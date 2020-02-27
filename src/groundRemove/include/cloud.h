@@ -126,5 +126,7 @@ public:
         
     // 对称点的对数
     size_t numSymPoints = 0;
+    size_t numNoneEmptyLShapePoint = 0;
+    float SymPointPercent = 0.0f;
 };
 #endif

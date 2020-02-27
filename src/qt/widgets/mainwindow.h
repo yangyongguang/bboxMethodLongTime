@@ -127,8 +127,8 @@ private:
     // 可供选择的 对象
     QComboBox *ObjSelectCB;
     QDockWidget *dock_Image;
-    QDockWidget *dock_cluster_image;
-    QDockWidget *dockshow_depth_image;
+    // QDockWidget *dock_cluster_image;
+    // QDockWidget *dockshow_depth_image;
     // QDockWidget *dockshow_depth_image2;
 
     QLabel *imgLabel;

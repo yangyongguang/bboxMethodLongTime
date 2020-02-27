@@ -118,22 +118,23 @@ MainWindow::MainWindow(QWidget *parent):
     imgLabel = new QLabel(dock_Image);
     imgLabel->setScaledContents(true);
     dock_Image->setFloating(true);
+    // dock_Image->setWindowFlags(Qt::WindowStaysOnTopHint);
 
-    dock_cluster_image = new QDockWidget(tr("Imagecluster"), this);
-    addDockWidget(Qt::TopDockWidgetArea,dock_cluster_image);
-    dock_cluster_image->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable);
-    dock_cluster_image->setAllowedAreas(Qt::AllDockWidgetAreas);
-    cluster_image = new QLabel(dock_cluster_image);
-    cluster_image->setScaledContents(true);
-    dock_cluster_image->setFloating(true);
+    // dock_cluster_image = new QDockWidget(tr("Imagecluster"), this);
+    // addDockWidget(Qt::TopDockWidgetArea,dock_cluster_image);
+    // dock_cluster_image->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable);
+    // dock_cluster_image->setAllowedAreas(Qt::AllDockWidgetAreas);
+    // cluster_image = new QLabel(dock_cluster_image);
+    // cluster_image->setScaledContents(true);
+    // dock_cluster_image->setFloating(true);
 
-    dockshow_depth_image = new QDockWidget(tr("ImageDepth"), this);
-    addDockWidget(Qt::TopDockWidgetArea, dockshow_depth_image);
-    dockshow_depth_image->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable);
-    dockshow_depth_image->setAllowedAreas(Qt::AllDockWidgetAreas);
-    depth_image = new QLabel(dockshow_depth_image);
-    depth_image->setScaledContents(true);
-    dockshow_depth_image->setFloating(true);
+    // dockshow_depth_image = new QDockWidget(tr("ImageDepth"), this);
+    // addDockWidget(Qt::TopDockWidgetArea, dockshow_depth_image);
+    // dockshow_depth_image->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable);
+    // dockshow_depth_image->setAllowedAreas(Qt::AllDockWidgetAreas);
+    // depth_image = new QLabel(dockshow_depth_image);
+    // depth_image->setScaledContents(true);
+    // dockshow_depth_image->setFloating(true);
 
     // dockshow_depth_image2 = new QDockWidget(tr("ImageDepth2"), this);
     // addDockWidget(Qt::TopDockWidgetArea, dockshow_depth_image2);
@@ -157,8 +158,8 @@ MainWindow::~MainWindow()
     delete dock_Image;
     delete imgLabel;
     delete ObjSelectCB;
-    delete dockshow_depth_image;
-    delete dock_cluster_image;
+    // delete dockshow_depth_image;
+    // delete dock_cluster_image;
     delete infoTextEdit;
     delete cluster_image;
     delete depth_image;
@@ -436,11 +437,11 @@ void MainWindow::onSliderMovedTo(int cloud_number)
             // _viewer->AddDrawable(DrawableBBox::FromCloud(bboxPts, true));
             _viewer->drawSelectableBBox = DrawSelectAbleBBox(bboxPts, true);
             // fprintf(stderr, "drawSelectedBBox objects size : %d\n", _viewer->drawSelectableBBox.objects.size());
-            _viewer->AddDrawable(DrawSelectAbleBBox::FromCloud(bboxPts, false), "DrawSelectAbleBBox");
+            _viewer->AddDrawable(DrawSelectAbleBBox::FromCloud(bboxPts, true), "DrawSelectAbleBBox");
             // 对比方法 bbox
             // _viewer->AddDrawable(DrawableBBox::FromCloud(bboxPts2, true, 1));
             _viewer->AddDrawable(DrawableCloud::FromCloud(markPoints, Eigen::Vector3f(0.0f, 1.0f, 0.2f),
-                     GLfloat(6)),"L_shape markPoints");
+                     GLfloat(5)),"L_shape markPoints");
         }
 
         infoTextEdit->append("number of cluster : " + QString::number(cluster.getNumCluster()));
@@ -563,10 +564,10 @@ void MainWindow::onSliderMovedTo(int cloud_number)
 
     if (ui->depthClusterCB->isChecked())
     {
-        QImage qimage_depth = utils::MatToQImage(visImage);
-        dockshow_depth_image->resize(qimage_depth.width() * 2, qimage_depth.height() * 2);
-        depth_image->setPixmap(QPixmap::fromImage(qimage_depth));
-        depth_image->resize(qimage_depth.width() * 2, qimage_depth.height() * 2);
+        // QImage qimage_depth = utils::MatToQImage(visImage);
+        // dockshow_depth_image->resize(qimage_depth.width() * 2, qimage_depth.height() * 2);
+        // depth_image->setPixmap(QPixmap::fromImage(qimage_depth));
+        // depth_image->resize(qimage_depth.width() * 2, qimage_depth.height() * 2);
 
         // QImage qimage_depth2 = utils::MatToQImage(depthImage);
         // dockshow_depth_image2->resize(qimage_depth2.width() * 2, qimage_depth2.height() * 2);
@@ -704,8 +705,8 @@ void MainWindow::onClearSelection()
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     dock_Image->resize(imgLabel->width(), imgLabel->height());
-    dock_cluster_image->resize(cluster_image->width(), cluster_image->height());
-    dockshow_depth_image->resize(depth_image->width(), depth_image->height());
+    // dock_cluster_image->resize(cluster_image->width(), cluster_image->height());
+    // dockshow_depth_image->resize(depth_image->width(), depth_image->height());
     // int showImageGV_x = (ui->CloudViewer->width() - ui->showImageGV->width()) / 2;
     // ui->showImageGV->move(showImageGV_x, 0);
 }

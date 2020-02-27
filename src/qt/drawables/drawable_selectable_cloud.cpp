@@ -96,10 +96,13 @@ void DrawSelectAbleBBox::Draw() const
         Cloud bboxPt = (*rectPosVec[iBBox]);
         if (_drawZAxis)
         {
-            glColor3f(0.4112f, 0.412f, 0.412f);
-            glBegin(GL_QUAD_STRIP);
-            std::array<int, 4> bottom = {1, 2, 0, 3};
-            for (int idx = 0; idx < 4; ++idx)
+            // glColor3f(0.4112f, 0.412f, 0.412f);
+            // glBegin(GL_QUAD_STRIP);
+            glColor3f(1.0f, 1.0f, 1.0f);
+            glBegin(GL_LINE_STRIP);
+            // std::array<int, 4> bottom = {1, 2, 0, 3};
+            std::array<int, 5> bottom = {0, 1, 2, 3, 0};
+            for (int idx = 0; idx < 5; ++idx)
             {
                 glVertex3f(bboxPt[bottom[idx]].x(), 
                             bboxPt[bottom[idx]].y(), 
@@ -140,7 +143,8 @@ void DrawSelectAbleBBox::Draw() const
         // --------
         if (_drawZAxis)
         {
-            glColor3f(0.80f, 0.745f, 0.448f);             
+            // glColor3f(0.80f, 0.745f, 0.448f);     
+            glColor3f(1.0f, 1.0f, 1.0f);        
             glBegin(GL_LINE_STRIP);
             for (int idx = 4; idx < 8;++idx)
             {

@@ -429,7 +429,7 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
         }
         // 找到拐点后， 直接切割 旋转 LShape 点云
         // 等分， 或者调整大侧边点云
-        getLShapePoints(cluster, maxDx, maxDy, needFixed ,debugBool, lShapeHorizonResolution);
+        getLShapePoints(cluster, maxDx, maxDy, needFixed , debugBool, lShapeHorizonResolution);
         //---------------------------------------------------
 
         Cloud clusterTmp;
@@ -489,15 +489,23 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
             fprintf(stderr, "slopeDist %f, numPoints %d\n", slopeDist, numPoints);
         }
         // 车宽 2.5m ？？？
-        if (cluster.numSymPoints >= 30 && slopeDist < 2.5f && numPoints > lnumPoints)
+        // if (debugBool)
+        // {
+        //     fprintf(stderr, "number of percent SymPoints %f, numSymPoints %d, numNoneEmptyLShapePoint %d\n", 
+        //         cluster.numSymPoints / (cluster.numNoneEmptyLShapePoint + 1e-3),
+        //         cluster.numSymPoints, 
+        //         cluster.numNoneEmptyLShapePoint);
+        // }
+        // if (cluster.numSymPoints >= 30 && slopeDist < 2.5f && numPoints > lnumPoints)
+        if (cluster.SymPointPercent >= 0.3f && slopeDist < 2.5f && numPoints > lnumPoints)
         {
             // fprintf(stderr, "has gone404 ----\n");
             float rectK;
-            if (debugBool)
-            {
-                fprintf(stderr, "using direction, num %d Symmetric points\n", 
-                        cluster.numSymPoints);
-            }
+            // if (debugBool)
+            // {
+            //     fprintf(stderr, "using direction, num %d Symmetric points\n", 
+            //             cluster.numSymPoints);
+            // }
             // 对称情况， 直接对全部点云使用 pac 方法  失败了
             // rectK = direction(*clusteredPoints[iCluster]);
             // rectK = direction(clusterTmp);  
@@ -518,17 +526,17 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
             // fprintf(stderr, "clusterTmp Size %d\n", clusterTmp.size());
             // fprintf(stderr, "------\n");
             // clusterTmp.sort();
-            std::vector<Point3f> frontKelemPoints(clusterTmp.size());
-            for (int idx = 0; idx < clusterTmp.size(); ++idx)
-            {
-                frontKelemPoints[idx].x = clusterTmp[idx].x();
-                frontKelemPoints[idx].y = clusterTmp[idx].y();
-                frontKelemPoints[idx].z = clusterTmp[idx].toSensor2D;
-            } 
-            std::sort(frontKelemPoints.begin(), frontKelemPoints.end(), 
-                    [](const Point3f & a, const Point3f & b){return a.z < b.z;});
-            // 取对象的前百分之 10 的点求平均值
-            // int numFrontPoints = std::floor(clusterTmp.size() / 3);
+            // std::vector<Point3f> frontKelemPoints(clusterTmp.size());
+            // for (int idx = 0; idx < clusterTmp.size(); ++idx)
+            // {
+            //     frontKelemPoints[idx].x = clusterTmp[idx].x();
+            //     frontKelemPoints[idx].y = clusterTmp[idx].y();
+            //     frontKelemPoints[idx].z = clusterTmp[idx].toSensor2D;
+            // } 
+            // std::sort(frontKelemPoints.begin(), frontKelemPoints.end(), 
+            //         [](const Point3f & a, const Point3f & b){return a.z < b.z;});
+            // // 取对象的前百分之 10 的点求平均值
+            // int numFrontPoints = std::floor(clusterTmp.size() / 2);
             
             // // fprintf(stderr, "numFrontPoints ");
             // std::vector<cv::Point2f> points;
@@ -544,11 +552,10 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
             // frontMiddlePoint.y = sumFrontY / numFrontPoints;
             // markPoints->emplace_back(point(frontMiddlePoint.x, frontMiddlePoint.y, 0.0f));
             // float correctFitPercent = 0.0f;
-            // fprintf(stderr, "has gone1 !\n");
-            // std::vector<cv::Point2f> points;
+            // // fprintf(stderr, "has gone1 !\n");
             // for (int idx = 0; idx < clusterTmp.size(); ++idx)
             // {
-            //     points.emplace_back(Point2f(frontKelemPoints[idx].x, frontKelemPoints[idx].y);
+            //     points.emplace_back(Point2f(frontKelemPoints[idx].x, frontKelemPoints[idx].y));
             // }
             // rectK = fitLineRansac(points, 30, 0.045, correctFitPercent, debugBool);        
             // if (correctFitPercent < 0.8)
@@ -557,7 +564,7 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
             // 直接使用激光雷达中心到中心点的连线
             rectK = (centerY) / (centerX + 1e-6);
             // rectK = fitLine(points);
-            fitRect(rectK, *clusteredPoints[iCluster],  pcPoints);                   
+            fitRect(rectK, cluster,  pcPoints);                   
             if (debugBool)
                 fprintf(stderr, "\ncurrent rectK : %f\n", rectK);
             hasRect = true;
@@ -631,10 +638,11 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
             // float lastY = maxDy + maxMvecY + minMvecY;
 
             // 添加三个可视化点
-            
+            markPoints->emplace_back(cluster[cluster.maxLPoint]);
+            markPoints->emplace_back(cluster[cluster.minLPoint]);
             markPoints->emplace_back(point(maxDx, maxDy, 0.0f));
-            markPoints->emplace_back(point(maxMx, maxMy, 0.0f));
-            markPoints->emplace_back(point(minMx, minMy, 0.0f));
+            // markPoints->emplace_back(point(maxMx, maxMy, 0.0f));
+            // markPoints->emplace_back(point(minMx, minMy, 0.0f));
 
             // 求 垂线 俩边的点集合
             // float k = (maxMvecY - minMvecY) / (maxMvecX - minMvecX + 1e-6);
@@ -731,13 +739,13 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
             if (distA < distB)
             {
                 lessZero = k_1 * minMx + vet.y - minMy; 
-                markPoints->emplace_back(point((minMx + maxDx) / 2, (minMy + maxDy) / 2, 0.0f));
+                markPoints->emplace_back(point((minMx + maxDx) / 2, (minMy + maxDy) / 2, cluster[cluster.minLPoint].z() / 2));
                 longEdge = distB;
             }            
             else
             {
                 lessZero = k_1 * maxMx + vet.y - maxMy;
-                markPoints->emplace_back(point((maxMx + maxDx) / 2, (maxMy + maxDy) / 2, 0.0f));
+                markPoints->emplace_back(point((maxMx + maxDx) / 2, (maxMy + maxDy) / 2, cluster[cluster.maxLPoint].z() / 2));
                 longEdge = distA;
             }
 
@@ -1181,18 +1189,33 @@ void getLShapePoints(Cloud & cluster,
     // 拐点的角度
     float OAngle = atan2(maxDy, maxDx);   
     if (needFixed) OAngle = (OAngle > 0) ? (OAngle - M_PI) : (OAngle + M_PI);    
+    // 计算俩侧的采样比例， 尝试一人一半， 或者长度比划分
+    float distMinAngleToOPoint = distTwoPoint(point(maxDx, maxDy, 0.0f), cluster[cluster.minLPoint]);
+    float distMaxAngleToOpoint = distTwoPoint(point(maxDx, maxDy, 0.0f), cluster[cluster.maxLPoint]);
+    float distMinToOrigin = distTwoPoint(point(0.0f, 0.0f, 0.0f), cluster[cluster.minLPoint]);
+    float distMaxToOrigin = distTwoPoint(point(0.0f, 0.0f, 0.0f), cluster[cluster.maxLPoint]);
+    // 如果对称， 那么车宽的估值为这个数
+    float carWidth = 2 * max(distMinToOrigin, distMaxToOrigin) * sin((maxAngle - minAngle) / 2);
     // 逻辑上， 角度对应的点的数量
     int numSampPoint = std::ceil((maxAngle - minAngle) / M_PI * 180 / lShapeHorizonResolution);
+    if (carWidth > 1.30f && carWidth < 2.05f)
+        numSampPoint /= 2;
     int numSampPointComp;
-    // if (debugBool)
-    //     fprintf(stderr, "numSampPoint before %d\n", numSampPoint);
-    if (numSampPoint > 80 && numSampPoint < 150)
-        numSampPoint = 80;
+    if (debugBool)
+        fprintf(stderr, "numSampPoint before %d\n", numSampPoint);
+    // if (numSampPoint > 80 && numSampPoint < 150)
+    //     numSampPoint = 80;
+    int nSegment = 10; //  分割为十等份
+    if (numSampPoint < 150)
+    {
+        numSampPoint = std::ceil(numSampPoint * 1.0f / nSegment) * nSegment - 1;
+        // numSampPoint = numSampPoint - numSampPoint % nSegment - 1;
+    }
     if (numSampPoint > 150)
-        numSampPoint = 150;
+        numSampPoint = 149;
     // 此处为赋值， 并非判断是否相等  
-    // if (debugBool)
-    //     fprintf(stderr, "numSampPoint after %d\n", numSampPoint);
+    if (debugBool)
+        fprintf(stderr, "numSampPoint after %d\n", numSampPoint);
     numSampPointComp = numSampPoint;
     // colIdx 到 实际点云簇中的点
     std::vector<int> ToPointID(numSampPointComp + 1, -1);
@@ -1207,9 +1230,7 @@ void getLShapePoints(Cloud & cluster,
                          numSampPoint,
                          lShapeHorizonResolution);
     }
-    // 计算俩侧的采样比例， 尝试一人一半， 或者长度比划分
-    float distMinAngleToOPoint = distTwoPoint(point(maxDx, maxDy, 0.0f), cluster[cluster.minLPoint]);
-    float distMaxAngleToOpoint = distTwoPoint(point(maxDx, maxDy, 0.0f), cluster[cluster.maxLPoint]);
+
     // 按俩边的长度比重旋转选点的密度
     int numMinSample = floor(distMinAngleToOPoint / (distMinAngleToOPoint + distMaxAngleToOpoint) * numSampPointComp);
     int numMaxSample = numSampPointComp - numMinSample;
@@ -1254,8 +1275,7 @@ void getLShapePoints(Cloud & cluster,
         else
         {
             colIdx = ColFromAngle(angle, minAngle, maxAngle, OAngle, minToOStep, maxToOStep, numMinSample, debugBool);
-        }
-        
+        }        
 
         // if (debugBool)
         // {
@@ -1316,24 +1336,84 @@ void getLShapePoints(Cloud & cluster,
         }
     }
 
-    for (int idx = 0; idx < numPoints / 2; ++idx)
+    // 先判断车宽度， 然后判断是否需要对称检测
+    if (carWidth > 1.30f && carWidth < 2.05f && numSampPoint >= nSegment)
     {
+        int NumSymSegs = 0;
+        int nPointPreSeg = numSampPoint / nSegment; 
+        for (int idx = 0; idx < nSegment / 2; ++idx)
+        {
+            if (debugBool)
+                fprintf(stderr, "idx %d\n", idx);
+            int frontIdx = idx;
+            int backIdx = nSegment - frontIdx - 1;
+            // int NumFrontPts = 0, NumBackPts = 0;
+            // float SumFront = 0.0f, SumBack = 0.0f;
+            // for (int i = 0; i < nSegment; ++i)
+            // {
+            //     if (debugBool)
+            //         fprintf(stderr, "Front point idx %d\n", frontIdx * nPointPreSeg + i);
+            //     float currentValue = ToDist[frontIdx * nPointPreSeg + i];
+            //     if (currentValue < 300.0f)
+            //     {
+            //         ++NumFrontPts;
+            //         SumFront += currentValue;
+            //     }
+            // }
+
+            // for (int i = 0; i < nSegment; ++i)
+            // {
+            //     if (debugBool)
+            //         fprintf(stderr, "back point idx %d\n", backIdx * nPointPreSeg + i);
+            //     float currentValue = ToDist[backIdx * nPointPreSeg + i];
+            //     if (currentValue < 300.0f)
+            //     {
+            //         ++NumBackPts;
+            //         SumBack += currentValue;
+            //     }
+            // }
+            // float frontAveValue = SumFront / (1e-3 + NumFrontPts);
+            // float backAveValue = SumBack / (1e-3 + NumBackPts);
+            // ToDist[frontIdx * nPointPreSeg + i]
+            // ToDist[backIdx * nPointPreSeg + i]
+            float frontAveValue = *std::min_element(ToDist.begin() + frontIdx * nPointPreSeg, 
+                ToDist.begin() + (frontIdx + 1) * nPointPreSeg - 1);
+            float backAveValue = *std::min_element(ToDist.begin() + backIdx * nPointPreSeg,
+                ToDist.begin() + (backIdx + 1) * nPointPreSeg - 1);
+            if (std::abs(frontAveValue - backAveValue) < 0.25f)
+            {
+                ++NumSymSegs;
+            }
+            if (debugBool)
+                fprintf(stderr, "diff of dist : %f\n", std::abs(frontAveValue - backAveValue));
+        }
+        cluster.SymPointPercent = NumSymSegs * 1.0f / nSegment;
         if (debugBool)
         {
-            fprintf(stderr, "current idx : %d, %d\n", idx, numPoints - idx - 1);
-            fprintf(stderr, "%f ", ToDist[idx]);
-            fprintf(stderr, "%f ", ToDist[numPoints - idx - 1]);
+            fprintf(stderr, "NumSymSegs %d\n", NumSymSegs);
+            fprintf(stderr, "SymPointPrecent %f\n", cluster.SymPointPercent);
         }
-        float diff = ToDist[idx] - ToDist[numPoints - idx - 1];
-        if (debugBool)
-            fprintf(stderr, "  ----  %f ", diff);
-        if (std::abs(diff) < 0.20)
+        /*
+        for (int idx = 0; idx < numPoints / 2; ++idx)
         {
-            // ++numSymPoint;
-            cluster.numSymPoints++;
+            if (debugBool)
+            {
+                fprintf(stderr, "current idx : %d, %d\n", idx, numPoints - idx - 1);
+                fprintf(stderr, "%f ", ToDist[idx]);
+                fprintf(stderr, "%f ", ToDist[numPoints - idx - 1]);
+            }
+            float diff = ToDist[idx] - ToDist[numPoints - idx - 1];
+            if (debugBool)
+                fprintf(stderr, "  ----  %f ", diff);
+            if (std::abs(diff) < 0.20)
+            {
+                // ++numSymPoint;
+                cluster.numSymPoints++;
+            }
+            if (debugBool)
+                fprintf(stderr, "\n");                
         }
-        if (debugBool)
-            fprintf(stderr, "\n");                
+        */
     }
 
     for (int idx = 0; idx < ToPointID.size(); ++idx)
@@ -1347,6 +1427,9 @@ void getLShapePoints(Cloud & cluster,
         // points->emplace_back((*cluster)[ToPointID[idx]]);
         cluster[ToPointID[idx]].isLShapePoint = 1;
     }
+    cluster.numNoneEmptyLShapePoint = ToDist.size();
+    if (debugBool)
+        fprintf(stderr, "distMinToOrigin %f, carWidth %f\n", distMinToOrigin, carWidth);
     if (debugBool)
         fprintf(stderr, "\n\n\n\n\n\n\n\n");
 }

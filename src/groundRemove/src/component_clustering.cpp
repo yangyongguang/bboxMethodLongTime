@@ -463,10 +463,10 @@ void cluster::getLShapePoints(const std::vector<Cloud::Ptr> & clusters,
             for (int idx = 0; idx < numPoints/2; idx++)
             {
                 float minDist = ToDist[2 * idx];
-                for (int i = 1; i < 2;++i)
+                for (int i = 1; i < 4;++i)
                 {
-                    if (minDist > ToDist[2 * idx + i])
-                        minDist = ToDist[2 * idx + i]; 
+                    if (minDist > ToDist[4 * idx + i])
+                        minDist = ToDist[4 * idx + i]; 
                 }
                 int numStart = std::floor((minDist - minDistGlobal) * 100);
                 if (minDist > 200)
@@ -486,6 +486,7 @@ void cluster::getLShapePoints(const std::vector<Cloud::Ptr> & clusters,
             }
         }
 
+        // 车宽在一个范围内， 使用进一步对称判断
         for (int idx = 0; idx < numPoints / 2; ++idx)
         {
             if (debugBool)
