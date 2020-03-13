@@ -21,6 +21,8 @@ memory
 -
 opencv2/core/core.hpp
 -
+string
+-
 
 ../src/groundRemove/include/param.h
 string
@@ -91,6 +93,12 @@ memory
 -
 object.h
 /home/yyg/code/lidarCode/src/qt/drawables/object.h
+GL/gl.h
+-
+GL/glu.h
+-
+QGLViewer/qglviewer.h
+-
 
 /opt/Qt5.6.0/5.6/gcc_64/include/QtCore/QObject
 qobject.h

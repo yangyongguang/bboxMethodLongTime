@@ -24,8 +24,8 @@ float tHeightMax = 2.6;
 float tWidthMin = 0.25;
 float tWidthMax = 5.5;
 float tLenMin = 0.5;
-float tLenMax = 25.0;
-float tAreaMax = 50.0;
+float tLenMax = 30.0;
+float tAreaMax = 80.0;
 float tRatioMin = 1.2;
 float tRatioMax = 5.0;
 float minLenRatio = 3.0;
@@ -1347,45 +1347,45 @@ void getLShapePoints(Cloud & cluster,
                 fprintf(stderr, "idx %d\n", idx);
             int frontIdx = idx;
             int backIdx = nSegment - frontIdx - 1;
-            // int NumFrontPts = 0, NumBackPts = 0;
-            // float SumFront = 0.0f, SumBack = 0.0f;
-            // for (int i = 0; i < nSegment; ++i)
-            // {
-            //     if (debugBool)
-            //         fprintf(stderr, "Front point idx %d\n", frontIdx * nPointPreSeg + i);
-            //     float currentValue = ToDist[frontIdx * nPointPreSeg + i];
-            //     if (currentValue < 300.0f)
-            //     {
-            //         ++NumFrontPts;
-            //         SumFront += currentValue;
-            //     }
-            // }
+            int NumFrontPts = 0, NumBackPts = 0;
+            float SumFront = 0.0f, SumBack = 0.0f;
+            for (int i = 0; i < nSegment; ++i)
+            {
+                // if (debugBool)
+                //     fprintf(stderr, "Front point idx %d\n", frontIdx * nPointPreSeg + i);
+                float currentValue = ToDist[frontIdx * nPointPreSeg + i];
+                if (currentValue < 300.0f)
+                {
+                    ++NumFrontPts;
+                    SumFront += currentValue;
+                }
+            }
 
-            // for (int i = 0; i < nSegment; ++i)
-            // {
-            //     if (debugBool)
-            //         fprintf(stderr, "back point idx %d\n", backIdx * nPointPreSeg + i);
-            //     float currentValue = ToDist[backIdx * nPointPreSeg + i];
-            //     if (currentValue < 300.0f)
-            //     {
-            //         ++NumBackPts;
-            //         SumBack += currentValue;
-            //     }
-            // }
-            // float frontAveValue = SumFront / (1e-3 + NumFrontPts);
-            // float backAveValue = SumBack / (1e-3 + NumBackPts);
-            // ToDist[frontIdx * nPointPreSeg + i]
-            // ToDist[backIdx * nPointPreSeg + i]
-            float frontAveValue = *std::min_element(ToDist.begin() + frontIdx * nPointPreSeg, 
-                ToDist.begin() + (frontIdx + 1) * nPointPreSeg - 1);
-            float backAveValue = *std::min_element(ToDist.begin() + backIdx * nPointPreSeg,
-                ToDist.begin() + (backIdx + 1) * nPointPreSeg - 1);
-            if (std::abs(frontAveValue - backAveValue) < 0.25f)
+            for (int i = 0; i < nSegment; ++i)
+            {
+                // if (debugBool)
+                    // fprintf(stderr, "back point idx %d\n", backIdx * nPointPreSeg + i);
+                float currentValue = ToDist[backIdx * nPointPreSeg + i];
+                if (currentValue < 300.0f)
+                {
+                    ++NumBackPts;
+                    SumBack += currentValue;
+                }
+            }
+            float frontAveValue = SumFront / (1e-3 + NumFrontPts);
+            float backAveValue = SumBack / (1e-3 + NumBackPts);
+            // float frontAveValue = *std::min_element(ToDist.begin() + frontIdx * nPointPreSeg, 
+            //     ToDist.begin() + (frontIdx + 1) * nPointPreSeg - 1);
+            // float backAveValue = *std::min_element(ToDist.begin() + backIdx * nPointPreSeg,
+            //     ToDist.begin() + (backIdx + 1) * nPointPreSeg - 1);
+            // if (std::abs(frontAveValue - backAveValue) < 0.25f)
+            if (std::abs(frontAveValue - backAveValue) < 0.1 + (nSegment / 2 - idx) * 0.08)
             {
                 ++NumSymSegs;
             }
             if (debugBool)
-                fprintf(stderr, "diff of dist : %f\n", std::abs(frontAveValue - backAveValue));
+                fprintf(stderr, "diff of dist : %f, stand diff :%f\n", 
+                        std::abs(frontAveValue - backAveValue), 0.1 + (nSegment / 2 - idx) * 0.08);
         }
         cluster.SymPointPercent = NumSymSegs * 1.0f / nSegment;
         if (debugBool)

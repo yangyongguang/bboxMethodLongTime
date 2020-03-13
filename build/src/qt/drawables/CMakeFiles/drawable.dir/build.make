@@ -143,12 +143,18 @@ src/qt/drawables/libdrawable.so: src/qt/drawables/CMakeFiles/drawable.dir/drawab
 src/qt/drawables/libdrawable.so: src/qt/drawables/CMakeFiles/drawable.dir/drawable_selectable_cloud.cpp.o
 src/qt/drawables/libdrawable.so: src/qt/drawables/CMakeFiles/drawable.dir/build.make
 src/qt/drawables/libdrawable.so: src/qt/utils/libutils.so
+src/qt/drawables/libdrawable.so: /usr/lib/x86_64-linux-gnu/libQGLViewer.so
+src/qt/drawables/libdrawable.so: /opt/Qt5.6.0/5.6/gcc_64/lib/libQt5Xml.so.5.6.0
+src/qt/drawables/libdrawable.so: /opt/Qt5.6.0/5.6/gcc_64/lib/libQt5OpenGL.so.5.6.0
 src/qt/drawables/libdrawable.so: /usr/lib/x86_64-linux-gnu/libGL.so
 src/qt/drawables/libdrawable.so: /usr/lib/x86_64-linux-gnu/libGLU.so
 src/qt/drawables/libdrawable.so: /usr/local/lib/libboost_system.so
 src/qt/drawables/libdrawable.so: /usr/local/lib/libboost_filesystem.so
 src/qt/drawables/libdrawable.so: /usr/local/lib/libboost_regex.so
 src/qt/drawables/libdrawable.so: /usr/local/lib/libboost_program_options.so
+src/qt/drawables/libdrawable.so: /opt/Qt5.6.0/5.6/gcc_64/lib/libQt5Widgets.so.5.6.0
+src/qt/drawables/libdrawable.so: /opt/Qt5.6.0/5.6/gcc_64/lib/libQt5Gui.so.5.6.0
+src/qt/drawables/libdrawable.so: /opt/Qt5.6.0/5.6/gcc_64/lib/libQt5Core.so.5.6.0
 src/qt/drawables/libdrawable.so: src/qt/drawables/CMakeFiles/drawable.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/yyg/code/lidarCode/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX shared library libdrawable.so"
 	cd /home/yyg/code/lidarCode/build/src/qt/drawables && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/drawable.dir/link.txt --verbose=$(VERBOSE)

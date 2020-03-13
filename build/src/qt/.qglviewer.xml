@@ -1,21 +1,21 @@
 <!DOCTYPE QGLVIEWER>
 <QGLViewer version="2.6.3">
   <State stereo="false">
-    <foregroundColor red="180" green="180" blue="180"/>
-    <backgroundColor red="51" green="51" blue="51"/>
+    <foregroundColor red="180" blue="180" green="180"/>
+    <backgroundColor red="255" blue="255" green="255"/>
   </State>
-  <Display gridIsDrawn="false" cameraIsEdited="false" axisIsDrawn="false" FPSIsDisplayed="false"/>
-  <Geometry posY="21" width="1366" posX="0" fullScreen="false" height="747"/>
+  <Display axisIsDrawn="false" cameraIsEdited="false" gridIsDrawn="false" FPSIsDisplayed="false"/>
+  <Geometry height="747" posX="0" fullScreen="false" posY="21" width="1366"/>
   <Camera>
-    <Parameters sceneRadius="100" fieldOfView="0.785398" orthoCoef="0.414214" zNearCoefficient="0.005" Type="PERSPECTIVE" zClippingCoefficient="1.73205">
+    <Parameters fieldOfView="0.785398" zClippingCoefficient="1.73205" orthoCoef="0.414214" zNearCoefficient="0.005" sceneRadius="50" Type="PERSPECTIVE">
       <SceneCenter x="0" y="0" z="0"/>
     </Parameters>
-    <Stereo focusDistance="241.421" physScreenWidth="0.5" IODist="0.062"/>
+    <Stereo physScreenWidth="0.5" focusDistance="120.711" IODist="0.062"/>
     <ManipulatedCameraFrame>
-      <position x="-22.1123" y="-19.4054" z="19.0848"/>
-      <orientation q0="0.435514" q1="-0.156097" q3="0.830902" q2="-0.309134"/>
-      <ManipulatedParameters spinSens="0.3" wheelSens="1" rotSens="1" zoomSens="1" transSens="1"/>
-      <ManipulatedCameraParameters rotatesAroundUpVector="false" flySpeed="1" zoomsOnPivotPoint="false">
+      <position x="-18.0168" y="-2.07132" z="14.934"/>
+      <orientation q0="0.3385" q1="-0.402716" q3="0.586202" q2="-0.616121"/>
+      <ManipulatedParameters spinSens="0.3" transSens="1" wheelSens="1" zoomSens="1" rotSens="1"/>
+      <ManipulatedCameraParameters flySpeed="0.5" zoomsOnPivotPoint="false" rotatesAroundUpVector="false">
         <sceneUpVector x="0" y="1" z="0"/>
       </ManipulatedCameraParameters>
     </ManipulatedCameraFrame>

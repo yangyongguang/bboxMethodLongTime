@@ -5,6 +5,10 @@
 #include <memory>
 #include "object.h"
 
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <QGLViewer/qglviewer.h>
+
 class DrawSelectAbleCloud : public Drawable
 {
 public:

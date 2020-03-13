@@ -7,6 +7,8 @@ add_library(drawable SHARED
 
 target_link_libraries(drawable
                      utils
+                    ${QGLVIEWER_LIBRARY}
+                    ${MY_QT_LIBRARIES}
                     ${OPENGL_gl_LIBRARY}
                     ${OPENGL_glu_LIBRARY})
                     

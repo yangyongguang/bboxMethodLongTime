@@ -17,13 +17,16 @@ void Viewer::Clear()
 {
     lock_guard<mutex> guard(_cloud_mutex);
     _drawables.clear();
+    bboxs.clear();
 }
 
 void Viewer::draw() 
 {
     // 绘制自车
+    glEnable(GL_LINE_STIPPLE);
+    glLineStipple(2, 0x3F3F);
     glColor3f(1.0f, 0.0f, 0.0f);
-    glLineWidth(1.0f);
+    glLineWidth(2.0f);
     glBegin(GL_LINE_STRIP);
     glVertex3f(-2.5f, -1.4f, -1.73f);
     glVertex3f(2.5f, -1.4f, -1.73f);
@@ -31,15 +34,23 @@ void Viewer::draw()
     glVertex3f(-2.5f, 1.4f, -1.73f);
     glVertex3f(-2.5f, -1.4f, -1.73f);   
     glEnd();
-    // 参考前进方向
-    glLineWidth (0.8f);    
-    glLineStipple (1, 0x0F0F);
-    glBegin(GL_LINES);  
-    glVertex3f(-100.0f, 0.0f, -1.72f);
-    glVertex3f(100.0f, 0.0f, -1.72f);
-    glVertex3f(0.0f, -100.0f, -1.72f);
-    glVertex3f(0.0f, 100.0f, -1.72f);
+    glDisable( GL_LINE_STIPPLE);
+
+    glColor3f(0.0f, 1.0f, 0.0f);
+    glBegin(GL_LINE_STRIP);
+    glVertex3f(0.3f, 0.0f, -1.73f);
+    glVertex3f(0.0f, 0.0f, -1.73f);
+    glVertex3f(0.0f, 0.3f, -1.73f);  
     glEnd();
+    // 参考前进方向
+    // glLineWidth (0.8f);    
+    // glLineStipple (1, 0x0F0F);
+    // glBegin(GL_LINES);  
+    // glVertex3f(-100.0f, 0.0f, -1.72f);
+    // glVertex3f(100.0f, 0.0f, -1.72f);
+    // glVertex3f(0.0f, -100.0f, -1.72f);
+    // glVertex3f(0.0f, 100.0f, -1.72f);
+    // glEnd();
     // glLineWidth (1.5f);    
     // glLineStipple (1, 0x0F0F);
     // glBegin(GL_LINES);  
@@ -49,14 +60,14 @@ void Viewer::draw()
     // glVertex3f(100.0f, 1.0f, -1.72f);
     // glEnd();
     ////////------------------   绘制参考线圆线 白色----------------    
-    float radius = 10;
-    glColor3f(1.0f, 0.0f, 0.0f);
-    while (radius <= 100)
-    {
-        /* code */
-        drawRefCircle(radius, radius * 100);
-        radius += 10;
-    }
+    // float radius = 10;
+    // glColor3f(1.0f, 0.0f, 0.0f);
+    // while (radius <= 100)
+    // {
+    //     /* code */
+    //     drawRefCircle(radius, radius * 100);
+    //     radius += 10;
+    // }
     ////////--------------------- 绘制距离圆结束  ------------------
     
     // ---------------------------- 绘制可视化网格 ----
@@ -164,6 +175,8 @@ void Viewer::draw()
     // Draws rectangular selection area. Could be done in postDraw() instead.
     if (selectionMode_ != NONE)
         drawSelectionRectangle();
+
+    displayText();
     // // yyg add
     // // Draws selected objects only.
     // glColor3f(0.9f, 0.3f, 0.3f);
@@ -181,6 +194,34 @@ void Viewer::draw()
     // glColor3f(0.8f, 0.8f, 0.8f);
     // for (int i = 0; i < int(objects_.size()); i++)
     //     objects_.at(i)->draw();
+    // test draw Text function
+    
+}
+
+void Viewer::displayText()
+{
+    // 绘制 bboxs 的索引
+    // 设置颜色
+    // QPalette pa;
+    // pa.setColor(QPalette::WindowText, Qt::red);
+    // setPalette(pa);
+    QFont ft("Helvetica [Cronyx]", 10, QFont::Bold);
+    glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_LIGHTING);
+    for (int idx = 0; idx < bboxs.size(); ++idx)
+    {
+        auto bbox = (*bboxs[idx]);
+        // renderText(bbox[0].x(), bbox[1].y(), bbox[2].z(),
+        //     QString::number(idx), ft);
+        point pt1 = bbox[0];
+        point pt2 = bbox[2];
+        QString str = QString::number(idx);// + "m/s";
+        QGLWidget::renderText(0.5 * (pt1.x() + pt2.x()) , 0.5 * (pt2.y() + pt1.y()), -1.73f, str, ft);
+    }    
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_LIGHTING);
+    // glFlush();
 }
 
 void Viewer::drawWithNames() 
@@ -355,10 +396,15 @@ void Viewer::init()
     // glClearColor(1.0f,1.0f,1.0f,1.0f);
     // glClear(GL_COLOR_BUFFER_BIT);
     // fprintf(stderr, "Viewer::init()\n");
-
-    setSceneRadius(100.0);
-    // setBackgroundColor(QColor(0, 0, 0));
-    // setBackgroundColor(QColor(1, 1, 1));
+    // Clear Screen And Depth Buffer
+    // glClearColor(1.0, 1.0, 1.0, 0.0);
+    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+   // Reset The Current Modelview Matrix
+    // glLoadIdentity();
+    glClear(GL_COLOR_BUFFER_BIT);
+    // 如果想要黑色 设置为 0.0, 0.0, 0.0,  如果想要白色为 255, 255, 255
+    setBackgroundColor(QColor(255, 255, 255));
+    setSceneRadius(50.0);
     // fprintf(stderr, "setBackgroundColor(QColor(1, 1, 1));\n");
     camera()->showEntireScene();
     glDisable(GL_LIGHTING);
@@ -437,4 +483,9 @@ void Viewer::drawSelectionRectangle() const
     glDisable(GL_BLEND);
     glEnable(GL_LIGHTING);
     stopScreenCoordinatesSystem();
+}
+
+void Viewer::setBBoxs(const std::vector<Cloud::Ptr> & inputBBox)
+{
+    bboxs.assign(inputBBox.begin(), inputBBox.end());
 }

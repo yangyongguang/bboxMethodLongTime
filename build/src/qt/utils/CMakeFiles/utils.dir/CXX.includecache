@@ -21,6 +21,8 @@ memory
 -
 opencv2/core/core.hpp
 -
+string
+-
 
 /home/yyg/code/lidarCode/src/qt/utils/utils.cpp
 utils.h

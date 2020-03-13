@@ -26,10 +26,14 @@ public:
     void Clear();
     ~Viewer() override {}
     void getClickedPoint(double & x, double & y);
+    void setBBoxs(const std::vector<Cloud::Ptr> & inputBBox);
+    
 protected:
     void draw() override;
     void init() override;
 
+    // 绘制文本信息
+    void displayText();
     // 多选框
     // Selection functions
     virtual void drawWithNames();
@@ -75,6 +79,7 @@ private:
 public:
     bool isFullScreen;
     params paramsViewer;
+    std::vector<Cloud::Ptr> bboxs;
 };
 #endif
 

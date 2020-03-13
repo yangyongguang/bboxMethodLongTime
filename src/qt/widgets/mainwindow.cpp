@@ -13,6 +13,9 @@
 #include <QUuid>
 #include <QRadioButton>
 #include <QLabel>
+// save to txt file
+#include <fstream>
+#include <ostream>
 
 MainWindow::MainWindow(QWidget *parent):
     // QWidget(parent),
@@ -229,6 +232,8 @@ void MainWindow::onOpenFolderToRead()
     // utils::ReadKittiFileByDir(folder_name.toStdString(), _file_names_velo);
     utils::ReadKittiFileByDir(kitti_velo_dir, _file_names_velo);
     utils::ReadKittiFileByDir(kitti_img_dir, _file_names_img);
+    // fprintf(stderr, "_file_names_velo.size %d, _file_names_imgs %d\n",
+    //         _file_names_velo.size(), _file_names_img.size());
     // utils::ReadKittiFileByDir(_params.kitti_img_dir, _file_names_img);
     std::sort(_file_names_velo.begin(), _file_names_velo.end()); // 对文件夹排序
     std::sort(_file_names_img.begin(), _file_names_img.end());
@@ -294,6 +299,8 @@ void MainWindow::onSliderMovedTo(int cloud_number)
     
     const auto &file_name = _file_names_velo[cloud_number];
     _cloud = utils::ReadKittiBinCloudByPath(file_name);
+    // fprintf(stderr, "num Point %d\n", _cloud->size());
+    assert(_cloud->size() != 0);
     fprintf(stderr, "\n\n------------------------------>\n");
     infoTextEdit->append("read bin file from: " + QString::fromStdString(file_name));
     infoTextEdit->append("current frame is: " + QString::number(cloud_number));
@@ -402,7 +409,7 @@ void MainWindow::onSliderMovedTo(int cloud_number)
         Cloud::Ptr lShapePoints (new Cloud);
         // cluster.getLShapePoints(clusters, lShapePoints, bboxDebugId, lShpaeHorizonResolution);
         Eigen::Vector3f color;
-        float pointSize = 3;
+        float pointSize = 3.2f;
         color << 1.0, 0.0, 0.0;
         _viewer->AddDrawable(DrawableCloud::FromCloud(lShapePoints, color, pointSize), "lShapePoints");
         // fprintf(stderr, "------------------2\n");
@@ -427,6 +434,32 @@ void MainWindow::onSliderMovedTo(int cloud_number)
             // }
             std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
             getBBox(clusters, bboxPts, markPoints, lShapePoints ,bboxToCluster, lShpaeHorizonResolution ,bboxDebugId);
+
+            // a single block
+            /*
+            {
+                ofstream outFile;
+                string fileName = "/home/yyg/pythonCode/jupyterCode/bboxData/" + 
+                        std::to_string(cloud_number) + ".txt";
+                outFile.open(fileName, ios::out);
+                if (!outFile)
+                {
+                    fprintf(stderr, "open file error \n");
+                    return;
+                }
+                // 保存 bounding box 到 txt 文档， 以供 python 调用
+                for (int idx = 0; idx < bboxPts.size(); ++idx)
+                {
+                    auto & bbox = (*bboxPts[idx]);
+                    for (int pointIdx = 0; pointIdx < 4; ++pointIdx)
+                    {
+                        outFile << bbox[pointIdx].x() << " " << bbox[pointIdx].y() << " ";
+                    }
+                    outFile << "\n";
+                }
+                outFile.close();
+            }
+            */
             // 对比方法
             // getOrientedBBox(clusters, bboxPts2);
             std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
@@ -436,12 +469,13 @@ void MainWindow::onSliderMovedTo(int cloud_number)
             // fprintf(stderr, "drawSelectedBBox objects size : %d\n", _viewer->drawSelectableBBox.objects.size());
             // _viewer->AddDrawable(DrawableBBox::FromCloud(bboxPts, true));
             _viewer->drawSelectableBBox = DrawSelectAbleBBox(bboxPts, true);
+            _viewer->setBBoxs(bboxPts);
             // fprintf(stderr, "drawSelectedBBox objects size : %d\n", _viewer->drawSelectableBBox.objects.size());
-            _viewer->AddDrawable(DrawSelectAbleBBox::FromCloud(bboxPts, true), "DrawSelectAbleBBox");
+            _viewer->AddDrawable(DrawSelectAbleBBox::FromCloud(bboxPts, false), "DrawSelectAbleBBox");
             // 对比方法 bbox
             // _viewer->AddDrawable(DrawableBBox::FromCloud(bboxPts2, true, 1));
             _viewer->AddDrawable(DrawableCloud::FromCloud(markPoints, Eigen::Vector3f(0.0f, 1.0f, 0.2f),
-                     GLfloat(5)),"L_shape markPoints");
+                     GLfloat(6)),"L_shape markPoints");
         }
 
         infoTextEdit->append("number of cluster : " + QString::number(cluster.getNumCluster()));
@@ -472,10 +506,12 @@ void MainWindow::onSliderMovedTo(int cloud_number)
     if (ui->cloudCB->isChecked())
     {
         Eigen::Vector3f color;
-        color << 0.0, 1.0, 0.0;
+        // color << 0.0, 1.0, 0.0;
+        // color << 0.79f, 1.0f, 0.439f;
+        color << 0.0f, 0.0f, 0.0f;
         // _viewer->AddDrawable(DrawableCloud::FromCloud(_cloud));
         // _viewer->AddDrawable(DrawSelectAbleCloud::FromCloud(_cloud, color, 2), "DrawSelectAbleCloud");
-        _viewer->AddDrawable(DrawableCloud::FromCloud(_cloud, color, 2), "DrawSelectAbleCloud");
+        _viewer->AddDrawable(DrawableCloud::FromCloud(_cloud, color, 2.5f), "DrawSelectAbleCloud");
         // 为 viewer 的 drawSelectableCloud 赋值
         // _viewer->selection.clear();
     }
@@ -490,7 +526,8 @@ void MainWindow::onSliderMovedTo(int cloud_number)
     if (ui->obstacleCB->isChecked())
     {
         Eigen::Vector3f color;
-        color << 1.0, 0.0, 0.0;
+        // color << 1.0, 0.0, 0.0;
+        color << 0.0f, 0.0f, 0.0f;
         _viewer->AddDrawable(DrawableCloud::FromCloud(obstacle_cloud, color, pointSize), "DrawableCloud obstacle");
     }
 

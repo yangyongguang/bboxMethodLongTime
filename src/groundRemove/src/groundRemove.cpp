@@ -72,7 +72,8 @@ void GroundSegmentation::insertPointThread(const Cloud & cloud,
     // bin_idx = (range - r_min + r_min_bin + 2 * detaX) / (r_min_bin + detaX);
     // std::cout << "thread id is :" << std::this_thread::get_id() << std::endl;
     // double detaX = (params_.r_max_bin - params_.r_min_bin) / (params_.n_bins - 1);
-    const double segment_step = 2 * M_PI / params_.n_segments;
+    const double segment_step = 2 * M_PI / (params_.n_segments - 1e-6);
+    // 减去 1e-6 是为了放置出现 0 和 n_segment 数出现， 使得数组访问越界
     // const double bin_step = (sqrt(params_.r_max_square) - sqrt(params_.r_min_square))
     //          / params_.n_bins;
     // const double r_min = sqrt(params_.r_min_square);
@@ -429,6 +430,7 @@ void GroundSegmentation::segment(const Cloud & cloud, std::vector<int> * segment
     // fprintf(stderr, "%d points\n", cloud.size());
     thisCloud = std::make_shared<Cloud>(cloud);
     insertPoints(cloud);   
+    // fprintf(stderr, "%insertPoints(cloud);");
     int groundRemoveID = 1;
     if (groundRemoveID == 0)
     {   
@@ -456,13 +458,16 @@ void GroundSegmentation::segment(const Cloud & cloud, std::vector<int> * segment
         //     fprintf(stderr, "applayMedianFilter %d\n");
         //     applayMedianFilter();
         getLines(&lines);    
+        // fprintf(stderr, "getLines(&lines);\n");
         // 可视化部分结果
         // 跟新 bin 是否是地面点， 根据是否在地面线段上
         updateBinGround();   
+        // fprintf(stderr, "updateBinGround();\n");
         // 给点云分类
         // assignCluster(segmentation);
         // 第三种给点云分类的方法， 利用地面点的距离分类
         assignClusterByLine(segmentation);
+        // fprintf(stderr, "assignClusterByLine(segmentation);\n");
    }
 }
 
@@ -583,11 +588,12 @@ void GroundSegmentation::assignClusterByLine(std::vector<int> * segmentation)
     std::vector<std::thread> thread_vec(params_.n_threads);
     const size_t cloud_size = segmentation->size();
     const int num_pre_thread = cloud_size / params_.n_threads; 
-    for (int i = 0; i < params_.n_threads - 1; ++i) {
-    const int start_index = num_pre_thread * i;
-    const int end_index = num_pre_thread * (i+1);
-    thread_vec[i] = std::thread(&GroundSegmentation::assignClusterByLineThread, this,
-                            start_index, end_index, segmentation);
+    for (int i = 0; i < params_.n_threads - 1; ++i) 
+    {
+        const int start_index = num_pre_thread * i;
+        const int end_index = num_pre_thread * (i+1);
+        thread_vec[i] = std::thread(&GroundSegmentation::assignClusterByLineThread, this,
+                                start_index, end_index, segmentation);
     }
 
     const size_t start_idx = num_pre_thread * (params_.n_threads - 1);
@@ -604,7 +610,7 @@ void GroundSegmentation::assignClusterByLineThread(const unsigned int &start_ind
                                              const unsigned int &end_index,
                                              std::vector<int> *segmentation) 
 { 
-    // fprintf(stderr, "_params.n_segments: %d\n", params_.n_segments);
+    fprintf(stderr, "_params.n_segments: %d\n", params_.n_segments);
     const double segment_step = 2 * M_PI / params_.n_segments;
     for (unsigned int idx = start_index; idx < end_index; ++idx)
     {     
@@ -621,10 +627,10 @@ void GroundSegmentation::assignClusterByLineThread(const unsigned int &start_ind
         //     isDebug = true;
         // }
         
-        if (std::find(selectObjectIDs.begin(), selectObjectIDs.end(), idx) != selectObjectIDs.end())
-        {
-            isDebug = true;
-        }
+        // if (std::find(selectObjectIDs.begin(), selectObjectIDs.end(), idx) != selectObjectIDs.end())
+        // {
+        //     isDebug = true;
+        // }
 
         //
         
@@ -636,6 +642,7 @@ void GroundSegmentation::assignClusterByLineThread(const unsigned int &start_ind
             // 如果本地找到了线段
             bool is_ground = false;
             bool between_one_and_two = false; // 距离在指定的允许距离的一倍到俩倍之间
+            // fprintf(stderr, "segment_idx %d, bin_idx %d\n", segment_idx, bin_idx);
             if (segments_[segment_idx][bin_idx].isThisGround())
             {
                 double dist = point_2d.z - segments_[segment_idx][bin_idx].getMinZ();

@@ -115,7 +115,8 @@ void DrawSelectAbleBBox::Draw() const
         }
         else
         {
-            glColor3f(1.0f, 1.0f, 1.0f); 
+            // glColor3f(1.0f, 1.0f, 1.0f); 
+            glColor3f(0.0f, 0.0f, 0.0f);
             glBegin(GL_LINE_STRIP);
             std::array<int, 4> bottom = {0, 1, 2, 3};
             for (int idx = 0; idx < 4; ++idx)
@@ -130,7 +131,6 @@ void DrawSelectAbleBBox::Draw() const
                 centerPoint.y() += bboxPt[bottom[idx]].y();
                 centerPoint.z() += bboxPt[bottom[idx]].z();
             }
-            // glVertex3f(bboxPt[0].x(), bboxPt[0].y(), bboxPt[0].z());
             glVertex3f(bboxPt[0].x(), bboxPt[0].y(), -1.721f);
             glEnd();
         }

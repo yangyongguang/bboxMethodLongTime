@@ -63,6 +63,8 @@ memory
 -
 opencv2/core/core.hpp
 -
+string
+-
 
 ../src/groundRemove/include/component_clustering.h
 iostream
@@ -207,6 +209,12 @@ memory
 -
 object.h
 ../src/qt/drawables/object.h
+GL/gl.h
+-
+GL/glu.h
+-
+QGLViewer/qglviewer.h
+-
 
 ../src/qt/utils/object.h
 QGLViewer/frame.h
@@ -312,6 +320,10 @@ QUuid
 QRadioButton
 -
 QLabel
+-
+fstream
+-
+ostream
 -
 
 /home/yyg/code/lidarCode/src/qt/widgets/mainwindow.h

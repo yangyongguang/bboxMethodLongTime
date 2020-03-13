@@ -21,6 +21,8 @@ memory
 -
 opencv2/core/core.hpp
 -
+string
+-
 
 ../src/groundRemove/include/param.h
 string
@@ -57,6 +59,12 @@ memory
 -
 object.h
 ../src/qt/drawables/object.h
+GL/gl.h
+-
+GL/glu.h
+-
+QGLViewer/qglviewer.h
+-
 
 ../src/qt/utils/object.h
 QGLViewer/frame.h

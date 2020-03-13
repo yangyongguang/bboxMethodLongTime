@@ -333,10 +333,13 @@ component_clustering_LIB_DEPENDS:STATIC=general;opencv_calib3d;general;opencv_co
 convex_hull_LIB_DEPENDS:STATIC=general;opencv_calib3d;general;opencv_core;general;opencv_dnn;general;opencv_features2d;general;opencv_flann;general;opencv_highgui;general;opencv_imgcodecs;general;opencv_imgproc;general;opencv_ml;general;opencv_objdetect;general;opencv_photo;general;opencv_shape;general;opencv_stitching;general;opencv_superres;general;opencv_video;general;opencv_videoio;general;opencv_videostab;general;cloud;general;/usr/local/lib/libboost_system.so;general;/usr/local/lib/libboost_filesystem.so;general;/usr/local/lib/libboost_regex.so;general;/usr/local/lib/libboost_program_options.so;
 
 //Dependencies for the target
-drawable_LIB_DEPENDS:STATIC=general;utils;general;/usr/lib/x86_64-linux-gnu/libGL.so;general;/usr/lib/x86_64-linux-gnu/libGLU.so;
+drawable_LIB_DEPENDS:STATIC=general;utils;general;/usr/lib/x86_64-linux-gnu/libQGLViewer.so;general;Qt5::Widgets;general;Qt5::Core;general;Qt5::Gui;general;Qt5::Xml;general;Qt5::OpenGL;general;/usr/lib/x86_64-linux-gnu/libGL.so;general;/usr/lib/x86_64-linux-gnu/libGLU.so;
 
 //Dependencies for the target
 groundRemove_LIB_DEPENDS:STATIC=general;bin;general;segment;general;utils;general;cloud;general;/usr/local/lib/libboost_system.so;general;/usr/local/lib/libboost_filesystem.so;general;/usr/local/lib/libboost_regex.so;general;/usr/local/lib/libboost_program_options.so;general;-lpthread;
+
+//Dependencies for the target
+imm_ukf_pda_LIB_DEPENDS:STATIC=general;opencv_calib3d;general;opencv_core;general;opencv_dnn;general;opencv_features2d;general;opencv_flann;general;opencv_highgui;general;opencv_imgcodecs;general;opencv_imgproc;general;opencv_ml;general;opencv_objdetect;general;opencv_photo;general;opencv_shape;general;opencv_stitching;general;opencv_superres;general;opencv_video;general;opencv_videoio;general;opencv_videostab;general;cloud;general;/usr/local/lib/libboost_system.so;general;/usr/local/lib/libboost_filesystem.so;general;/usr/local/lib/libboost_regex.so;general;/usr/local/lib/libboost_program_options.so;
 
 //Value Computed by CMake
 lidarCode_BINARY_DIR:STATIC=/home/yyg/code/lidarCode/build

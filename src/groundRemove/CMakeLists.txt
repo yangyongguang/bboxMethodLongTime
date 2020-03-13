@@ -34,6 +34,13 @@ add_executable(Text src/test.cpp)
 add_library(box_fitting src/box_fitting.cpp)
 target_link_libraries(box_fitting ${OpenCV_LIBS} cloud  convex_hull ${Boost_LIBRARIES})
 
+# find_package(Eigen3 REQUIRED Core)
+# include_directories(${EIGEN3_INCLUDE_DIR})
+
+add_library(imm_ukf_pda src/imm_ukf_pda.cpp src/ukf.cpp)
+target_link_libraries(imm_ukf_pda ${OpenCV_LIBS} cloud ${Boost_LIBRARIES})
+
+
 
 
 

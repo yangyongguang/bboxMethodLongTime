@@ -8,6 +8,9 @@
 #include <Eigen/Core>
 #include <memory>
 #include <opencv2/core/core.hpp>
+#include <string>
+
+using std::string;
 
 typedef std::pair<float, float> float2D;
 typedef std::vector<float2D> float2DVec;
@@ -129,4 +132,69 @@ public:
     size_t numNoneEmptyLShapePoint = 0;
     float SymPointPercent = 0.0f;
 };
+
+struct point3d
+{
+    float x = 0.0;
+    float y = 0.0;
+    float z = 0.0;
+};
+
+struct Pose
+{
+    point3d position;
+    float yaw = 0.0;
+};
+
+
+struct Velocity
+{
+    point3d linear;
+    point3d angular;
+};
+
+struct Acceleration
+{
+    point3d linear;
+    point3d angular;
+};
+
+class BBox
+{
+public:
+    BBox(){}
+    BBox(const point & x1,
+         const point & x2,
+         const point & x3,
+         const point & x4);
+    BBox(const std::vector<point> & bbox);
+    BBox(const Cloud & bbox);
+public:
+    Pose pose;
+    std::array<point, 4> points;
+    string label = "unknown";
+    /*Behavior State of the Detected Object
+    behavior_state # 
+    FORWARD_STATE = 0, 
+    STOPPING_STATE = 1, 
+    BRANCH_LEFT_STATE = 2, 
+    BRANCH_RIGHT_STATE = 3, 
+    YIELDING_STATE = 4, 
+    ACCELERATING_STATE = 5, 
+    SLOWDOWN_STATE = 6
+    */
+    uint8_t behavior_state;
+    uint32_t id;
+    // velocity with angle and linear
+    Velocity velocity;
+    
+    Acceleration acceleration;
+    bool pose_reliable;
+    bool velocity_reliable;
+    bool acceleration_reliable;
+    point3d dimensions;
+
+    float angle;  // 0 ~ 2 * pi
+};
 #endif
+

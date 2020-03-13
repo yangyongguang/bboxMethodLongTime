@@ -97,14 +97,14 @@ src/qt/viewer/libviewer.so: /opt/Qt5.6.0/5.6/gcc_64/lib/libQt5Xml.so.5.6.0
 src/qt/viewer/libviewer.so: /opt/Qt5.6.0/5.6/gcc_64/lib/libQt5OpenGL.so.5.6.0
 src/qt/viewer/libviewer.so: /usr/lib/x86_64-linux-gnu/libGL.so
 src/qt/viewer/libviewer.so: /usr/lib/x86_64-linux-gnu/libGLU.so
+src/qt/viewer/libviewer.so: /opt/Qt5.6.0/5.6/gcc_64/lib/libQt5Widgets.so.5.6.0
+src/qt/viewer/libviewer.so: /opt/Qt5.6.0/5.6/gcc_64/lib/libQt5Gui.so.5.6.0
+src/qt/viewer/libviewer.so: /opt/Qt5.6.0/5.6/gcc_64/lib/libQt5Core.so.5.6.0
 src/qt/viewer/libviewer.so: src/qt/utils/libutils.so
 src/qt/viewer/libviewer.so: /usr/local/lib/libboost_system.so
 src/qt/viewer/libviewer.so: /usr/local/lib/libboost_filesystem.so
 src/qt/viewer/libviewer.so: /usr/local/lib/libboost_regex.so
 src/qt/viewer/libviewer.so: /usr/local/lib/libboost_program_options.so
-src/qt/viewer/libviewer.so: /opt/Qt5.6.0/5.6/gcc_64/lib/libQt5Widgets.so.5.6.0
-src/qt/viewer/libviewer.so: /opt/Qt5.6.0/5.6/gcc_64/lib/libQt5Gui.so.5.6.0
-src/qt/viewer/libviewer.so: /opt/Qt5.6.0/5.6/gcc_64/lib/libQt5Core.so.5.6.0
 src/qt/viewer/libviewer.so: src/qt/viewer/CMakeFiles/viewer.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/yyg/code/lidarCode/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX shared library libviewer.so"
 	cd /home/yyg/code/lidarCode/build/src/qt/viewer && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/viewer.dir/link.txt --verbose=$(VERBOSE)
