@@ -120,19 +120,35 @@ void DrawableBBox::Draw() const
     // glDisable(GL_LIGHTING);
     for (int iBBox = 0; iBBox < rectPosVec.size(); ++iBBox)
     {
+        // fprintf(stderr, "void DrawableBBox::Draw() const start\n");
+        // fprintf(stderr, "rect PosVec size %d\n", rectPosVec.size());
         Cloud bboxPt = (*rectPosVec[iBBox]);
-        glColor3f(0.4112f, 0.412f, 0.412f);
+        // fprintf(stderr, "bboxPt size %d\n", bboxPt.size());
+        glColor3f(0.0f, 1.0f, 0.0f);
 
-        glBegin(GL_QUAD_STRIP);
-        std::array<int, 4> bottom = {1, 2, 0, 3};
-        for (int idx = 0; idx < 4; ++idx)
+        // glBegin(GL_QUAD_STRIP);
+        // std::array<int, 4> bottom = {1, 2, 0, 3};
+        // for (int idx = 0; idx < 4; ++idx)
+        // {
+        //     glVertex3f(bboxPt[bottom[idx]].x(), 
+        //                 bboxPt[bottom[idx]].y(), 
+        //                 bboxPt[bottom[idx]].z());
+        // }
+        // glVertex3f(bboxPt[0].x(), bboxPt[0].y(), bboxPt[0].z());
+
+        //  ----------------------------------------------------
+        glBegin(GL_LINE_STRIP);
+        // std::array<int, 4> bottom = {1, 2, 0, 3};
+        std::array<int, 5> bottom = {0, 1, 2, 3, 0};
+        for (int idx = 0; idx < 5; ++idx)
         {
             glVertex3f(bboxPt[bottom[idx]].x(), 
                         bboxPt[bottom[idx]].y(), 
                         bboxPt[bottom[idx]].z());
         }
-        // glVertex3f(bboxPt[0].x(), bboxPt[0].y(), bboxPt[0].z());
         glEnd();
+        // fprintf(stderr, "void DrawableBBox::Draw() const end\n");
+        //  ----------------------------------------------------
         if (_drawZAxis)
         {
             if (_color == 0)

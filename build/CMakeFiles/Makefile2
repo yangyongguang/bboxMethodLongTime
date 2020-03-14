@@ -983,11 +983,11 @@ src/preinstall: src/qt/preinstall
 src/groundRemove/all: src/groundRemove/CMakeFiles/groundRemove.dir/all
 src/groundRemove/all: src/groundRemove/CMakeFiles/bin.dir/all
 src/groundRemove/all: src/groundRemove/CMakeFiles/segment.dir/all
+src/groundRemove/all: src/groundRemove/CMakeFiles/convex_hull.dir/all
 src/groundRemove/all: src/groundRemove/CMakeFiles/imm_ukf_pda.dir/all
+src/groundRemove/all: src/groundRemove/CMakeFiles/Test.dir/all
 src/groundRemove/all: src/groundRemove/CMakeFiles/component_clustering.dir/all
 src/groundRemove/all: src/groundRemove/CMakeFiles/box_fitting.dir/all
-src/groundRemove/all: src/groundRemove/CMakeFiles/convex_hull.dir/all
-src/groundRemove/all: src/groundRemove/CMakeFiles/Text.dir/all
 src/groundRemove/all: src/groundRemove/CMakeFiles/cloud.dir/all
 
 .PHONY : src/groundRemove/all
@@ -996,11 +996,11 @@ src/groundRemove/all: src/groundRemove/CMakeFiles/cloud.dir/all
 src/groundRemove/clean: src/groundRemove/CMakeFiles/groundRemove.dir/clean
 src/groundRemove/clean: src/groundRemove/CMakeFiles/bin.dir/clean
 src/groundRemove/clean: src/groundRemove/CMakeFiles/segment.dir/clean
+src/groundRemove/clean: src/groundRemove/CMakeFiles/convex_hull.dir/clean
 src/groundRemove/clean: src/groundRemove/CMakeFiles/imm_ukf_pda.dir/clean
+src/groundRemove/clean: src/groundRemove/CMakeFiles/Test.dir/clean
 src/groundRemove/clean: src/groundRemove/CMakeFiles/component_clustering.dir/clean
 src/groundRemove/clean: src/groundRemove/CMakeFiles/box_fitting.dir/clean
-src/groundRemove/clean: src/groundRemove/CMakeFiles/convex_hull.dir/clean
-src/groundRemove/clean: src/groundRemove/CMakeFiles/Text.dir/clean
 src/groundRemove/clean: src/groundRemove/CMakeFiles/cloud.dir/clean
 
 .PHONY : src/groundRemove/clean
@@ -1125,6 +1125,43 @@ clean: src/groundRemove/CMakeFiles/segment.dir/clean
 .PHONY : clean
 
 #=============================================================================
+# Target rules for target src/groundRemove/CMakeFiles/convex_hull.dir
+
+# All Build rule for target.
+src/groundRemove/CMakeFiles/convex_hull.dir/all: src/groundRemove/CMakeFiles/cloud.dir/all
+	$(MAKE) -f src/groundRemove/CMakeFiles/convex_hull.dir/build.make src/groundRemove/CMakeFiles/convex_hull.dir/depend
+	$(MAKE) -f src/groundRemove/CMakeFiles/convex_hull.dir/build.make src/groundRemove/CMakeFiles/convex_hull.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/yyg/code/lidarCode/build/CMakeFiles --progress-num=13,14 "Built target convex_hull"
+.PHONY : src/groundRemove/CMakeFiles/convex_hull.dir/all
+
+# Include target in all.
+all: src/groundRemove/CMakeFiles/convex_hull.dir/all
+
+.PHONY : all
+
+# Build rule for subdir invocation for target.
+src/groundRemove/CMakeFiles/convex_hull.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/yyg/code/lidarCode/build/CMakeFiles 4
+	$(MAKE) -f CMakeFiles/Makefile2 src/groundRemove/CMakeFiles/convex_hull.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/yyg/code/lidarCode/build/CMakeFiles 0
+.PHONY : src/groundRemove/CMakeFiles/convex_hull.dir/rule
+
+# Convenience name for target.
+convex_hull: src/groundRemove/CMakeFiles/convex_hull.dir/rule
+
+.PHONY : convex_hull
+
+# clean rule for target.
+src/groundRemove/CMakeFiles/convex_hull.dir/clean:
+	$(MAKE) -f src/groundRemove/CMakeFiles/convex_hull.dir/build.make src/groundRemove/CMakeFiles/convex_hull.dir/clean
+.PHONY : src/groundRemove/CMakeFiles/convex_hull.dir/clean
+
+# clean rule for target.
+clean: src/groundRemove/CMakeFiles/convex_hull.dir/clean
+
+.PHONY : clean
+
+#=============================================================================
 # Target rules for target src/groundRemove/CMakeFiles/imm_ukf_pda.dir
 
 # All Build rule for target.
@@ -1158,6 +1195,43 @@ src/groundRemove/CMakeFiles/imm_ukf_pda.dir/clean:
 
 # clean rule for target.
 clean: src/groundRemove/CMakeFiles/imm_ukf_pda.dir/clean
+
+.PHONY : clean
+
+#=============================================================================
+# Target rules for target src/groundRemove/CMakeFiles/Test.dir
+
+# All Build rule for target.
+src/groundRemove/CMakeFiles/Test.dir/all: src/groundRemove/CMakeFiles/cloud.dir/all
+	$(MAKE) -f src/groundRemove/CMakeFiles/Test.dir/build.make src/groundRemove/CMakeFiles/Test.dir/depend
+	$(MAKE) -f src/groundRemove/CMakeFiles/Test.dir/build.make src/groundRemove/CMakeFiles/Test.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/yyg/code/lidarCode/build/CMakeFiles --progress-num=3,4 "Built target Test"
+.PHONY : src/groundRemove/CMakeFiles/Test.dir/all
+
+# Include target in all.
+all: src/groundRemove/CMakeFiles/Test.dir/all
+
+.PHONY : all
+
+# Build rule for subdir invocation for target.
+src/groundRemove/CMakeFiles/Test.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/yyg/code/lidarCode/build/CMakeFiles 4
+	$(MAKE) -f CMakeFiles/Makefile2 src/groundRemove/CMakeFiles/Test.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/yyg/code/lidarCode/build/CMakeFiles 0
+.PHONY : src/groundRemove/CMakeFiles/Test.dir/rule
+
+# Convenience name for target.
+Test: src/groundRemove/CMakeFiles/Test.dir/rule
+
+.PHONY : Test
+
+# clean rule for target.
+src/groundRemove/CMakeFiles/Test.dir/clean:
+	$(MAKE) -f src/groundRemove/CMakeFiles/Test.dir/build.make src/groundRemove/CMakeFiles/Test.dir/clean
+.PHONY : src/groundRemove/CMakeFiles/Test.dir/clean
+
+# clean rule for target.
+clean: src/groundRemove/CMakeFiles/Test.dir/clean
 
 .PHONY : clean
 
@@ -1237,80 +1311,6 @@ clean: src/groundRemove/CMakeFiles/box_fitting.dir/clean
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target src/groundRemove/CMakeFiles/convex_hull.dir
-
-# All Build rule for target.
-src/groundRemove/CMakeFiles/convex_hull.dir/all: src/groundRemove/CMakeFiles/cloud.dir/all
-	$(MAKE) -f src/groundRemove/CMakeFiles/convex_hull.dir/build.make src/groundRemove/CMakeFiles/convex_hull.dir/depend
-	$(MAKE) -f src/groundRemove/CMakeFiles/convex_hull.dir/build.make src/groundRemove/CMakeFiles/convex_hull.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/yyg/code/lidarCode/build/CMakeFiles --progress-num=13,14 "Built target convex_hull"
-.PHONY : src/groundRemove/CMakeFiles/convex_hull.dir/all
-
-# Include target in all.
-all: src/groundRemove/CMakeFiles/convex_hull.dir/all
-
-.PHONY : all
-
-# Build rule for subdir invocation for target.
-src/groundRemove/CMakeFiles/convex_hull.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/yyg/code/lidarCode/build/CMakeFiles 4
-	$(MAKE) -f CMakeFiles/Makefile2 src/groundRemove/CMakeFiles/convex_hull.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/yyg/code/lidarCode/build/CMakeFiles 0
-.PHONY : src/groundRemove/CMakeFiles/convex_hull.dir/rule
-
-# Convenience name for target.
-convex_hull: src/groundRemove/CMakeFiles/convex_hull.dir/rule
-
-.PHONY : convex_hull
-
-# clean rule for target.
-src/groundRemove/CMakeFiles/convex_hull.dir/clean:
-	$(MAKE) -f src/groundRemove/CMakeFiles/convex_hull.dir/build.make src/groundRemove/CMakeFiles/convex_hull.dir/clean
-.PHONY : src/groundRemove/CMakeFiles/convex_hull.dir/clean
-
-# clean rule for target.
-clean: src/groundRemove/CMakeFiles/convex_hull.dir/clean
-
-.PHONY : clean
-
-#=============================================================================
-# Target rules for target src/groundRemove/CMakeFiles/Text.dir
-
-# All Build rule for target.
-src/groundRemove/CMakeFiles/Text.dir/all:
-	$(MAKE) -f src/groundRemove/CMakeFiles/Text.dir/build.make src/groundRemove/CMakeFiles/Text.dir/depend
-	$(MAKE) -f src/groundRemove/CMakeFiles/Text.dir/build.make src/groundRemove/CMakeFiles/Text.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/yyg/code/lidarCode/build/CMakeFiles --progress-num=3,4 "Built target Text"
-.PHONY : src/groundRemove/CMakeFiles/Text.dir/all
-
-# Include target in all.
-all: src/groundRemove/CMakeFiles/Text.dir/all
-
-.PHONY : all
-
-# Build rule for subdir invocation for target.
-src/groundRemove/CMakeFiles/Text.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/yyg/code/lidarCode/build/CMakeFiles 2
-	$(MAKE) -f CMakeFiles/Makefile2 src/groundRemove/CMakeFiles/Text.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/yyg/code/lidarCode/build/CMakeFiles 0
-.PHONY : src/groundRemove/CMakeFiles/Text.dir/rule
-
-# Convenience name for target.
-Text: src/groundRemove/CMakeFiles/Text.dir/rule
-
-.PHONY : Text
-
-# clean rule for target.
-src/groundRemove/CMakeFiles/Text.dir/clean:
-	$(MAKE) -f src/groundRemove/CMakeFiles/Text.dir/build.make src/groundRemove/CMakeFiles/Text.dir/clean
-.PHONY : src/groundRemove/CMakeFiles/Text.dir/clean
-
-# clean rule for target.
-clean: src/groundRemove/CMakeFiles/Text.dir/clean
-
-.PHONY : clean
-
-#=============================================================================
 # Target rules for target src/groundRemove/CMakeFiles/cloud.dir
 
 # All Build rule for target.
@@ -1383,9 +1383,10 @@ src/qt/preinstall: src/qt/widgets/preinstall
 src/qt/CMakeFiles/QTest.dir/all: src/groundRemove/CMakeFiles/groundRemove.dir/all
 src/qt/CMakeFiles/QTest.dir/all: src/groundRemove/CMakeFiles/bin.dir/all
 src/qt/CMakeFiles/QTest.dir/all: src/groundRemove/CMakeFiles/segment.dir/all
+src/qt/CMakeFiles/QTest.dir/all: src/groundRemove/CMakeFiles/convex_hull.dir/all
+src/qt/CMakeFiles/QTest.dir/all: src/groundRemove/CMakeFiles/imm_ukf_pda.dir/all
 src/qt/CMakeFiles/QTest.dir/all: src/groundRemove/CMakeFiles/component_clustering.dir/all
 src/qt/CMakeFiles/QTest.dir/all: src/groundRemove/CMakeFiles/box_fitting.dir/all
-src/qt/CMakeFiles/QTest.dir/all: src/groundRemove/CMakeFiles/convex_hull.dir/all
 src/qt/CMakeFiles/QTest.dir/all: src/groundRemove/CMakeFiles/cloud.dir/all
 src/qt/CMakeFiles/QTest.dir/all: src/qt/utils/CMakeFiles/utils.dir/all
 src/qt/CMakeFiles/QTest.dir/all: src/qt/utils/CMakeFiles/object.dir/all
@@ -1404,7 +1405,7 @@ all: src/qt/CMakeFiles/QTest.dir/all
 
 # Build rule for subdir invocation for target.
 src/qt/CMakeFiles/QTest.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/yyg/code/lidarCode/build/CMakeFiles 34
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/yyg/code/lidarCode/build/CMakeFiles 37
 	$(MAKE) -f CMakeFiles/Makefile2 src/qt/CMakeFiles/QTest.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/yyg/code/lidarCode/build/CMakeFiles 0
 .PHONY : src/qt/CMakeFiles/QTest.dir/rule

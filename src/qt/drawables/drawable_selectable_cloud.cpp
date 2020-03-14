@@ -63,11 +63,13 @@ DrawSelectAbleCloud::Ptr DrawSelectAbleCloud::FromCloud(const Cloud::ConstPtr& c
 }
 
 // selected BBox
-DrawSelectAbleBBox::DrawSelectAbleBBox(const std::vector<Cloud::Ptr> & posVec, bool drawZAxis)
+DrawSelectAbleBBox::DrawSelectAbleBBox(const std::vector<Cloud::Ptr> & posVec, 
+                                       bool drawZAxis,
+                                       const Eigen::Vector3f& color)
 {
     rectPosVec.assign(posVec.begin(), posVec.end());
     _drawZAxis = drawZAxis;
-
+    _color = color;
     objects.clear();
     // 构造对象
     for (const auto & rect : rectPosVec)
@@ -116,7 +118,8 @@ void DrawSelectAbleBBox::Draw() const
         else
         {
             // glColor3f(1.0f, 1.0f, 1.0f); 
-            glColor3f(0.0f, 0.0f, 0.0f);
+            // glColor3f(0.0f, 0.0f, 0.0f);
+            glColor3f(_color[0], _color[1], _color[2]);
             glBegin(GL_LINE_STRIP);
             std::array<int, 4> bottom = {0, 1, 2, 3};
             for (int idx = 0; idx < 4; ++idx)
@@ -173,7 +176,8 @@ void DrawSelectAbleBBox::Draw() const
 
 DrawSelectAbleBBox::Prt DrawSelectAbleBBox::FromCloud(
                         const std::vector<Cloud::Ptr> & posVec, 
-                        bool drawZAxis)
+                        bool drawZAxis,
+                        const Eigen::Vector3f& color)
 {
-    return std::make_shared<DrawSelectAbleBBox>(DrawSelectAbleBBox(posVec, drawZAxis));   
+    return std::make_shared<DrawSelectAbleBBox>(DrawSelectAbleBBox(posVec, drawZAxis, color));   
 }

@@ -16,6 +16,11 @@
 },
 {
   "directory": "/home/yyg/code/lidarCode/build/src/groundRemove",
+  "command": "/usr/bin/c++    -I/opt/Qt5.6.0/5.6/gcc_64/include -I/opt/Qt5.6.0/5.6/gcc_64/include/QtCore -I/opt/Qt5.6.0/5.6/gcc_64/./mkspecs/linux-g++ -I/opt/Qt5.6.0/5.6/gcc_64/include/QtXml -I/opt/Qt5.6.0/5.6/gcc_64/include/QtGui -I/opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets -I/opt/Qt5.6.0/5.6/gcc_64/include/QtOpenGL -I/home/yyg/code/lidarCode/build/src -I/usr/include/QGLViewer -I/usr/include/eigen3 -isystem /usr/local/include -I/home/yyg/code/lidarCode/src -I/home/yyg/code/lidarCode/src/groundRemove/include -I/home/yyg/code/lidarCode/src/groundRemove/qt -isystem /usr/local/include/opencv  -Wall -Wextra -fPIC -O3   -Wall -std=c++11 -o CMakeFiles/convex_hull.dir/src/convex_hull.cpp.o -c /home/yyg/code/lidarCode/src/groundRemove/src/convex_hull.cpp",
+  "file": "/home/yyg/code/lidarCode/src/groundRemove/src/convex_hull.cpp"
+},
+{
+  "directory": "/home/yyg/code/lidarCode/build/src/groundRemove",
   "command": "/usr/bin/c++    -I/opt/Qt5.6.0/5.6/gcc_64/include -I/opt/Qt5.6.0/5.6/gcc_64/include/QtCore -I/opt/Qt5.6.0/5.6/gcc_64/./mkspecs/linux-g++ -I/opt/Qt5.6.0/5.6/gcc_64/include/QtXml -I/opt/Qt5.6.0/5.6/gcc_64/include/QtGui -I/opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets -I/opt/Qt5.6.0/5.6/gcc_64/include/QtOpenGL -I/home/yyg/code/lidarCode/build/src -I/usr/include/QGLViewer -I/usr/include/eigen3 -isystem /usr/local/include -I/home/yyg/code/lidarCode/src -I/home/yyg/code/lidarCode/src/groundRemove/include -I/home/yyg/code/lidarCode/src/groundRemove/qt -isystem /usr/local/include/opencv  -Wall -Wextra -fPIC -O3   -Wall -std=c++11 -o CMakeFiles/imm_ukf_pda.dir/src/imm_ukf_pda.cpp.o -c /home/yyg/code/lidarCode/src/groundRemove/src/imm_ukf_pda.cpp",
   "file": "/home/yyg/code/lidarCode/src/groundRemove/src/imm_ukf_pda.cpp"
 },
@@ -26,6 +31,11 @@
 },
 {
   "directory": "/home/yyg/code/lidarCode/build/src/groundRemove",
+  "command": "/usr/bin/c++    -I/opt/Qt5.6.0/5.6/gcc_64/include -I/opt/Qt5.6.0/5.6/gcc_64/include/QtCore -I/opt/Qt5.6.0/5.6/gcc_64/./mkspecs/linux-g++ -I/opt/Qt5.6.0/5.6/gcc_64/include/QtXml -I/opt/Qt5.6.0/5.6/gcc_64/include/QtGui -I/opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets -I/opt/Qt5.6.0/5.6/gcc_64/include/QtOpenGL -I/home/yyg/code/lidarCode/build/src -I/usr/include/QGLViewer -I/usr/include/eigen3 -isystem /usr/local/include -I/home/yyg/code/lidarCode/src -I/home/yyg/code/lidarCode/src/groundRemove/include -I/home/yyg/code/lidarCode/src/groundRemove/qt -isystem /usr/local/include/opencv  -Wall -Wextra -fPIC -O3   -Wall -std=c++11 -o CMakeFiles/Test.dir/src/test2.cpp.o -c /home/yyg/code/lidarCode/src/groundRemove/src/test2.cpp",
+  "file": "/home/yyg/code/lidarCode/src/groundRemove/src/test2.cpp"
+},
+{
+  "directory": "/home/yyg/code/lidarCode/build/src/groundRemove",
   "command": "/usr/bin/c++    -I/opt/Qt5.6.0/5.6/gcc_64/include -I/opt/Qt5.6.0/5.6/gcc_64/include/QtCore -I/opt/Qt5.6.0/5.6/gcc_64/./mkspecs/linux-g++ -I/opt/Qt5.6.0/5.6/gcc_64/include/QtXml -I/opt/Qt5.6.0/5.6/gcc_64/include/QtGui -I/opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets -I/opt/Qt5.6.0/5.6/gcc_64/include/QtOpenGL -I/home/yyg/code/lidarCode/build/src -I/usr/include/QGLViewer -I/usr/include/eigen3 -isystem /usr/local/include -I/home/yyg/code/lidarCode/src -I/home/yyg/code/lidarCode/src/groundRemove/include -I/home/yyg/code/lidarCode/src/groundRemove/qt -isystem /usr/local/include/opencv  -Wall -Wextra -fPIC -O3   -Wall -std=c++11 -o CMakeFiles/component_clustering.dir/src/component_clustering.cpp.o -c /home/yyg/code/lidarCode/src/groundRemove/src/component_clustering.cpp",
   "file": "/home/yyg/code/lidarCode/src/groundRemove/src/component_clustering.cpp"
 },
@@ -33,16 +43,6 @@
   "directory": "/home/yyg/code/lidarCode/build/src/groundRemove",
   "command": "/usr/bin/c++    -I/opt/Qt5.6.0/5.6/gcc_64/include -I/opt/Qt5.6.0/5.6/gcc_64/include/QtCore -I/opt/Qt5.6.0/5.6/gcc_64/./mkspecs/linux-g++ -I/opt/Qt5.6.0/5.6/gcc_64/include/QtXml -I/opt/Qt5.6.0/5.6/gcc_64/include/QtGui -I/opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets -I/opt/Qt5.6.0/5.6/gcc_64/include/QtOpenGL -I/home/yyg/code/lidarCode/build/src -I/usr/include/QGLViewer -I/usr/include/eigen3 -isystem /usr/local/include -I/home/yyg/code/lidarCode/src -I/home/yyg/code/lidarCode/src/groundRemove/include -I/home/yyg/code/lidarCode/src/groundRemove/qt -isystem /usr/local/include/opencv  -Wall -Wextra -fPIC -O3   -Wall -std=c++11 -o CMakeFiles/box_fitting.dir/src/box_fitting.cpp.o -c /home/yyg/code/lidarCode/src/groundRemove/src/box_fitting.cpp",
   "file": "/home/yyg/code/lidarCode/src/groundRemove/src/box_fitting.cpp"
-},
-{
-  "directory": "/home/yyg/code/lidarCode/build/src/groundRemove",
-  "command": "/usr/bin/c++    -I/opt/Qt5.6.0/5.6/gcc_64/include -I/opt/Qt5.6.0/5.6/gcc_64/include/QtCore -I/opt/Qt5.6.0/5.6/gcc_64/./mkspecs/linux-g++ -I/opt/Qt5.6.0/5.6/gcc_64/include/QtXml -I/opt/Qt5.6.0/5.6/gcc_64/include/QtGui -I/opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets -I/opt/Qt5.6.0/5.6/gcc_64/include/QtOpenGL -I/home/yyg/code/lidarCode/build/src -I/usr/include/QGLViewer -I/usr/include/eigen3 -isystem /usr/local/include -I/home/yyg/code/lidarCode/src -I/home/yyg/code/lidarCode/src/groundRemove/include -I/home/yyg/code/lidarCode/src/groundRemove/qt -isystem /usr/local/include/opencv  -Wall -Wextra -fPIC -O3   -Wall -std=c++11 -o CMakeFiles/convex_hull.dir/src/convex_hull.cpp.o -c /home/yyg/code/lidarCode/src/groundRemove/src/convex_hull.cpp",
-  "file": "/home/yyg/code/lidarCode/src/groundRemove/src/convex_hull.cpp"
-},
-{
-  "directory": "/home/yyg/code/lidarCode/build/src/groundRemove",
-  "command": "/usr/bin/c++    -I/opt/Qt5.6.0/5.6/gcc_64/include -I/opt/Qt5.6.0/5.6/gcc_64/include/QtCore -I/opt/Qt5.6.0/5.6/gcc_64/./mkspecs/linux-g++ -I/opt/Qt5.6.0/5.6/gcc_64/include/QtXml -I/opt/Qt5.6.0/5.6/gcc_64/include/QtGui -I/opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets -I/opt/Qt5.6.0/5.6/gcc_64/include/QtOpenGL -I/home/yyg/code/lidarCode/build/src -I/usr/include/QGLViewer -I/usr/include/eigen3 -I/usr/local/include -I/home/yyg/code/lidarCode/src -I/home/yyg/code/lidarCode/src/groundRemove/include -I/home/yyg/code/lidarCode/src/groundRemove/qt  -Wall -Wextra -fPIC -O3   -Wall -std=c++11 -o CMakeFiles/Text.dir/src/test.cpp.o -c /home/yyg/code/lidarCode/src/groundRemove/src/test.cpp",
-  "file": "/home/yyg/code/lidarCode/src/groundRemove/src/test.cpp"
 },
 {
   "directory": "/home/yyg/code/lidarCode/build/src/groundRemove",

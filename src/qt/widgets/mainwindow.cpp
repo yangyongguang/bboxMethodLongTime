@@ -100,7 +100,7 @@ MainWindow::MainWindow(QWidget *parent):
     ui->clearSelectionPB->setEnabled(false);
 
     // 数据 序列显示
-    ui->dataSeqSB->setValue(13);
+    ui->dataSeqSB->setValue(20);
     ui->dataSeqSB->setRange(0, 22);
 
     // 创建图像显示窗口
@@ -432,7 +432,7 @@ void MainWindow::onSliderMovedTo(int cloud_number)
             // {
             //     bboxDebugId = bboxToCluster[_viewer->bboxSelection[0]];
             // }
-            std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+            std::chrono::high_resolution_clock::time_point start_bbox = std::chrono::high_resolution_clock::now();
             getBBox(clusters, bboxPts, markPoints, lShapePoints ,bboxToCluster, lShpaeHorizonResolution ,bboxDebugId);
 
             // a single block
@@ -462,16 +462,17 @@ void MainWindow::onSliderMovedTo(int cloud_number)
             */
             // 对比方法
             // getOrientedBBox(clusters, bboxPts2);
-            std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double, std::milli> fp_ms = end - start;
-            std::cout << "boundingbox took about " << fp_ms.count() << " ms" << std::endl;            
+            std::chrono::high_resolution_clock::time_point end_bbox = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double, std::milli> fp_ms_bbox = end_bbox - start_bbox;
+            std::cout << "boundingbox took about " << fp_ms_bbox.count() << " ms" << std::endl;            
             // fprintf(stderr, "------------------4\n");
             // fprintf(stderr, "drawSelectedBBox objects size : %d\n", _viewer->drawSelectableBBox.objects.size());
             // _viewer->AddDrawable(DrawableBBox::FromCloud(bboxPts, true));
             _viewer->drawSelectableBBox = DrawSelectAbleBBox(bboxPts, true);
             _viewer->setBBoxs(bboxPts);
+            Eigen::Vector3f detectBBoxColor(0.0f, 0.0f, 0.0f);
             // fprintf(stderr, "drawSelectedBBox objects size : %d\n", _viewer->drawSelectableBBox.objects.size());
-            _viewer->AddDrawable(DrawSelectAbleBBox::FromCloud(bboxPts, false), "DrawSelectAbleBBox");
+            _viewer->AddDrawable(DrawSelectAbleBBox::FromCloud(bboxPts, false, detectBBoxColor), "DrawSelectAbleBBox");
             // 对比方法 bbox
             // _viewer->AddDrawable(DrawableBBox::FromCloud(bboxPts2, true, 1));
             _viewer->AddDrawable(DrawableCloud::FromCloud(markPoints, Eigen::Vector3f(0.0f, 1.0f, 0.2f),
@@ -481,6 +482,26 @@ void MainWindow::onSliderMovedTo(int cloud_number)
         infoTextEdit->append("number of cluster : " + QString::number(cluster.getNumCluster()));
         infoTextEdit->append("number of non-empty voxels : " + QString::number(rect2DVec.size()));
         moveCursorToEnd();
+
+        /*imm_ukf_pda_tracking part*/   
+        std::chrono::high_resolution_clock::time_point start_tracker = std::chrono::high_resolution_clock::now();     
+        std::vector<Cloud::Ptr> trackerBBoxPts;  // minAre + pca
+        Eigen::Vector3f trackerBBoxColor(0.0f, 1.0f, 0.0f);
+        fprintf(stderr, "tracker start\n");
+        tracker.callback(CloudToBBoxs(bboxPts), curr_data_idx, trackerBBoxPts);
+        fprintf(stderr, "tracker finished with tracker bbox : %d\n", trackerBBoxPts.size());
+        // _viewer->AddDrawable(DrawSelectAbleBBox::FromCloud(trackerBBoxPts, false, trackerBBoxColor), "DrawSelectAbleTrackerBBox");
+        // for (int idx = 0; idx < trackerBBoxPts.size(); ++idx)
+        // {
+        //     auto & bbox = (*trackerBBoxPts[idx]);
+        //     fprintf(stderr, "trackerBBoxPts size %d\n", trackerBBoxPts.size());
+        //     fprintf(stderr, "(%f, %f)\n", bbox[0].x(), bbox[0].y());
+        // }
+        _viewer->AddDrawable(DrawableBBox::FromCloud(trackerBBoxPts, false, 0), "DrawSelectAbleTrackerBBox");
+        std::chrono::high_resolution_clock::time_point end_tracker = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> fp_ms_tracker = end_tracker - start_tracker;
+        std::cout << "ImmUkfPda tracker took about " << fp_ms_tracker.count() << " ms" << std::endl;  
+
     }
 
     cv::Mat visImage, depthImage;
@@ -613,6 +634,17 @@ void MainWindow::onSliderMovedTo(int cloud_number)
     }
     _viewer->update();
     fprintf(stderr, "<------------------------------\n\n\n");
+}
+
+std::vector<BBox> MainWindow::CloudToBBoxs(const std::vector<Cloud::Ptr> & bboxPts)
+{
+    std::vector<BBox> res(bboxPts.size());
+    for (int idx = 0; idx < bboxPts.size(); ++idx)
+    {
+        auto & cloud = (*bboxPts[idx]);
+        res[idx] = BBox(cloud[0], cloud[1], cloud[2], cloud[3]);
+    }
+    return res;
 }
 
 void MainWindow::moveCursorToEnd()

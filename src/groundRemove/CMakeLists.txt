@@ -29,7 +29,7 @@ target_link_libraries(convex_hull ${OpenCV_LIBS} cloud ${Boost_LIBRARIES})
 # add_executable(Text3 src/convex_hull.cpp)
 # target_link_libraries(Text3 ${OpenCV_LIBS} cloud ${Boost_LIBRARIES})
 
-add_executable(Text src/test.cpp)
+# add_executable(Test src/test.cpp)
 
 add_library(box_fitting src/box_fitting.cpp)
 target_link_libraries(box_fitting ${OpenCV_LIBS} cloud  convex_hull ${Boost_LIBRARIES})
@@ -39,6 +39,9 @@ target_link_libraries(box_fitting ${OpenCV_LIBS} cloud  convex_hull ${Boost_LIBR
 
 add_library(imm_ukf_pda src/imm_ukf_pda.cpp src/ukf.cpp)
 target_link_libraries(imm_ukf_pda ${OpenCV_LIBS} cloud ${Boost_LIBRARIES})
+
+add_executable(Test src/test2.cpp)
+target_link_libraries(Test ${OpenCV_LIBS} cloud ${Boost_LIBRARIES})
 
 
 

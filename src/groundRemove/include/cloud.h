@@ -89,6 +89,7 @@ public:
     // explicit Cloud(Cloud & cloud) {}
     inline size_t size() const { return _points.size(); }
     inline bool empty() const { return _points.empty(); }
+    //  这里需要验证一下， 问题很大， 直接导致分配的点个数为 0 的情况， 在第一次显示 trackBBox 时间出现问题
     inline void reserve(size_t size) { _points.reserve(size); }
     inline void push_back(const point& pt) { _points.push_back(pt); }
     inline void emplace_back(const point& pt) {_points.emplace_back(pt);}
@@ -168,7 +169,12 @@ public:
          const point & x3,
          const point & x4);
     BBox(const std::vector<point> & bbox);
-    BBox(const Cloud & bbox);
+    ~BBox(){}
+    inline point operator[](const int & pointIdx){return points[pointIdx];}
+    inline const point & operator[](const int & pointIdx) const {return points[pointIdx];}
+    // golbel to local update yaw
+    void updateCenterAndYaw();
+    // fprintf(stderr, "pointIdx %d, points[pointIdx](%f, %f)\n", pointIdx, points[pointIdx].x(), points[pointIdx].y());
 public:
     Pose pose;
     std::array<point, 4> points;

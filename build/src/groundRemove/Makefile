@@ -167,6 +167,21 @@ segment/fast:
 .PHONY : segment/fast
 
 # Convenience name for target.
+src/groundRemove/CMakeFiles/convex_hull.dir/rule:
+	cd /home/yyg/code/lidarCode/build && $(MAKE) -f CMakeFiles/Makefile2 src/groundRemove/CMakeFiles/convex_hull.dir/rule
+.PHONY : src/groundRemove/CMakeFiles/convex_hull.dir/rule
+
+# Convenience name for target.
+convex_hull: src/groundRemove/CMakeFiles/convex_hull.dir/rule
+
+.PHONY : convex_hull
+
+# fast build rule for target.
+convex_hull/fast:
+	cd /home/yyg/code/lidarCode/build && $(MAKE) -f src/groundRemove/CMakeFiles/convex_hull.dir/build.make src/groundRemove/CMakeFiles/convex_hull.dir/build
+.PHONY : convex_hull/fast
+
+# Convenience name for target.
 src/groundRemove/CMakeFiles/imm_ukf_pda.dir/rule:
 	cd /home/yyg/code/lidarCode/build && $(MAKE) -f CMakeFiles/Makefile2 src/groundRemove/CMakeFiles/imm_ukf_pda.dir/rule
 .PHONY : src/groundRemove/CMakeFiles/imm_ukf_pda.dir/rule
@@ -180,6 +195,21 @@ imm_ukf_pda: src/groundRemove/CMakeFiles/imm_ukf_pda.dir/rule
 imm_ukf_pda/fast:
 	cd /home/yyg/code/lidarCode/build && $(MAKE) -f src/groundRemove/CMakeFiles/imm_ukf_pda.dir/build.make src/groundRemove/CMakeFiles/imm_ukf_pda.dir/build
 .PHONY : imm_ukf_pda/fast
+
+# Convenience name for target.
+src/groundRemove/CMakeFiles/Test.dir/rule:
+	cd /home/yyg/code/lidarCode/build && $(MAKE) -f CMakeFiles/Makefile2 src/groundRemove/CMakeFiles/Test.dir/rule
+.PHONY : src/groundRemove/CMakeFiles/Test.dir/rule
+
+# Convenience name for target.
+Test: src/groundRemove/CMakeFiles/Test.dir/rule
+
+.PHONY : Test
+
+# fast build rule for target.
+Test/fast:
+	cd /home/yyg/code/lidarCode/build && $(MAKE) -f src/groundRemove/CMakeFiles/Test.dir/build.make src/groundRemove/CMakeFiles/Test.dir/build
+.PHONY : Test/fast
 
 # Convenience name for target.
 src/groundRemove/CMakeFiles/component_clustering.dir/rule:
@@ -210,36 +240,6 @@ box_fitting: src/groundRemove/CMakeFiles/box_fitting.dir/rule
 box_fitting/fast:
 	cd /home/yyg/code/lidarCode/build && $(MAKE) -f src/groundRemove/CMakeFiles/box_fitting.dir/build.make src/groundRemove/CMakeFiles/box_fitting.dir/build
 .PHONY : box_fitting/fast
-
-# Convenience name for target.
-src/groundRemove/CMakeFiles/convex_hull.dir/rule:
-	cd /home/yyg/code/lidarCode/build && $(MAKE) -f CMakeFiles/Makefile2 src/groundRemove/CMakeFiles/convex_hull.dir/rule
-.PHONY : src/groundRemove/CMakeFiles/convex_hull.dir/rule
-
-# Convenience name for target.
-convex_hull: src/groundRemove/CMakeFiles/convex_hull.dir/rule
-
-.PHONY : convex_hull
-
-# fast build rule for target.
-convex_hull/fast:
-	cd /home/yyg/code/lidarCode/build && $(MAKE) -f src/groundRemove/CMakeFiles/convex_hull.dir/build.make src/groundRemove/CMakeFiles/convex_hull.dir/build
-.PHONY : convex_hull/fast
-
-# Convenience name for target.
-src/groundRemove/CMakeFiles/Text.dir/rule:
-	cd /home/yyg/code/lidarCode/build && $(MAKE) -f CMakeFiles/Makefile2 src/groundRemove/CMakeFiles/Text.dir/rule
-.PHONY : src/groundRemove/CMakeFiles/Text.dir/rule
-
-# Convenience name for target.
-Text: src/groundRemove/CMakeFiles/Text.dir/rule
-
-.PHONY : Text
-
-# fast build rule for target.
-Text/fast:
-	cd /home/yyg/code/lidarCode/build && $(MAKE) -f src/groundRemove/CMakeFiles/Text.dir/build.make src/groundRemove/CMakeFiles/Text.dir/build
-.PHONY : Text/fast
 
 # Convenience name for target.
 src/groundRemove/CMakeFiles/cloud.dir/rule:
@@ -472,32 +472,32 @@ src/segment.cpp.s:
 	cd /home/yyg/code/lidarCode/build && $(MAKE) -f src/groundRemove/CMakeFiles/segment.dir/build.make src/groundRemove/CMakeFiles/segment.dir/src/segment.cpp.s
 .PHONY : src/segment.cpp.s
 
-src/test.o: src/test.cpp.o
+src/test2.o: src/test2.cpp.o
 
-.PHONY : src/test.o
+.PHONY : src/test2.o
 
 # target to build an object file
-src/test.cpp.o:
-	cd /home/yyg/code/lidarCode/build && $(MAKE) -f src/groundRemove/CMakeFiles/Text.dir/build.make src/groundRemove/CMakeFiles/Text.dir/src/test.cpp.o
-.PHONY : src/test.cpp.o
+src/test2.cpp.o:
+	cd /home/yyg/code/lidarCode/build && $(MAKE) -f src/groundRemove/CMakeFiles/Test.dir/build.make src/groundRemove/CMakeFiles/Test.dir/src/test2.cpp.o
+.PHONY : src/test2.cpp.o
 
-src/test.i: src/test.cpp.i
+src/test2.i: src/test2.cpp.i
 
-.PHONY : src/test.i
+.PHONY : src/test2.i
 
 # target to preprocess a source file
-src/test.cpp.i:
-	cd /home/yyg/code/lidarCode/build && $(MAKE) -f src/groundRemove/CMakeFiles/Text.dir/build.make src/groundRemove/CMakeFiles/Text.dir/src/test.cpp.i
-.PHONY : src/test.cpp.i
+src/test2.cpp.i:
+	cd /home/yyg/code/lidarCode/build && $(MAKE) -f src/groundRemove/CMakeFiles/Test.dir/build.make src/groundRemove/CMakeFiles/Test.dir/src/test2.cpp.i
+.PHONY : src/test2.cpp.i
 
-src/test.s: src/test.cpp.s
+src/test2.s: src/test2.cpp.s
 
-.PHONY : src/test.s
+.PHONY : src/test2.s
 
 # target to generate assembly for a file
-src/test.cpp.s:
-	cd /home/yyg/code/lidarCode/build && $(MAKE) -f src/groundRemove/CMakeFiles/Text.dir/build.make src/groundRemove/CMakeFiles/Text.dir/src/test.cpp.s
-.PHONY : src/test.cpp.s
+src/test2.cpp.s:
+	cd /home/yyg/code/lidarCode/build && $(MAKE) -f src/groundRemove/CMakeFiles/Test.dir/build.make src/groundRemove/CMakeFiles/Test.dir/src/test2.cpp.s
+.PHONY : src/test2.cpp.s
 
 src/ukf.o: src/ukf.cpp.o
 
@@ -537,11 +537,11 @@ help:
 	@echo "... groundRemove"
 	@echo "... bin"
 	@echo "... segment"
+	@echo "... convex_hull"
 	@echo "... imm_ukf_pda"
+	@echo "... Test"
 	@echo "... component_clustering"
 	@echo "... box_fitting"
-	@echo "... convex_hull"
-	@echo "... Text"
 	@echo "... cloud"
 	@echo "... rebuild_cache"
 	@echo "... src/bin.o"
@@ -568,9 +568,9 @@ help:
 	@echo "... src/segment.o"
 	@echo "... src/segment.i"
 	@echo "... src/segment.s"
-	@echo "... src/test.o"
-	@echo "... src/test.i"
-	@echo "... src/test.s"
+	@echo "... src/test2.o"
+	@echo "... src/test2.i"
+	@echo "... src/test2.s"
 	@echo "... src/ukf.o"
 	@echo "... src/ukf.i"
 	@echo "... src/ukf.s"

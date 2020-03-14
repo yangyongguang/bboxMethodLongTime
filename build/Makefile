@@ -525,6 +525,19 @@ segment/fast:
 .PHONY : segment/fast
 
 #=============================================================================
+# Target rules for targets named convex_hull
+
+# Build rule for target.
+convex_hull: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 convex_hull
+.PHONY : convex_hull
+
+# fast build rule for target.
+convex_hull/fast:
+	$(MAKE) -f src/groundRemove/CMakeFiles/convex_hull.dir/build.make src/groundRemove/CMakeFiles/convex_hull.dir/build
+.PHONY : convex_hull/fast
+
+#=============================================================================
 # Target rules for targets named imm_ukf_pda
 
 # Build rule for target.
@@ -536,6 +549,19 @@ imm_ukf_pda: cmake_check_build_system
 imm_ukf_pda/fast:
 	$(MAKE) -f src/groundRemove/CMakeFiles/imm_ukf_pda.dir/build.make src/groundRemove/CMakeFiles/imm_ukf_pda.dir/build
 .PHONY : imm_ukf_pda/fast
+
+#=============================================================================
+# Target rules for targets named Test
+
+# Build rule for target.
+Test: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 Test
+.PHONY : Test
+
+# fast build rule for target.
+Test/fast:
+	$(MAKE) -f src/groundRemove/CMakeFiles/Test.dir/build.make src/groundRemove/CMakeFiles/Test.dir/build
+.PHONY : Test/fast
 
 #=============================================================================
 # Target rules for targets named component_clustering
@@ -562,32 +588,6 @@ box_fitting: cmake_check_build_system
 box_fitting/fast:
 	$(MAKE) -f src/groundRemove/CMakeFiles/box_fitting.dir/build.make src/groundRemove/CMakeFiles/box_fitting.dir/build
 .PHONY : box_fitting/fast
-
-#=============================================================================
-# Target rules for targets named convex_hull
-
-# Build rule for target.
-convex_hull: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 convex_hull
-.PHONY : convex_hull
-
-# fast build rule for target.
-convex_hull/fast:
-	$(MAKE) -f src/groundRemove/CMakeFiles/convex_hull.dir/build.make src/groundRemove/CMakeFiles/convex_hull.dir/build
-.PHONY : convex_hull/fast
-
-#=============================================================================
-# Target rules for targets named Text
-
-# Build rule for target.
-Text: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 Text
-.PHONY : Text
-
-# fast build rule for target.
-Text/fast:
-	$(MAKE) -f src/groundRemove/CMakeFiles/Text.dir/build.make src/groundRemove/CMakeFiles/Text.dir/build
-.PHONY : Text/fast
 
 #=============================================================================
 # Target rules for targets named cloud
@@ -720,11 +720,11 @@ help:
 	@echo "... groundRemove"
 	@echo "... bin"
 	@echo "... segment"
+	@echo "... convex_hull"
 	@echo "... imm_ukf_pda"
+	@echo "... Test"
 	@echo "... component_clustering"
 	@echo "... box_fitting"
-	@echo "... convex_hull"
-	@echo "... Text"
 	@echo "... cloud"
 	@echo "... QTest"
 	@echo "... utils"

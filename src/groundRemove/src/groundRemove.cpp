@@ -610,7 +610,7 @@ void GroundSegmentation::assignClusterByLineThread(const unsigned int &start_ind
                                              const unsigned int &end_index,
                                              std::vector<int> *segmentation) 
 { 
-    fprintf(stderr, "_params.n_segments: %d\n", params_.n_segments);
+    // fprintf(stderr, "_params.n_segments: %d\n", params_.n_segments);
     const double segment_step = 2 * M_PI / params_.n_segments;
     for (unsigned int idx = start_index; idx < end_index; ++idx)
     {     

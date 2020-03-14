@@ -1,0 +1,36 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../src/groundRemove/include/param.h
+string
+-
+math.h
+-
+iostream
+-
+array
+-
+vector
+-
+math.h
+-
+
+/home/yyg/code/lidarCode/src/groundRemove/src/test2.cpp
+iostream
+-
+fstream
+-
+param.h
+/home/yyg/code/lidarCode/src/groundRemove/src/param.h
+vector
+-
+array
+-
+sstream
+-
+

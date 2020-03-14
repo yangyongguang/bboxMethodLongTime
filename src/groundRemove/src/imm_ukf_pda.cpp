@@ -7,130 +7,212 @@ ImmUkfPda::ImmUkfPda()
   frame_count_(0),
   has_subscribed_vectormap_(false)
 {
-//   private_nh_.param<std::string>("tracking_frame", tracking_frame_, "world");
-//   private_nh_.param<int>("life_time_threshold", life_time_threshold_, 8);
-//   private_nh_.param<double>("gating_threshold", gating_threshold_, 9.22);
-//   private_nh_.param<double>("gate_probability", gate_probability_, 0.99);
-//   private_nh_.param<double>("detection_probability", detection_probability_, 0.9);
-//   private_nh_.param<double>("static_velocity_threshold", static_velocity_threshold_, 0.5);
-//   private_nh_.param<int>("static_num_history_threshold", static_num_history_threshold_, 3);
-//   private_nh_.param<double>("prevent_explosion_threshold", prevent_explosion_threshold_, 1000);
-//   private_nh_.param<double>("merge_distance_threshold", merge_distance_threshold_, 0.5);
-//   private_nh_.param<bool>("use_sukf", use_sukf_, false);
+  tracking_frame_ = "world";
+  life_time_threshold_ = 8;
+  gating_threshold_ = 9.22;
+  gate_probability_ = 0.99;
+  detection_probability_ = 0.9;
+  static_velocity_threshold_ = 0.5;
+  static_num_history_threshold_ = 3;
+  prevent_explosion_threshold_ = 1000;
+  merge_distance_threshold_ = 0.5;
+  use_sukf_ = false;
 
-//   // for vectormap assisted tracking
-//   private_nh_.param<bool>("use_vectormap", use_vectormap_, false);
-//   private_nh_.param<double>("lane_direction_chi_threshold", lane_direction_chi_threshold_, 2.71);
-//   private_nh_.param<double>("nearest_lane_distance_threshold", nearest_lane_distance_threshold_, 1.0);
-//   private_nh_.param<std::string>("vectormap_frame", vectormap_frame_, "map");
+  use_vectormap_ = false;
+  lane_direction_chi_threshold_ = 2.71;
+  nearest_lane_distance_threshold_ = 1.0;
+  vectormap_frame_ = "map";
 
-//   // rosparam for benchmark
-//   private_nh_.param<bool>("is_benchmark", is_benchmark_, false);
-//   private_nh_.param<std::string>("kitti_data_dir", kitti_data_dir_, "");
+  is_benchmark_ = false;
+  kitti_data_dir_ = "";
+
+  std::ifstream timeStream;
+	std::ifstream poseStream;
+	string lineStr;
+	char ch;
+	string timeFileDir = param.kitti_base_velo_dir + "20/info/timestamp.txt";
+	std::cout << timeFileDir <<std::endl;
+	timeStream.open(timeFileDir, std::ios::in);
+	if (timeStream.fail())
+	{
+		fprintf(stderr, "open timeStream error\n");
+    exit(0);
+	}
+	// while(timeStream >> ch)
+	while(timeStream >> lineStr)
+	{
+		// std::cout << ch << std::endl;
+		// std::cout << lineStr << std::endl;
+		timestamp.emplace_back(std::stof(lineStr));
+	}
+	// for (int idx = 0; idx < timestamp.size(); ++idx)
+	// {
+	// 	fprintf(stderr, "%f\n", timestamp[idx]);
+	// }
+	// fprintf(stderr, "num of timestamp : %d\n", timestamp.size());
+	timeStream.close();
+	// -------------------------------------------------------------
+	string poseFileDir = param.kitti_base_velo_dir + "20/info/pose.txt";
+	poseStream.open(poseFileDir, std::ios::in);
+	if (poseStream.fail())
+	{
+		fprintf(stderr, "open poseStream error\n");
+		exit(1);
+	}
+	int count = 0;
+	while (getline(poseStream, lineStr, '\n'))
+	{
+		string str;
+		int strIdx = 0;
+		std::array<float, 3> ps;
+		stringstream ss(lineStr);
+		// while(getline(ss, str, ' '))
+		// {
+		// 	ps[strIdx] = std::stof(str);
+		// 	strIdx++;
+		// }
+		ss >> ps[0] >> ps[1] >> ps[2];
+		selfCarPose.emplace_back(ps);
+	}
+	// --------------------------------------------------------------
+	// for (int idx = 0; idx < 100; ++idx)
+	// {
+	// 	fprintf(stderr, "%f, %f, %f\n", selfCarPose[idx][0], selfCarPose[idx][1], selfCarPose[idx][2]);
+	// }
+	poseStream.close();
   if (is_benchmark_)
   {
-    result_file_path_ = kitti_data_dir_ + "benchmark_results.txt";
-    std::remove(result_file_path_.c_str());
+      result_file_path_ = kitti_data_dir_ + "benchmark_results.txt";
+      std::remove(result_file_path_.c_str());
   }
 }
 
-// 主函数
-void ImmUkfPda::run()
+// // 主函数
+// void ImmUkfPda::run()
+// {
+// //   pub_object_array_ = node_handle_.advertise<std::vector<BBox>>("/detection/objects", 1);
+// //   sub_detected_array_ = node_handle_.subscribe("/detection/fusion_tools/objects", 1, &ImmUkfPda::callback, this);
+
+// //   if (use_vectormap_)
+// //   {
+// //     vmap_.subscribe(private_nh_, vector_map::Category::point |
+// //                                  vector_map::Category::NODE  |
+// //                                  vector_map::Category::LANE, 1);
+// //   }
+// }
+
+// 直接使用其回调函数
+void ImmUkfPda::callback(const std::vector<BBox>& input, 
+      const size_t & currentFrame, 
+      vector<Cloud::Ptr> & trackerBBox)
 {
-//   pub_object_array_ = node_handle_.advertise<std::vector<BBox>>("/detection/objects", 1);
-//   sub_detected_array_ = node_handle_.subscribe("/detection/fusion_tools/objects", 1, &ImmUkfPda::callback, this);
-
-//   if (use_vectormap_)
-//   {
-//     vmap_.subscribe(private_nh_, vector_map::Category::point |
-//                                  vector_map::Category::NODE  |
-//                                  vector_map::Category::LANE, 1);
-//   }
-}
-
-void ImmUkfPda::callback(const std::vector<BBox>& input)
-{
-
-
-//   bool success = updateNecessaryTransform();
-//   if (!success)
-//   {
-//     fprintf(stderr, "Could not find coordiante transformation\n");
-//     return;
-//   }
-
+  // fprintf(stderr, "ImmUkfPda::callback() start\n");
   std::vector<BBox> transformed_input;
   std::vector<BBox> detected_objects_output;
-  transformPoseToGlobal(input, transformed_input);
+  transformPoseToGlobal(input, transformed_input, currentFrame);
   // 全局 bbox 输入跟踪
   tracker(transformed_input, detected_objects_output);
   // 还原
-  transformPoseToLocal(detected_objects_output);
+  transformPoseToLocal(detected_objects_output, currentFrame, trackerBBox);
 
   if (is_benchmark_)
   {
     dumpResultText(detected_objects_output);
   }
+  // fprintf(stderr, "ImmUkfPda::callback() finished\n");
 }
-
-// bool ImmUkfPda::updateNecessaryTransform()
-// {
-//   bool success = true;
-//   try
-//   {
-//     tf_listener_.waitForTransform(input_header_.frame_id, tracking_frame_, ros::Time(0), ros::Duration(1.0));
-//     // 從 input_header 投射到 tracking_frame_ 坐標系的轉換
-//     tf_listener_.lookupTransform(tracking_frame_, input_header_.frame_id, ros::Time(0), local2global_);
-//   }
-//   catch (tf::TransformException ex)
-//   {
-//     ROS_ERROR("%s", ex.what());
-//     success = false;
-//   }
-//   if (use_vectormap_ && has_subscribed_vectormap_)
-//   {
-//     try
-//     {
-//       tf_listener_.waitForTransform(vectormap_frame_, tracking_frame_, ros::Time(0), ros::Duration(1.0));
-//       tf_listener_.lookupTransform(vectormap_frame_, tracking_frame_, ros::Time(0), tracking_frame2lane_frame_);
-//       tf_listener_.lookupTransform(tracking_frame_, vectormap_frame_, ros::Time(0), lane_frame2tracking_frame_);
-//     }
-//     catch (tf::TransformException ex)
-//     {
-//       ROS_ERROR("%s", ex.what());
-//     }
-//   }
-//   return success;
-// }
 
 void ImmUkfPda::transformPoseToGlobal(const std::vector<BBox>& input,
-                                      std::vector<BBox>& transformed_input)
+                                      std::vector<BBox>& transformed_input,
+                                      const size_t & currentFrame)
 {
-  for (auto const &object: input)
+  //------------------------------------------------------
+  float theta = selfCarPose[currentFrame][0];
+  float detX = selfCarPose[currentFrame][1];
+  float detY = selfCarPose[currentFrame][2];
+
+  // Eigen::Matrix3f trans;
+  // trans << cos(theta),   sin(theta),    0,
+  //          -sin(theta),  cos(theta),    0,
+  //          detX,         detY,          1;
+  float cos_theta = cos(theta);
+  float sin_theta = sin(theta);
+  for (int bboxIdx = 0; bboxIdx < input.size(); ++bboxIdx)
   {
-    Pose out_pose = getTransformedPose(object.pose);
-
-    BBox dd;
-    dd = object;
-    dd.pose = out_pose;
-
-    transformed_input.push_back(dd);
+    auto & bbox = input[bboxIdx];
+    std::vector<point> tmpPt(4);
+    for (size_t idx = 0; idx < 4; ++idx)
+    {
+      // use pass2
+      tmpPt[idx].x() = bbox[idx].x() * cos_theta - bbox[idx].y() * sin_theta + detX;
+      tmpPt[idx].y() = bbox[idx].x() * sin_theta + bbox[idx].y() * cos_theta + detY;
+      // fprintf(stderr, "%f, %f\n", tmpPt[idx].x(), tmpPt[idx].y());
+    }
+    BBox dd(tmpPt);
+    transformed_input.emplace_back(dd);
   }
+  // //-------------------------------------------------------------------
+  // 可视化所绘制
+  // ofstream outFile;
+  // string fileName = "/home/yyg/pythonCode/jupyterCode/bboxDataTrans/" + 
+  //         std::to_string(currentFrame) + ".txt";
+  // outFile.open(fileName, std::ios::out);
+  // if (!outFile)
+  // {
+  //     fprintf(stderr, "open file error \n");
+  //     return;
+  // }
+  // // 保存 bounding box 到 txt 文档， 以供 python 调用
+  // for (int idx = 0; idx < transformed_input.size(); ++idx)
+  // {
+  //     auto & bbox = transformed_input[idx];
+  //     for (int pointIdx = 0; pointIdx < 4; ++pointIdx)
+  //     {
+  //         // use pass1
+  //         outFile << bbox[pointIdx].x() << " " << bbox[pointIdx].y() << " ";
+  //     }
+  //     outFile << "\n";
+  // }
+  // outFile.close();
+  // //-----------------------------------------------------------------
 }
 
-void ImmUkfPda::transformPoseToLocal(std::vector<BBox>& detected_objects_output)
+void ImmUkfPda::transformPoseToLocal(std::vector<BBox>& detected_objects_output, 
+                                      const size_t & currentFrame,
+                                      vector<Cloud::Ptr> & trackerBBox)
 {
 
-  for (auto& object : detected_objects_output)
+  //------------------------------------------------------
+  float theta = -selfCarPose[currentFrame][0];
+  float detX = -selfCarPose[currentFrame][1];
+  float detY = -selfCarPose[currentFrame][2];
+
+  float cos_theta = cos(theta);
+  float sin_theta = sin(theta);
+  for (int bboxIdx = 0; bboxIdx < detected_objects_output.size(); ++bboxIdx)
   {
-    Pose out_pose = getTransformedPose(object.pose);
-    object.pose = out_pose;
+    auto & bbox = detected_objects_output[bboxIdx];
+    // 返回可视化 Cloud
+    Cloud::Ptr cloudBBox(new Cloud);
+    for (size_t idx = 0; idx < 4; ++idx)
+    {
+      // use pass2 transform
+      bbox[idx].x() = bbox[idx].x() + detX;
+      bbox[idx].y() = bbox[idx].y() + detY;
+      // rotate
+      bbox[idx].x() = bbox[idx].x() * cos_theta - bbox[idx].y() * sin_theta;
+      bbox[idx].y() = bbox[idx].x() * sin_theta + bbox[idx].y() * cos_theta;
+      // 为了给予 _viewer 做可视化
+      point bboxPt;
+      bboxPt.x() = bbox[idx].x();
+      bboxPt.y() = bbox[idx].y();
+      cloudBBox->emplace_back(bboxPt);
+      // fprintf(stderr, "cloudBBox[%d] (%f, %f)\n", idx,(*cloudBBox)[idx].x(), (*cloudBBox)[idx].y());
+    }
+    bbox.updateCenterAndYaw();
+    // fprintf(stderr, "after update cloudBBox[idx] (%f, %f)\n", (*cloudBBox)[3].x(), (*cloudBBox)[3].y());
+    trackerBBox.push_back(cloudBBox);
   }
-}
-
-Pose ImmUkfPda::getTransformedPose(const Pose& in_pose)
-{
-
 }
 
 void ImmUkfPda::measurementValidation(const std::vector<BBox>& input, UKF& target,

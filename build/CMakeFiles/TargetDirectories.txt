@@ -37,11 +37,11 @@
 /home/yyg/code/lidarCode/build/src/groundRemove/CMakeFiles/groundRemove.dir
 /home/yyg/code/lidarCode/build/src/groundRemove/CMakeFiles/bin.dir
 /home/yyg/code/lidarCode/build/src/groundRemove/CMakeFiles/segment.dir
+/home/yyg/code/lidarCode/build/src/groundRemove/CMakeFiles/convex_hull.dir
 /home/yyg/code/lidarCode/build/src/groundRemove/CMakeFiles/imm_ukf_pda.dir
+/home/yyg/code/lidarCode/build/src/groundRemove/CMakeFiles/Test.dir
 /home/yyg/code/lidarCode/build/src/groundRemove/CMakeFiles/component_clustering.dir
 /home/yyg/code/lidarCode/build/src/groundRemove/CMakeFiles/box_fitting.dir
-/home/yyg/code/lidarCode/build/src/groundRemove/CMakeFiles/convex_hull.dir
-/home/yyg/code/lidarCode/build/src/groundRemove/CMakeFiles/Text.dir
 /home/yyg/code/lidarCode/build/src/groundRemove/CMakeFiles/cloud.dir
 /home/yyg/code/lidarCode/build/src/groundRemove/CMakeFiles/rebuild_cache.dir
 /home/yyg/code/lidarCode/build/src/qt/CMakeFiles/test.dir

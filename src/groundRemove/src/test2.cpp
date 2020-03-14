@@ -1,43 +1,75 @@
-#include <stdio.h>  
-#include <stdlib.h>  
-#include <unistd.h>  
-#include <string.h>  
-#include <sys/types.h>  
-#include <fcntl.h>  
-#include <errno.h>  
-#include <time.h>  
-#include <linux/input.h>  
- 
+#include <iostream>
+#include <fstream>
+#include "param.h"
+#include <vector>
+#include <array>
+#include <sstream>
+
+using std::string;
+using std::vector;
+using std::stringstream;
+
 int main()
 {
-	int keys_fd;
-	char ret[2];
-	struct input_event t;
-	keys_fd = open("/dev/input/event1", O_RDONLY);
-	if (keys_fd <= 0)
+	params param;
+	vector<float> timestamp;
+	vector<std::array<float, 3>> selfCarPose;
+	std::ifstream timeStream;
+	std::ifstream poseStream;
+	string lineStr;
+	char ch;
+	string timeFileDir = param.kitti_base_velo_dir + "20/info/timestamp.txt";
+	std::cout << timeFileDir <<std::endl;
+	timeStream.open(timeFileDir, std::ios::in);
+	if (timeStream.fail())
 	{
-		printf("open /dev/input/event0 device error!\n");
+		fprintf(stderr, "open timeStream error\n");
 		return 0;
 	}
- 
-	while (1)
+	// while(timeStream >> ch)
+	while(timeStream >> lineStr)
 	{
-		if (read(keys_fd, &t, sizeof (t)) == sizeof (t))
-		{
-			if (t.type == EV_KEY)
-			{
-				printf("value is %d\n",  t.value);
-				if (t.value == 0 || t.value == 1)
-				{
-					printf("key %d %s\n", t.code, (t.value) ? "Pressed" : "Released");
-					if (t.code == KEY_ESC)
-						break;
-				}
-			}
-		}
+		// std::cout << ch << std::endl;
+		// std::cout << lineStr << std::endl;
+		timestamp.emplace_back(std::stof(lineStr));
 	}
- 
-	close(keys_fd);
- 
+	// for (int idx = 0; idx < timestamp.size(); ++idx)
+	// {
+	// 	fprintf(stderr, "%f\n", timestamp[idx]);
+	// }
+	// fprintf(stderr, "num of timestamp : %d\n", timestamp.size());
+	timeStream.close();
+	// -------------------------------------------------------------
+	string poseFileDir = param.kitti_base_velo_dir + "20/info/pose.txt";
+	poseStream.open(poseFileDir, std::ios::in);
+	if (poseStream.fail())
+	{
+		fprintf(stderr, "open poseStream error\n");
+		return 0;
+	}
+	int count = 0;
+	while (getline(poseStream, lineStr, '\n'))
+	{
+		string str;
+		int strIdx = 0;
+		std::array<float, 3> ps;
+		stringstream ss(lineStr);
+		// while(getline(ss, str, ' '))
+		// {
+		// 	ps[strIdx] = std::stof(str);
+		// 	strIdx++;
+		// }
+		ss >> ps[0] >> ps[1] >> ps[2];
+		selfCarPose.emplace_back(ps);
+	}
+	// --------------------------------------------------------------
+	// for (int idx = 0; idx < 100; ++idx)
+	// {
+	// 	fprintf(stderr, "%f, %f, %f\n", selfCarPose[idx][0], selfCarPose[idx][1], selfCarPose[idx][2]);
+	// }
+	poseStream.close();
+	// --------------------------------------------------------------
+
+	fprintf(stderr, "test2.cpp done\n"); 
 	return 0;
 }

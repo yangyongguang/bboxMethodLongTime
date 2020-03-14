@@ -24,8 +24,12 @@
 
 // groundRemove 的代码
 #include "groundRemove/include/groundRemove.h"
+// 聚类
 #include "groundRemove/include/component_clustering.h"
+// bounding box
 #include "groundRemove/include/box_fitting.h"
+// imm_ukf_pda tracking
+#include "groundRemove/include/imm_ukf_pda.h"
 
 #include <QTextEdit>
 
@@ -72,6 +76,9 @@ public:
     float lShpaeHorizonResolution;
 
     std::unordered_map<int, int> bboxToCluster;
+    
+    // 跟踪 IMM_UKF_PDA filter
+    ImmUkfPda tracker;
 protected:
     void keyPressEvent(QKeyEvent *event) override;
     virtual void resizeEvent(QResizeEvent *event) override;
@@ -97,6 +104,8 @@ private slots:
 
     // 清除选择的 ID
     void onClearSelection();
+    // 将点云转换为 BBoxs 点的函数
+    std::vector<BBox> CloudToBBoxs(const std::vector<Cloud::Ptr> & bboxPts);
 
 private:
     // Ui::Widget *ui;

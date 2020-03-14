@@ -43,19 +43,22 @@ class DrawSelectAbleBBox: public Drawable
 public:
     using Ptr = std::shared_ptr<DrawSelectAbleBBox>;
     DrawSelectAbleBBox() {}
-    explicit DrawSelectAbleBBox(const std::vector<Cloud::Ptr> & posVec, bool drawZAxis = true);
+    explicit DrawSelectAbleBBox(const std::vector<Cloud::Ptr> & posVec, 
+                                bool drawZAxis = true,
+                                const Eigen::Vector3f& color = Eigen::Vector3f::Zero());
     
     void Draw() const override;
-
+    
     ~DrawSelectAbleBBox() override {}    
     static DrawSelectAbleBBox::Prt FromCloud(
                         const std::vector<Cloud::Ptr> & posVec, 
-                        bool drawZAxis = true);
+                        bool drawZAxis = true,
+                        const Eigen::Vector3f& color = Eigen::Vector3f::Zero());
 
     std::vector<Object::Ptr> objects;   
 private:
     std::vector<Cloud::Ptr> rectPosVec;
     bool _drawZAxis;
-    // int _color;
+    Eigen::Vector3f _color = Eigen::Vector3f::Zero();
 };
 #endif

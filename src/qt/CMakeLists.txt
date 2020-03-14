@@ -14,5 +14,5 @@ add_subdirectory(viewer)
 add_subdirectory(widgets)
 
 add_executable(QTest main.cpp)
-target_link_libraries(QTest qt_widgets groundRemove component_clustering box_fitting)
+target_link_libraries(QTest qt_widgets groundRemove component_clustering box_fitting imm_ukf_pda)
 

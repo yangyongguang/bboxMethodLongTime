@@ -5,8 +5,16 @@
 #include <vector>
 #include <chrono>
 #include <stdio.h>
+#include <sstream>
+#include <fstream>
+#include <array>
+#include "param.h"
 
 #include "ukf.h"
+using std::stringstream;
+using std::array;
+using std::vector;
+using std::ofstream;
 
 class ImmUkfPda
 {
@@ -60,15 +68,20 @@ private:
 
   std::string tracking_frame_;
 
-  void callback(const std::vector<BBox>& input);
+  // add by yyg
+  params param;
+	vector<float> timestamp;
+	vector<std::array<float, 3>> selfCarPose;
+  // -------------------------
 
   void transformPoseToGlobal(const std::vector<BBox>& input,
-                             std::vector<BBox>& transformed_input);
-  void transformPoseToLocal(std::vector<BBox>& detected_objects_output);
+                             std::vector<BBox>& transformed_input,
+                             const size_t & currentFrame);
 
-  Pose getTransformedPose(const Pose& in_pose);
-
-//   bool updateNecessaryTransform();
+  // 将结果转换到局部， 并返回给 mian 函数， 方便可视化
+  void transformPoseToLocal(std::vector<BBox>& detected_objects_output, 
+                            const size_t & currentFrame,
+                            vector<Cloud::Ptr> & trackerBBox);
 
   void measurementValidation(const std::vector<BBox>& input, UKF& target, const bool second_init,
                              const Eigen::VectorXd& max_det_z, const Eigen::MatrixXd& max_det_s,
@@ -135,7 +148,9 @@ private:
 
 public:
   ImmUkfPda();
-  void run();
+  void callback(const std::vector<BBox>& input, 
+                const size_t & currentFrame,
+                vector<Cloud::Ptr> & trackerBBox);
 };
 
 #endif /* OBJECT_TRACKING_IMM_UKF_JPDAF_H */
