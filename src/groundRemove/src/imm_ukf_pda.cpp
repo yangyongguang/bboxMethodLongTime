@@ -74,6 +74,10 @@ ImmUkfPda::ImmUkfPda()
 		ss >> ps[0] >> ps[1] >> ps[2];
 		selfCarPose.emplace_back(ps);
 	}
+  // for (int idx = 0; idx < selfCarPose.size(); ++idx)
+  // {
+  //   selfCarPose[idx][0] -= selfCarPose[0][0];
+  // }
 	// --------------------------------------------------------------
 	// for (int idx = 0; idx < 100; ++idx)
 	// {
@@ -183,9 +187,15 @@ void ImmUkfPda::transformPoseToLocal(std::vector<BBox>& detected_objects_output,
 {
 
   //------------------------------------------------------
-  float theta = -selfCarPose[currentFrame][0];
+  // float theta = 40.0f / 180 * M_PI;
+  // 需要将全局坐标系旋转为正的朝向， 这样后面的计算会容易很多
+  float theta = -(selfCarPose[currentFrame][0]);  
   float detX = -selfCarPose[currentFrame][1];
   float detY = -selfCarPose[currentFrame][2];
+
+  // float theta = 0.0f;
+  // float detX = 0.0f;
+  // float detY = 0.0f;
 
   float cos_theta = cos(theta);
   float sin_theta = sin(theta);
@@ -197,16 +207,23 @@ void ImmUkfPda::transformPoseToLocal(std::vector<BBox>& detected_objects_output,
     for (size_t idx = 0; idx < 4; ++idx)
     {
       // use pass2 transform
+      // fprintf(stderr, "transform befor (%f, %f)\n", bbox[idx].x(), bbox[idx].y());
+      // bug  bbox[idx] 访问的可能是一份复制的值， 并非原 bbox 对象的引用， 因为 operator[] 忘记加 前缀 & 符号
       bbox[idx].x() = bbox[idx].x() + detX;
-      bbox[idx].y() = bbox[idx].y() + detY;
-      // rotate
+      bbox[idx].y() = bbox[idx].y() + detY;      // rotate
+      // fprintf(stderr, "transform after detX detY (%f, %f)(%f, %f)\n", 
+                //  bbox[idx].x(), bbox[idx].y(), detX, detY);
       bbox[idx].x() = bbox[idx].x() * cos_theta - bbox[idx].y() * sin_theta;
       bbox[idx].y() = bbox[idx].x() * sin_theta + bbox[idx].y() * cos_theta;
+      // fprintf(stderr, "rotate after theta (%f, %f)(%f)\n", 
+      //            bbox[idx].x(), bbox[idx].y(), theta);
       // 为了给予 _viewer 做可视化
       point bboxPt;
       bboxPt.x() = bbox[idx].x();
       bboxPt.y() = bbox[idx].y();
+      bboxPt.z() = -1.721f;
       cloudBBox->emplace_back(bboxPt);
+      // fprintf(stderr, "transform after (%f, %f)\n", (*cloudBBox)[idx].x(), (*cloudBBox)[idx].y());
       // fprintf(stderr, "cloudBBox[%d] (%f, %f)\n", idx,(*cloudBBox)[idx].x(), (*cloudBBox)[idx].y());
     }
     bbox.updateCenterAndYaw();
@@ -702,15 +719,15 @@ void ImmUkfPda::makeOutput(const std::vector<BBox>& input,
       dd.pose.position.x = tx;
       dd.pose.position.y = ty;
 
-    //   if (!std::isnan(q[0]))
-    //     dd.pose.orientation.x = q[0];
-    //   if (!std::isnan(q[1]))
-    //     dd.pose.orientation.y = q[1];
-    //   if (!std::isnan(q[2]))
-    //     dd.pose.orientation.z = q[2];
-    //   if (!std::isnan(q[3]))
-    //     dd.pose.orientation.w = q[3];
-    dd.pose.yaw = tyaw;
+      //   if (!std::isnan(q[0]))
+      //     dd.pose.orientation.x = q[0];
+      //   if (!std::isnan(q[1]))
+      //     dd.pose.orientation.y = q[1];
+      //   if (!std::isnan(q[2]))
+      //     dd.pose.orientation.z = q[2];
+      //   if (!std::isnan(q[3]))
+      //     dd.pose.orientation.w = q[3];
+      dd.pose.yaw = tyaw;
     }
     // 根据概率， 判断使用了哪一个模型
     updateBehaviorState(targets_[i], use_sukf_, dd);

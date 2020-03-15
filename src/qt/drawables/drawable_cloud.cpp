@@ -145,6 +145,11 @@ void DrawableBBox::Draw() const
             glVertex3f(bboxPt[bottom[idx]].x(), 
                         bboxPt[bottom[idx]].y(), 
                         bboxPt[bottom[idx]].z());
+
+            // -1.721f
+            glVertex3f(bboxPt[bottom[idx]].x(), 
+                        bboxPt[bottom[idx]].y(), 
+                        -1.721f);
         }
         glEnd();
         // fprintf(stderr, "void DrawableBBox::Draw() const end\n");

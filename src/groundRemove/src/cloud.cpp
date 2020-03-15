@@ -39,7 +39,7 @@ BBox::BBox(const point & x1,
     pose.position.z = 0.0;
 
     // 角度
-    pose.yaw = (x1.y() - x2.y()) / (x1.x() - x2.x() + 1e-6);
+    pose.yaw = std::atan2((x1.y() - x2.y()), (x1.x() - x2.x()));
 
     // 维度
     dimensions.x = sqrt((x1.x() - x2.x()) * (x1.x() - x2.x()) + (x1.y() - x2.y()) * (x1.y() - x2.y()));
@@ -61,7 +61,7 @@ BBox::BBox(const std::vector<point> & bbox)
     pose.position.z = 0.0;
 
     // 角度
-    pose.yaw = (points[0].y() - points[1].y()) / (points[0].x() -points[1].x() + 1e-6);
+    pose.yaw = std::atan2((points[0].y() - points[1].y()), (points[0].x() - points[1].x()));
 
     // 维度
     dimensions.x = sqrt((points[0].x() - points[1].x()) * (points[0].x() - points[1].x()) + 

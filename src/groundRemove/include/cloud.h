@@ -170,7 +170,7 @@ public:
          const point & x4);
     BBox(const std::vector<point> & bbox);
     ~BBox(){}
-    inline point operator[](const int & pointIdx){return points[pointIdx];}
+    inline point & operator[](const int & pointIdx){return points[pointIdx];}
     inline const point & operator[](const int & pointIdx) const {return points[pointIdx];}
     // golbel to local update yaw
     void updateCenterAndYaw();

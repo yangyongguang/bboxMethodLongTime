@@ -487,9 +487,9 @@ void MainWindow::onSliderMovedTo(int cloud_number)
         std::chrono::high_resolution_clock::time_point start_tracker = std::chrono::high_resolution_clock::now();     
         std::vector<Cloud::Ptr> trackerBBoxPts;  // minAre + pca
         Eigen::Vector3f trackerBBoxColor(0.0f, 1.0f, 0.0f);
-        fprintf(stderr, "tracker start\n");
+        // fprintf(stderr, "tracker start\n");
         tracker.callback(CloudToBBoxs(bboxPts), curr_data_idx, trackerBBoxPts);
-        fprintf(stderr, "tracker finished with tracker bbox : %d\n", trackerBBoxPts.size());
+        // fprintf(stderr, "tracker finished with tracker bbox : %d\n", trackerBBoxPts.size());
         // _viewer->AddDrawable(DrawSelectAbleBBox::FromCloud(trackerBBoxPts, false, trackerBBoxColor), "DrawSelectAbleTrackerBBox");
         // for (int idx = 0; idx < trackerBBoxPts.size(); ++idx)
         // {
@@ -638,12 +638,15 @@ void MainWindow::onSliderMovedTo(int cloud_number)
 
 std::vector<BBox> MainWindow::CloudToBBoxs(const std::vector<Cloud::Ptr> & bboxPts)
 {
-    std::vector<BBox> res(bboxPts.size());
+    std::vector<BBox> res(bboxPts.size() + 1);
     for (int idx = 0; idx < bboxPts.size(); ++idx)
     {
         auto & cloud = (*bboxPts[idx]);
         res[idx] = BBox(cloud[0], cloud[1], cloud[2], cloud[3]);
     }
+    // 添加子车的跟踪轨迹
+    res[bboxPts.size()] = BBox(point(2.5f, 1.4f, 0.0f), point(2.5f, -1.4f, 0.0f), 
+            point(-2.5f, -1.4f, 0.0f), point(-2.5f, 1.4f, 0.0f));
     return res;
 }
 
