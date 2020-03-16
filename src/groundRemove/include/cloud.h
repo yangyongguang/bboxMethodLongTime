@@ -138,6 +138,7 @@ public:
     int id = -1; 
     float velocity = 0.0f;
     float acceleration = 0.0f;
+    float yaw = 0.0f;
 };
 
 struct point3d
@@ -206,7 +207,8 @@ public:
     bool acceleration_reliable;
     point3d dimensions;
 
-    float angle;  // 0 ~ 2 * pi
+    float angle = 0.0f; // 0 ~ 2 * pi 为 object msg 消息所定义
+    float yaw = 0.0f;  // 0 ~ 2 * pi
 
     // 存储最高最低 z 值
     float minZ = 0.0f;

@@ -224,9 +224,11 @@ void ImmUkfPda::transformPoseToLocal(std::vector<BBox>& detected_objects_output,
     cloudBBox->acceleration = bbox.acceleration.linear.x;
     cloudBBox->minZ = bbox.minZ;
     cloudBBox->maxZ = bbox.maxZ;
+    cloudBBox->yaw = bbox.yaw;
     if (DEBUG)
     {
       fprintf(stderr, "minZ : %f, maxZ : %f\n", bbox.minZ, bbox.maxZ);
+      fprintf(stderr, "yaw : %f\n", bbox.yaw);
     }
     for (size_t idx = 0; idx < 4; ++idx)
     {
@@ -752,6 +754,9 @@ void ImmUkfPda::makeOutput(const std::vector<BBox>& input,
     // z 方向
     dd.maxZ = targets_[i].object_.maxZ;
     dd.minZ = targets_[i].object_.minZ;
+
+    // 预测方向
+    dd.yaw = tyaw;
     
     // 目标稳定与否
     // 目标是否是动态的目标， 静态目标不跟踪

@@ -22,7 +22,8 @@ void Viewer::Clear()
 
 void Viewer::draw() 
 {
-
+    // 坐标原点
+    QGLViewer::drawAxis(sceneRadius() / 50.0);
     // 绘制自车
     glEnable(GL_LINE_STIPPLE);
     glLineStipple(2, 0x3F3F);
@@ -37,12 +38,13 @@ void Viewer::draw()
     glEnd();
     glDisable( GL_LINE_STIPPLE);
 
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glBegin(GL_LINE_STRIP);
-    glVertex3f(0.3f, 0.0f, -1.73f);
-    glVertex3f(0.0f, 0.0f, -1.73f);
-    glVertex3f(0.0f, 0.3f, -1.73f);  
-    glEnd();
+    // 绘制坐标系
+    // glColor3f(0.0f, 1.0f, 0.0f);
+    // glBegin(GL_LINE_STRIP);
+    // glVertex3f(0.3f, 0.0f, -1.73f);
+    // glVertex3f(0.0f, 0.0f, -1.73f);
+    // glVertex3f(0.0f, 0.3f, -1.73f);  
+    // glEnd();
     // 参考前进方向
     // glLineWidth (0.8f);    
     // glLineStipple (1, 0x0F0F);
@@ -218,9 +220,9 @@ void Viewer::displayText()
     glDisable(GL_LIGHTING);
     QGLWidget::makeCurrent();
     // glColor3f(177.0f / 255, 187.0f / 255, 81.0f / 255);
-    glColor3f(1.0f, 1.0f, 1.0f);
     for (int idx = 0; idx < bboxs.size(); ++idx)
     {
+        glColor3f(1.0f, 1.0f, 1.0f);
         auto bbox = (*bboxs[idx]);
         // renderText(bbox[0].x(), bbox[1].y(), bbox[2].z(),
         //     QString::number(idx), ft);
@@ -230,12 +232,22 @@ void Viewer::displayText()
         float x = 0.5 * (pt1.x() + pt2.x());
         float y = 0.5 * (pt1.y() + pt2.y());
         float z = 0.5 * (pt1.z() + pt2.z());
+        float v = bbox.velocity * 3.6;
+        float yaw = bbox.yaw;
         const qglviewer::Vec point2dID = camera()->projectedCoordinatesOf(qglviewer::Vec(x, y + 0.1, bbox.maxZ));
         QGLViewer::drawText(point2dID.x, point2dID.y, strID, ftID);
 
-        QString velocityStr = QString::number(bboxs[idx]->velocity * 3.6, 'g', 2) + " km/h";
-        const qglviewer::Vec point2d = camera()->projectedCoordinatesOf(qglviewer::Vec(x - 0.3, y - 0.5, bbox.maxZ));
+        QString velocityStr = QString::number(v, 'g', 2) + " km/h";
+        const qglviewer::Vec point2d = camera()->projectedCoordinatesOf(qglviewer::Vec(x - 0.3, y - 0.3, bbox.maxZ));
         QGLViewer::drawText(point2d.x, point2d.y, velocityStr, ft);
+
+        // 显示角度信息        
+        point ArrowTo;
+        ArrowTo.x() = x + 0.15 * v * cos(yaw);
+        ArrowTo.y() = y + 0.15 * v * sin(yaw);
+        glColor3f(0.0f, 1.0f, 0.0f);
+        QGLViewer::drawArrow(qglviewer::Vec(x, y, z), qglviewer::Vec(ArrowTo.x(), ArrowTo.y(), z), 0.1);
+
     }    
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_LIGHTING);
