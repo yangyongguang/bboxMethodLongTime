@@ -90,7 +90,8 @@ public:
     inline size_t size() const { return _points.size(); }
     inline bool empty() const { return _points.empty(); }
     //  这里需要验证一下， 问题很大， 直接导致分配的点个数为 0 的情况， 在第一次显示 trackBBox 时间出现问题
-    inline void reserve(size_t size) { _points.reserve(size); }
+    inline void reserve(size_t size) { _points.reserve(size);}
+    inline void resize(size_t size) { _points.resize(size);}
     inline void push_back(const point& pt) { _points.push_back(pt); }
     inline void emplace_back(const point& pt) {_points.emplace_back(pt);}
     inline point & operator[](int idx) {return _points[idx];}
@@ -132,6 +133,11 @@ public:
     size_t numSymPoints = 0;
     size_t numNoneEmptyLShapePoint = 0;
     float SymPointPercent = 0.0f;
+
+    // 跟踪的类型
+    int id = -1; 
+    float velocity = 0.0f;
+    float acceleration = 0.0f;
 };
 
 struct point3d
@@ -201,6 +207,10 @@ public:
     point3d dimensions;
 
     float angle;  // 0 ~ 2 * pi
+
+    // 存储最高最低 z 值
+    float minZ = 0.0f;
+    float maxZ = 0.0f;
 };
 #endif
 

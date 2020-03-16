@@ -1,6 +1,6 @@
 #ifndef OBJECT_TRACKING_IMM_UKF_JPDAF_H
 #define OBJECT_TRACKING_IMM_UKF_JPDAF_H
-
+#define DEBUG false
 
 #include <vector>
 #include <chrono>
@@ -70,7 +70,7 @@ private:
 
   // add by yyg
   params param;
-	vector<float> timestamp;
+	vector<float> timestampVec;
 	vector<std::array<float, 3>> selfCarPose;
   // -------------------------
 
@@ -112,7 +112,8 @@ private:
   void dumpResultText(std::vector<BBox>& detected_objects);
 
   void tracker(const std::vector<BBox>& transformed_input,
-               std::vector<BBox>& detected_objects_output);
+               std::vector<BBox>& detected_objects_output,
+               const size_t & currentFrame);
 
   bool updateDirection(const double smallest_nis, const BBox& in_object,
                            BBox& out_object, UKF& target);

@@ -22,6 +22,7 @@ void Viewer::Clear()
 
 void Viewer::draw() 
 {
+
     // 绘制自车
     glEnable(GL_LINE_STIPPLE);
     glLineStipple(2, 0x3F3F);
@@ -176,7 +177,7 @@ void Viewer::draw()
     if (selectionMode_ != NONE)
         drawSelectionRectangle();
 
-    displayText();
+    
     // // yyg add
     // // Draws selected objects only.
     // glColor3f(0.9f, 0.3f, 0.3f);
@@ -195,7 +196,8 @@ void Viewer::draw()
     // for (int i = 0; i < int(objects_.size()); i++)
     //     objects_.at(i)->draw();
     // test draw Text function
-    
+    displayText();
+        
 }
 
 void Viewer::displayText()
@@ -205,10 +207,18 @@ void Viewer::displayText()
     // QPalette pa;
     // pa.setColor(QPalette::WindowText, Qt::red);
     // setPalette(pa);
-    QFont ft("Helvetica [Cronyx]", 10, QFont::Bold);
-    glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+    // QFont ft("Helvetica [Cronyx]", 10, QFont::Bold);
+    QFont ft("Arial", 10);
+    QFont ftID("Arial", 12, QFont::Bold);
+    // QFont ft("Time New Roman", 12, QFont::Bold);
+    // QFont ft("Comic Sans MS", 12);
+    // QFont ft("Fixed", 8, QFont::Bold);
+    qglColor(Qt::black);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_LIGHTING);
+    QGLWidget::makeCurrent();
+    // glColor3f(177.0f / 255, 187.0f / 255, 81.0f / 255);
+    glColor3f(1.0f, 1.0f, 1.0f);
     for (int idx = 0; idx < bboxs.size(); ++idx)
     {
         auto bbox = (*bboxs[idx]);
@@ -216,8 +226,16 @@ void Viewer::displayText()
         //     QString::number(idx), ft);
         point pt1 = bbox[0];
         point pt2 = bbox[2];
-        QString str = QString::number(idx);// + "m/s";
-        QGLWidget::renderText(0.5 * (pt1.x() + pt2.x()) , 0.5 * (pt2.y() + pt1.y()), -1.73f, str, ft);
+        QString strID = QString("ID:") + QString::number(bboxs[idx]->id);// + "m/s";
+        float x = 0.5 * (pt1.x() + pt2.x());
+        float y = 0.5 * (pt1.y() + pt2.y());
+        float z = 0.5 * (pt1.z() + pt2.z());
+        const qglviewer::Vec point2dID = camera()->projectedCoordinatesOf(qglviewer::Vec(x, y + 0.1, bbox.maxZ));
+        QGLViewer::drawText(point2dID.x, point2dID.y, strID, ftID);
+
+        QString velocityStr = QString::number(bboxs[idx]->velocity * 3.6, 'g', 2) + " km/h";
+        const qglviewer::Vec point2d = camera()->projectedCoordinatesOf(qglviewer::Vec(x - 0.3, y - 0.5, bbox.maxZ));
+        QGLViewer::drawText(point2d.x, point2d.y, velocityStr, ft);
     }    
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_LIGHTING);
@@ -403,7 +421,8 @@ void Viewer::init()
     // glLoadIdentity();
     glClear(GL_COLOR_BUFFER_BIT);
     // 如果想要黑色 设置为 0.0, 0.0, 0.0,  如果想要白色为 255, 255, 255
-    setBackgroundColor(QColor(255, 255, 255));
+    // setBackgroundColor(QColor(255, 255, 255));
+    setBackgroundColor(QColor(1, 0, 1));
     setSceneRadius(50.0);
     // fprintf(stderr, "setBackgroundColor(QColor(1, 1, 1));\n");
     camera()->showEntireScene();

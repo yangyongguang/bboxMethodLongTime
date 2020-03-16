@@ -92,7 +92,7 @@ void DrawSelectAbleBBox::Draw() const
 {
     point centerPoint;
     glPushMatrix();
-    glLineWidth(2.0f);
+    glLineWidth(1.0f);
     for (int iBBox = 0; iBBox < rectPosVec.size(); ++iBBox)
     {
         Cloud bboxPt = (*rectPosVec[iBBox]);

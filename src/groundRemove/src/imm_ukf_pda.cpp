@@ -43,7 +43,7 @@ ImmUkfPda::ImmUkfPda()
 	{
 		// std::cout << ch << std::endl;
 		// std::cout << lineStr << std::endl;
-		timestamp.emplace_back(std::stof(lineStr));
+		timestampVec.emplace_back(std::stof(lineStr));
 	}
 	// for (int idx = 0; idx < timestamp.size(); ++idx)
 	// {
@@ -110,12 +110,19 @@ void ImmUkfPda::callback(const std::vector<BBox>& input,
       const size_t & currentFrame, 
       vector<Cloud::Ptr> & trackerBBox)
 {
+  if (DEBUG)
+  {
+    for (int idx = 0; idx < input.size(); ++idx)
+    {
+      fprintf(stderr, "callback min max Z: %f, %f\n", input[idx].minZ, input[idx].maxZ);
+    }
+  }
   // fprintf(stderr, "ImmUkfPda::callback() start\n");
   std::vector<BBox> transformed_input;
   std::vector<BBox> detected_objects_output;
   transformPoseToGlobal(input, transformed_input, currentFrame);
   // 全局 bbox 输入跟踪
-  tracker(transformed_input, detected_objects_output);
+  tracker(transformed_input, detected_objects_output, currentFrame);
   // 还原
   transformPoseToLocal(detected_objects_output, currentFrame, trackerBBox);
 
@@ -153,6 +160,8 @@ void ImmUkfPda::transformPoseToGlobal(const std::vector<BBox>& input,
       // fprintf(stderr, "%f, %f\n", tmpPt[idx].x(), tmpPt[idx].y());
     }
     BBox dd(tmpPt);
+    dd.minZ = bbox.minZ;
+    dd.maxZ = bbox.maxZ;
     transformed_input.emplace_back(dd);
   }
   // //-------------------------------------------------------------------
@@ -189,43 +198,81 @@ void ImmUkfPda::transformPoseToLocal(std::vector<BBox>& detected_objects_output,
   //------------------------------------------------------
   // float theta = 40.0f / 180 * M_PI;
   // 需要将全局坐标系旋转为正的朝向， 这样后面的计算会容易很多
-  float theta = -(selfCarPose[currentFrame][0]);  
-  float detX = -selfCarPose[currentFrame][1];
-  float detY = -selfCarPose[currentFrame][2];
+  float theta = (selfCarPose[currentFrame][0]);  
+  float detX = selfCarPose[currentFrame][1];
+  float detY = selfCarPose[currentFrame][2];
 
-  // float theta = 0.0f;
-  // float detX = 0.0f;
-  // float detY = 0.0f;
-
+  Eigen::Matrix3f transG2L, transL2G;
   float cos_theta = cos(theta);
   float sin_theta = sin(theta);
+  transL2G << cos_theta, sin_theta, 0,
+              -sin_theta, cos_theta, 0,
+              detX, detY, 1;
+  // 求逆矩阵
+  transG2L = transL2G.inverse();
+  if (DEBUG)
+    fprintf(stderr, "theta : %f\n", theta / M_PI * 180);
+
   for (int bboxIdx = 0; bboxIdx < detected_objects_output.size(); ++bboxIdx)
   {
     auto & bbox = detected_objects_output[bboxIdx];
     // 返回可视化 Cloud
     Cloud::Ptr cloudBBox(new Cloud);
+    cloudBBox->resize(8);
+    cloudBBox->id = bbox.id;  // track id
+    cloudBBox->velocity = bbox.velocity.linear.x;
+    cloudBBox->acceleration = bbox.acceleration.linear.x;
+    cloudBBox->minZ = bbox.minZ;
+    cloudBBox->maxZ = bbox.maxZ;
+    if (DEBUG)
+    {
+      fprintf(stderr, "minZ : %f, maxZ : %f\n", bbox.minZ, bbox.maxZ);
+    }
     for (size_t idx = 0; idx < 4; ++idx)
     {
       // use pass2 transform
       // fprintf(stderr, "transform befor (%f, %f)\n", bbox[idx].x(), bbox[idx].y());
       // bug  bbox[idx] 访问的可能是一份复制的值， 并非原 bbox 对象的引用， 因为 operator[] 忘记加 前缀 & 符号
-      bbox[idx].x() = bbox[idx].x() + detX;
-      bbox[idx].y() = bbox[idx].y() + detY;      // rotate
-      // fprintf(stderr, "transform after detX detY (%f, %f)(%f, %f)\n", 
-                //  bbox[idx].x(), bbox[idx].y(), detX, detY);
-      bbox[idx].x() = bbox[idx].x() * cos_theta - bbox[idx].y() * sin_theta;
-      bbox[idx].y() = bbox[idx].x() * sin_theta + bbox[idx].y() * cos_theta;
+      // bbox[idx].x() = bbox[idx].x() + detX;
+      // bbox[idx].y() = bbox[idx].y() + detY;  // rotate
+      // // fprintf(stderr, "transform after detX detY (%f, %f)(%f, %f)\n", 
+      //           //  bbox[idx].x(), bbox[idx].y(), detX, detY);
+      // bbox[idx].x() = bbox[idx].x() * cos_theta - bbox[idx].y() * sin_theta;
+      // bbox[idx].y() = bbox[idx].x() * sin_theta + bbox[idx].y() * cos_theta;
+      // bug 此处 因为 bbox[idx].x() 在下一行已经提前改变了， 而 在下俩行， 需要的是一个 x 值未改变的相称
+      // 所以 需要申请一个临时变量， 待俩者都结束后进行赋值, 参考上俩行的注释错误 提前改变了后面还需要使用的 x 值
+      point tmp;
+      tmp.x() = bbox[idx].x() * transG2L(0, 0) + bbox[idx].y() * transG2L(1, 0) + transG2L(2, 0);
+      tmp.y() = bbox[idx].x() * transG2L(0, 1) + bbox[idx].y() * transG2L(1, 1) + transG2L(2, 1);
+      bbox[idx].x() = tmp.x();
+      bbox[idx].y() = tmp.y();
       // fprintf(stderr, "rotate after theta (%f, %f)(%f)\n", 
       //            bbox[idx].x(), bbox[idx].y(), theta);
       // 为了给予 _viewer 做可视化
-      point bboxPt;
-      bboxPt.x() = bbox[idx].x();
-      bboxPt.y() = bbox[idx].y();
-      bboxPt.z() = -1.721f;
-      cloudBBox->emplace_back(bboxPt);
+      point bboxPt, bboxPt2;
+      bboxPt.x() = tmp.x();
+      bboxPt.y() = tmp.y();
+      bboxPt.z() = bbox.minZ;
+
+      bboxPt2.x() = tmp.x();
+      bboxPt2.y() = tmp.y();
+      bboxPt2.z() = bbox.maxZ;
+      // cloudBBox->emplace_back(bboxPt);
+      (*cloudBBox)[idx] = bboxPt;
+      (*cloudBBox)[idx + 4] = bboxPt2;
       // fprintf(stderr, "transform after (%f, %f)\n", (*cloudBBox)[idx].x(), (*cloudBBox)[idx].y());
       // fprintf(stderr, "cloudBBox[%d] (%f, %f)\n", idx,(*cloudBBox)[idx].x(), (*cloudBBox)[idx].y());
     }
+    // assert(cloudBBox->size() == 8);
+    // // 绘制顶端 bbox
+    // auto &outBBox = (*cloudBBox);
+    // fprintf(stderr, "----------------------\n");
+    // for (int idx = 0; idx < 4; ++idx)
+    //   fprintf(stderr, "%f ", outBBox[idx].z());
+    // fprintf(stderr, "|<-->|");
+    // for (int idx = 4; idx < 8; ++idx)
+    //   fprintf(stderr, "%f ", outBBox[idx].z());
+    // fprintf(stderr, "\n----------------------\n");
     bbox.updateCenterAndYaw();
     // fprintf(stderr, "after update cloudBBox[idx] (%f, %f)\n", (*cloudBBox)[3].x(), (*cloudBBox)[3].y());
     trackerBBox.push_back(cloudBBox);
@@ -670,7 +717,6 @@ ImmUkfPda::removeRedundantObjects(const std::vector<BBox>& in_detected_objects,
   }
 
   return resulting_objects;
-
 }
 
 void ImmUkfPda::makeOutput(const std::vector<BBox>& input,
@@ -703,8 +749,10 @@ void ImmUkfPda::makeOutput(const std::vector<BBox>& input,
     dd.acceleration.linear.y = tyaw_rate;
     dd.velocity_reliable = targets_[i].is_stable_;
     dd.pose_reliable = targets_[i].is_stable_;
-
-
+    // z 方向
+    dd.maxZ = targets_[i].object_.maxZ;
+    dd.minZ = targets_[i].object_.minZ;
+    
     // 目标稳定与否
     // 目标是否是动态的目标， 静态目标不跟踪
     if (!targets_[i].is_static_ && targets_[i].is_stable_)
@@ -798,11 +846,19 @@ void ImmUkfPda::dumpResultText(std::vector<BBox>& detected_objects)
 }
 
 void ImmUkfPda::tracker(const std::vector<BBox>& input,
-                        std::vector<BBox>& detected_objects_output)
+                        std::vector<BBox>& detected_objects_output,
+                        const size_t & currentFrame)
 {
   // 时间戳， 并不一定是 0.1 s 一个 单位 秒
   // double timestamp = input.header.stamp.toSec();
-  double timestamp = 0.1;     // 暂时
+  if (DEBUG)
+  {
+    for (int idx = 0; idx < input.size(); ++idx)
+    {
+      fprintf(stderr, "input min max Z: %f, %f\n", input[idx].minZ, input[idx].maxZ);
+    }
+  }
+  float timestamp = timestampVec[currentFrame];
   // 当前对象是否被别人匹配得到
   std::vector<bool> matching_vec(input.size(), false);
 
@@ -816,8 +872,13 @@ void ImmUkfPda::tracker(const std::vector<BBox>& input,
     return;
   }
 
-  // 新旧时间间隔 利用俩帧时间戳
   double dt = (timestamp - timestamp_);
+  // 新旧时间间隔 利用俩帧时间戳
+  if (DEBUG)
+  {
+    fprintf(stderr, "currnt timestamp : %f, last timestamp_ : %f , dt : %f\n", timestamp, timestamp_, dt);
+  }
+
   // 跟新时间帧
   timestamp_ = timestamp;
 

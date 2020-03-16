@@ -84,7 +84,7 @@ MainWindow::MainWindow(QWidget *parent):
     ui->infoTab->setCurrentIndex(0);
     // 
     ui->cloudCB->setChecked(false);
-    ui->groundCB->setChecked(false);
+    ui->groundCB->setChecked(true);
     ui->obstacleCB->setChecked(false);
     ui->insertCB->setChecked(false);
     ui->lineCB->setChecked(false); 
@@ -435,31 +435,6 @@ void MainWindow::onSliderMovedTo(int cloud_number)
             std::chrono::high_resolution_clock::time_point start_bbox = std::chrono::high_resolution_clock::now();
             getBBox(clusters, bboxPts, markPoints, lShapePoints ,bboxToCluster, lShpaeHorizonResolution ,bboxDebugId);
 
-            // a single block
-            /*
-            {
-                ofstream outFile;
-                string fileName = "/home/yyg/pythonCode/jupyterCode/bboxData/" + 
-                        std::to_string(cloud_number) + ".txt";
-                outFile.open(fileName, ios::out);
-                if (!outFile)
-                {
-                    fprintf(stderr, "open file error \n");
-                    return;
-                }
-                // 保存 bounding box 到 txt 文档， 以供 python 调用
-                for (int idx = 0; idx < bboxPts.size(); ++idx)
-                {
-                    auto & bbox = (*bboxPts[idx]);
-                    for (int pointIdx = 0; pointIdx < 4; ++pointIdx)
-                    {
-                        outFile << bbox[pointIdx].x() << " " << bbox[pointIdx].y() << " ";
-                    }
-                    outFile << "\n";
-                }
-                outFile.close();
-            }
-            */
             // 对比方法
             // getOrientedBBox(clusters, bboxPts2);
             std::chrono::high_resolution_clock::time_point end_bbox = std::chrono::high_resolution_clock::now();
@@ -469,14 +444,17 @@ void MainWindow::onSliderMovedTo(int cloud_number)
             // fprintf(stderr, "drawSelectedBBox objects size : %d\n", _viewer->drawSelectableBBox.objects.size());
             // _viewer->AddDrawable(DrawableBBox::FromCloud(bboxPts, true));
             _viewer->drawSelectableBBox = DrawSelectAbleBBox(bboxPts, true);
-            _viewer->setBBoxs(bboxPts);
-            Eigen::Vector3f detectBBoxColor(0.0f, 0.0f, 0.0f);
+            // _viewer->setBBoxs(bboxPts);  为了显示 id 设置给全局使用的
+            // 检测可选择的框
+            Eigen::Vector3f detectBBoxColor(67.0f/255, 141.0f/255, 43.0f/255);
+            // Eigen::Vector3f detectBBoxColor(0.0f, 0.0f, 0.0f);
             // fprintf(stderr, "drawSelectedBBox objects size : %d\n", _viewer->drawSelectableBBox.objects.size());
-            _viewer->AddDrawable(DrawSelectAbleBBox::FromCloud(bboxPts, false, detectBBoxColor), "DrawSelectAbleBBox");
+            _viewer->AddDrawable(DrawSelectAbleBBox::FromCloud(bboxPts, true, detectBBoxColor), "DrawSelectAbleBBox");
             // 对比方法 bbox
             // _viewer->AddDrawable(DrawableBBox::FromCloud(bboxPts2, true, 1));
-            _viewer->AddDrawable(DrawableCloud::FromCloud(markPoints, Eigen::Vector3f(0.0f, 1.0f, 0.2f),
-                     GLfloat(6)),"L_shape markPoints");
+            // 显示三个端点
+            // _viewer->AddDrawable(DrawableCloud::FromCloud(markPoints, Eigen::Vector3f(0.0f, 1.0f, 0.2f),
+            //          GLfloat(6)),"L_shape markPoints");
         }
 
         infoTextEdit->append("number of cluster : " + QString::number(cluster.getNumCluster()));
@@ -497,7 +475,8 @@ void MainWindow::onSliderMovedTo(int cloud_number)
         //     fprintf(stderr, "trackerBBoxPts size %d\n", trackerBBoxPts.size());
         //     fprintf(stderr, "(%f, %f)\n", bbox[0].x(), bbox[0].y());
         // }
-        _viewer->AddDrawable(DrawableBBox::FromCloud(trackerBBoxPts, false, 0), "DrawSelectAbleTrackerBBox");
+        _viewer->setBBoxs(trackerBBoxPts); // 可视化id velocity 等信息 提供给全局使用
+        _viewer->AddDrawable(DrawableBBox::FromCloud(trackerBBoxPts, true, 0), "DrawSelectAbleTrackerBBox");
         std::chrono::high_resolution_clock::time_point end_tracker = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> fp_ms_tracker = end_tracker - start_tracker;
         std::cout << "ImmUkfPda tracker took about " << fp_ms_tracker.count() << " ms" << std::endl;  
@@ -540,7 +519,8 @@ void MainWindow::onSliderMovedTo(int cloud_number)
     if (ui->groundCB->isChecked())
     {
         Eigen::Vector3f color;
-        color << 0.0, 1.0, 0.0;
+        // color << 0.0, 1.0, 0.0;
+        color << 6.0f / 255, 4.0f / 255, 110.0f / 255;  // 蓝色地面
         _viewer->AddDrawable(DrawableCloud::FromCloud(ground_cloud, color, pointSize), "DrawableCloud ground");
     }
     
@@ -643,10 +623,15 @@ std::vector<BBox> MainWindow::CloudToBBoxs(const std::vector<Cloud::Ptr> & bboxP
     {
         auto & cloud = (*bboxPts[idx]);
         res[idx] = BBox(cloud[0], cloud[1], cloud[2], cloud[3]);
+        res[idx].minZ = cloud[0].z();
+        res[idx].maxZ = cloud[4].z();
     }
     // 添加子车的跟踪轨迹
     res[bboxPts.size()] = BBox(point(2.5f, 1.4f, 0.0f), point(2.5f, -1.4f, 0.0f), 
             point(-2.5f, -1.4f, 0.0f), point(-2.5f, 1.4f, 0.0f));
+    res[bboxPts.size()].minZ = -1.73f;
+    res[bboxPts.size()].maxZ = 0.0f;
+    
     return res;
 }
 
