@@ -47,6 +47,7 @@ UKF::UKF()
   std_rm_yawdd_ = 3;
 
   // Laser measurement noise standard deviation position1 in m
+  // 測量方差
   std_laspx_ = 0.15;
   // Laser measurement noise standard deviation position2 in m
   std_laspy_ = 0.15;
@@ -168,6 +169,8 @@ UKF::UKF()
   k_lidar_direction_rm_ = Eigen::MatrixXd(num_state_, num_lidar_direction_state_);
 
   lidar_direction_ctrv_meas_ = Eigen::VectorXd(num_lidar_direction_state_);
+
+  // yyg
 }
 
 double UKF::normalizeAngle(const double angle)
@@ -188,7 +191,11 @@ void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int
   x_merge_ << 0, 0, 0, 0, 0.1;
 
   // init covariance matrix by hardcoding since no clue about initial state covrariance
-  p_merge_ << 0.5, 0, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 1;
+  p_merge_ << 0.5,  0,   0,   0,  0,
+              0,   0.5,  0,   0,  0,
+              0,    0,   3,   0,  0,
+              0,    0,   0,  10,  0,
+              0,    0,   0,   0,  1;
 
   // set weights
   // reference from "The Unscented Kalman Filter for Nonlinear Estimation, Eric A. Wan and Rudolph van der Merwe, 2000"
@@ -228,9 +235,12 @@ void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int
   x_cv_ = x_ctrv_ = x_rm_ = x_merge_;
   p_cv_ = p_ctrv_ = p_rm_ = p_merge_;
 
-  s_cv_ << 1, 0, 0, 1;
-  s_ctrv_ << 1, 0, 0, 1;
-  s_rm_ << 1, 0, 0, 1;
+  s_cv_ << 1, 0, 
+           0, 1;
+  s_ctrv_ << 1, 0, 
+             0, 1;
+  s_rm_ << 1, 0, 
+           0, 1;
 
   // initialize R covariance
   r_cv_ << std_laspx_ * std_laspx_, 0, 0, std_laspy_ * std_laspy_;
@@ -240,14 +250,14 @@ void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int
   // initialize lidar-lane R covariance
   // clang-format off
   lidar_direction_r_cv_ << std_laspx_ * std_laspx_,                       0,                                       0,
-                                            0, std_laspy_ * std_laspy_,                                       0,
-                                            0,                       0, std_lane_direction_*std_lane_direction_;
+                           0, std_laspy_ * std_laspy_,                                       0,
+                           0,                       0, std_lane_direction_*std_lane_direction_;
   lidar_direction_r_ctrv_ << std_laspx_ * std_laspx_,                       0,                                       0,
-                                              0, std_laspy_ * std_laspy_,                                       0,
-                                              0,                       0, std_lane_direction_*std_lane_direction_;
+                           0, std_laspy_ * std_laspy_,                                       0,
+                           0,                       0, std_lane_direction_*std_lane_direction_;
   lidar_direction_r_rm_ << std_laspx_ * std_laspx_,                       0,                                       0,
-                                            0, std_laspy_ * std_laspy_,                                       0,
-                                            0,                       0, std_lane_direction_*std_lane_direction_;
+                           0, std_laspy_ * std_laspy_,                                       0,
+                           0,                       0, std_lane_direction_*std_lane_direction_;
   // clang-format on
 
   // init tracking num
@@ -309,7 +319,9 @@ void UKF::mergeEstimationAndCovariance()
 
   // not interacting yaw(-pi ~ pi)
   updateYawWithHighProb();
-
+  if (debugBool)
+    std::cout << "x_merge_ :" << x_merge_.transpose() << std::endl;
+  
   p_merge_ = mode_prob_cv_ * (p_cv_ + (x_cv_ - x_merge_) * (x_cv_ - x_merge_).transpose()) +
              mode_prob_ctrv_ * (p_ctrv_ + (x_ctrv_ - x_merge_) * (x_ctrv_ - x_merge_).transpose()) +
              mode_prob_rm_ * (p_rm_ + (x_rm_ - x_merge_) * (x_rm_ - x_merge_).transpose());
@@ -410,6 +422,8 @@ void UKF::predictionIMMUKF(const double dt, const bool has_subscribed_vectormap)
   /*****************************************************************************
   *  Init covariance Q if it is needed
   ****************************************************************************/
+  if (debugBool)
+    fprintf(stderr, "x_merge_(3): %f\n", x_merge_(3));
   initCovarQs(dt, x_merge_(3));
   /*****************************************************************************
   *  IMM Mixing and Interaction  
@@ -426,6 +440,7 @@ void UKF::predictionIMMUKF(const double dt, const bool has_subscribed_vectormap)
   /*****************************************************************************
   *  Prediction Measurement
   ****************************************************************************/
+  // 利用 ukf 的 sigma 点得到预测的 z 空间的状态与方差
   predictionLidarMeasurement(MotionModel::CV, num_lidar_state_);
   predictionLidarMeasurement(MotionModel::CTRV, num_lidar_state_);
   predictionLidarMeasurement(MotionModel::RM, num_lidar_state_);
@@ -477,6 +492,9 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
                            std::vector<double>& lambda_vec)
 {
   // calculating association probability
+  // 当前关联了多少个可能的测量
+  if (debugBool)
+    fprintf(stderr, "num_meas %d\n", object_vec.size());
   double num_meas = object_vec.size();
   double b = 2 * num_meas * (1 - detection_probability * gate_probability) / (gating_threshold * detection_probability);
 
@@ -604,6 +622,7 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
     {
       std::vector<double>::iterator max_iter = std::max_element(e_vec.begin(), e_vec.end());
       int max_ind = std::distance(e_vec.begin(), max_iter);
+      // 最优的测量值
       likely_meas = meas_vec[max_ind];
     }
 
@@ -631,12 +650,19 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
     // update x and P
     Eigen::MatrixXd updated_x(x_cv_.rows(), x_cv_.cols());
     updated_x = x + kalman_gain * sigma_x;
+    if (debugBool)
+    {
+      std::cout << "predict x :" << x.transpose() << std::endl;
+      std::cout << "measure x :" << likely_meas.transpose() << std::endl;
+      std::cout << "merge x :" << updated_x.transpose() << std::endl;
+    }
 
     updated_x(3) = normalizeAngle(updated_x(3));
 
     Eigen::MatrixXd updated_p(p_cv_.rows(), p_cv_.cols());
     if (num_meas != 0)
     {
+      // 可能失去目标， 但是继续预测
       updated_p = beta_zero * p + (1 - beta_zero) * (p - kalman_gain * s_pred * kalman_gain.transpose()) +
                   kalman_gain * sigma_p * kalman_gain.transpose();
     }
@@ -1030,6 +1056,11 @@ void UKF::predictionMotion(const double delta_t, const int model_ind)
     p_rm_ = p;
     x_sig_pred_rm_ = x_sig_pred;
   }
+  if (debugBool)
+  {
+    fprintf(stderr, "ccurrent model is : %d (CV, CTRV, RM)\n", model_ind);
+    fprintf(stderr, "ukf predicte state : %f, %f, %f, %f, %f\n", x(0), x(1), x(2), x(3), x(4));
+  }
 }
 
 void UKF::updateKalmanGain(const int motion_ind)
@@ -1167,6 +1198,9 @@ void UKF::predictionLidarMeasurement(const int motion_ind, const int num_meas_st
 {
   // 输入 选择的 sigma 点后得到的预测值， 求取平均， 然后求 sigma 代入的值乘以权值之后与其相减去
   // 后，求方差， 这样方差最小的应该是大致估计最好的模型
+  // num_meas_state 表示的是 lidar 测量值可以提供的几种状态， 目前是 2 种， x, y 俩种
+  // 理论上还有第三种就是 我们预测的航向角
+
   Eigen::MatrixXd x_sig_pred(x_sig_pred_cv_.rows(), x_sig_pred_cv_.cols());
   Eigen::MatrixXd covariance_r(num_meas_state, num_meas_state);
   if (motion_ind == MotionModel::CV)
@@ -1225,6 +1259,7 @@ void UKF::predictionLidarMeasurement(const int motion_ind, const int num_meas_st
   s_pred.fill(0.0);
   for (int i = 0; i < 2 * num_state_ + 1; i++)
   {
+    // 預測的多個 state 減去 均值 然後得到方差
     Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
     if (num_meas_state == num_lidar_direction_state_)
       z_diff(2) = normalizeAngle(z_diff(2));
@@ -1332,10 +1367,14 @@ void UKF::prediction(const bool use_sukf, const bool has_subscribed_vectormap, c
 {
   if (use_sukf)
   {
+    if (debugBool)
+      fprintf(stderr, "predictionSUKF(dt, has_subscribed_vectormap);\n");
     predictionSUKF(dt, has_subscribed_vectormap);
   }
   else
   {
+    if (debugBool)
+      fprintf(stderr, "predictionIMMUKF(dt, has_subscribed_vectormap);\n");
     predictionIMMUKF(dt, has_subscribed_vectormap);
   }
 }
@@ -1351,4 +1390,17 @@ void UKF::update(const bool use_sukf, const double detection_probability, const 
   {
     updateIMMUKF(detection_probability, gate_probability, gating_threshold, object_vec);
   }
+}
+
+Eigen::VectorXd UKF::printUKFInfo() const
+{
+  fprintf(stderr, "------------ ukf -------------\n");
+  fprintf(stderr, "is_static_: %d\n: ", is_static_);
+  fprintf(stderr, "is_stable_: %d\n", is_stable_);
+  fprintf(stderr, "ukf_id_： %d\n", ukf_id_);
+  fprintf(stderr, "x_merge : %f, %f, %f, %f, %f\n", 
+          x_merge_(0), x_merge_(1), x_merge_(2), x_merge_(3), x_merge_(4));
+  fprintf(stderr, "tracking_num_: %d (number tracking frame)\n", tracking_num_);
+  return x_merge_;
+  // fprintf(stderr, "");
 }

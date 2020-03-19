@@ -155,6 +155,8 @@ math.h
 -
 ukf.h
 ../src/groundRemove/include/ukf.h
+Eigen/Dense
+../src/groundRemove/include/Eigen/Dense
 
 ../src/groundRemove/include/param.h
 string
@@ -205,6 +207,10 @@ fstream
 -
 cloud.h
 ../src/groundRemove/include/cloud.h
+paths.h
+../src/groundRemove/include/paths.h
+param.h
+../src/groundRemove/include/param.h
 
 ../src/qt/drawables/drawable.h
 memory
@@ -315,6 +321,8 @@ QTextCursor
 -
 QComboBox
 -
+QHBoxLayout
+-
 utils.h
 ../src/qt/widgets/utils.h
 groundRemove/include/cloud.h
@@ -352,6 +360,8 @@ opencv2/imgproc.hpp
 QLabel
 -
 QDockWidget
+-
+QSpinBox
 -
 unordered_map
 -
@@ -1714,6 +1724,10 @@ qgraphicsscene.h
 qgraphicsview.h
 /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qgraphicsview.h
 
+/opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/QHBoxLayout
+qboxlayout.h
+/opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qboxlayout.h
+
 /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/QLabel
 qlabel.h
 /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qlabel.h
@@ -1725,6 +1739,10 @@ qmainwindow.h
 /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/QOpenGLWidget
 qopenglwidget.h
 /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qopenglwidget.h
+
+/opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/QSpinBox
+qspinbox.h
+/opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qspinbox.h
 
 /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/QTextEdit
 qtextedit.h
@@ -1768,6 +1786,14 @@ QtGui/qcursor.h
 QtWidgets/qdesktopwidget.h
 -
 QtGui/qguiapplication.h
+-
+
+/opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qboxlayout.h
+QtWidgets/qlayout.h
+-
+QtWidgets/qwidget.h
+-
+limits.h
 -
 
 /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qcombobox.h
@@ -1834,8 +1860,42 @@ QtWidgets/qscrollarea.h
 QtWidgets/qgraphicsscene.h
 -
 
+/opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qgridlayout.h
+QtWidgets/qlayout.h
+-
+QtWidgets/qwidget.h
+-
+limits.h
+-
+
 /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qlabel.h
 QtWidgets/qframe.h
+-
+
+/opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qlayout.h
+QtCore/qobject.h
+-
+QtWidgets/qlayoutitem.h
+-
+QtWidgets/qsizepolicy.h
+-
+QtCore/qrect.h
+-
+QtCore/qmargins.h
+-
+limits.h
+-
+QtWidgets/qboxlayout.h
+-
+QtWidgets/qgridlayout.h
+-
+
+/opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qlayoutitem.h
+QtWidgets/qsizepolicy.h
+-
+QtCore/qrect.h
+-
+limits.h
 -
 
 /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qmainwindow.h
@@ -1868,6 +1928,10 @@ QtCore/qobject.h
 
 /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qslider.h
 QtWidgets/qabstractslider.h
+-
+
+/opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qspinbox.h
+QtWidgets/qabstractspinbox.h
 -
 
 /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qstyle.h

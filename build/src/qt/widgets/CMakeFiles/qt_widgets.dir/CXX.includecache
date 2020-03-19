@@ -155,6 +155,8 @@ math.h
 -
 ukf.h
 ../src/groundRemove/include/ukf.h
+Eigen/Dense
+../src/groundRemove/include/Eigen/Dense
 
 ../src/groundRemove/include/param.h
 string
@@ -205,6 +207,10 @@ fstream
 -
 cloud.h
 ../src/groundRemove/include/cloud.h
+paths.h
+../src/groundRemove/include/paths.h
+param.h
+../src/groundRemove/include/param.h
 
 ../src/qt/drawables/drawable.h
 memory
@@ -383,6 +389,8 @@ QTextCursor
 -
 QComboBox
 -
+QHBoxLayout
+-
 utils.h
 /home/yyg/code/lidarCode/src/qt/widgets/utils.h
 groundRemove/include/cloud.h
@@ -420,6 +428,8 @@ opencv2/imgproc.hpp
 QLabel
 -
 QDockWidget
+-
+QSpinBox
 -
 unordered_map
 -

@@ -32,6 +32,21 @@ MainWindow::MainWindow(QWidget *parent):
     this->playCloud = false;
     this->curr_data_idx = 0;
     ui->setupUi(this);
+
+    horizontalLayout_tracking = new QHBoxLayout();
+    horizontalLayout_tracking->setSpacing(6);
+    horizontalLayout_tracking->setObjectName(QStringLiteral("horizontalLayout_tracking"));
+    trackIDSB = new QSpinBox(ui->layoutWidget_3);
+    // trackIDSB = new QSpinBox();
+    trackIDSB->setObjectName(QStringLiteral("trackIDSB"));
+    horizontalLayout_tracking->addWidget(trackIDSB);
+    trackIDSB->setRange(0, 10000);
+
+    // trackLB = new QLabel(ui->layoutWidget_3);
+    // trackLB->setObjectName(QStringLiteral("trackId"));
+    // horizontalLayout_tracking->addWidget(trackLB);
+    ui->verticalLayout_3->addLayout(horizontalLayout_tracking);
+    //
     connect(ui->openFolderBT, SIGNAL(released()), this, SLOT(onOpenFolderToRead()));
     connect(ui->DataIdxVSlider, SIGNAL(valueChanged(int)), this, SLOT(onSliderMovedTo(int)));
     connect(ui->playBT, SIGNAL(released()), this, SLOT(onPlayClouds()));
@@ -109,6 +124,8 @@ MainWindow::MainWindow(QWidget *parent):
     ui->girdNumSB->setValue(360);
     // 
     ui->bboxCB->setChecked(true);
+
+    // trackId = trackIDSB->value();
     // int showImageGV_x = (ui->CloudViewer->width() - ui->showImageGV->width()) / 2;
     // ui->showImageGV->move(showImageGV_x, 0);
     // _graphView.reset(new QGraphicsView);
@@ -466,7 +483,7 @@ void MainWindow::onSliderMovedTo(int cloud_number)
         std::vector<Cloud::Ptr> trackerBBoxPts;  // minAre + pca
         Eigen::Vector3f trackerBBoxColor(0.0f, 1.0f, 0.0f);
         // fprintf(stderr, "tracker start\n");
-        tracker.callback(CloudToBBoxs(bboxPts), curr_data_idx, trackerBBoxPts);
+        tracker.callback(CloudToBBoxs(bboxPts), curr_data_idx, trackerBBoxPts, trackIDSB->value());
         // fprintf(stderr, "tracker finished with tracker bbox : %d\n", trackerBBoxPts.size());
         // _viewer->AddDrawable(DrawSelectAbleBBox::FromCloud(trackerBBoxPts, false, trackerBBoxColor), "DrawSelectAbleTrackerBBox");
         // for (int idx = 0; idx < trackerBBoxPts.size(); ++idx)

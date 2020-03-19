@@ -6,6 +6,8 @@
 #include <string>
 #include <fstream>
 #include "cloud.h"
+#include "paths.h"
+#include "param.h"
 
 enum TrackingState : int
 {
@@ -219,6 +221,10 @@ public:
 
   Eigen::VectorXd lidar_direction_ctrv_meas_;
 
+  // yyg
+public:
+  bool debugBool = false;
+
   /**
    * Constructor
    */
@@ -286,6 +292,9 @@ public:
               const double gating_threshold, const std::vector<BBox>& object_vec);
 
   void prediction(const bool use_sukf, const bool has_subscribed_vectormap, const double dt);
+
+  // 打印信息
+  Eigen::VectorXd printUKFInfo() const;
 };
 
 #endif /* UKF_H */

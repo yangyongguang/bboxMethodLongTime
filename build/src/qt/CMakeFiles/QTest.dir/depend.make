@@ -167,9 +167,11 @@ src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidget
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/QFileDialog
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/QGraphicsScene
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/QGraphicsView
+src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/QHBoxLayout
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/QLabel
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/QMainWindow
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/QOpenGLWidget
+src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/QSpinBox
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/QTextEdit
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/QWidget
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qabstractitemdelegate.h
@@ -177,6 +179,7 @@ src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidget
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qabstractslider.h
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qabstractspinbox.h
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qapplication.h
+src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qboxlayout.h
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qcombobox.h
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qdesktopwidget.h
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qdialog.h
@@ -185,13 +188,17 @@ src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidget
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qframe.h
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qgraphicsscene.h
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qgraphicsview.h
+src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qgridlayout.h
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qlabel.h
+src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qlayout.h
+src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qlayoutitem.h
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qmainwindow.h
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qopenglwidget.h
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qrubberband.h
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qscrollarea.h
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qsizepolicy.h
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qslider.h
+src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qspinbox.h
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qstyle.h
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qstyleoption.h
 src/qt/CMakeFiles/QTest.dir/main.cpp.o: /opt/Qt5.6.0/5.6/gcc_64/include/QtWidgets/qtabbar.h

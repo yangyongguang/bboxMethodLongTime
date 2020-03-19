@@ -528,9 +528,9 @@ public:
         insertCB->setText(QApplication::translate("MainWindow", "    insert     ", 0));
         label_5->setText(QApplication::translate("MainWindow", "            line      ", 0));
         lineCB->setText(QApplication::translate("MainWindow", "      line       ", 0));
-        label_11->setText(QApplication::translate("MainWindow", "          bbox     ", 0));
+        label_11->setText(QApplication::translate("MainWindow", "          bbox    ", 0));
         bboxCB->setText(QApplication::translate("MainWindow", "     bbox      ", 0));
-        label_12->setText(QApplication::translate("MainWindow", "        voxel     ", 0));
+        label_12->setText(QApplication::translate("MainWindow", "        voxels    ", 0));
         voxelCB->setText(QApplication::translate("MainWindow", "    voxels    ", 0));
         label_9->setText(QApplication::translate("MainWindow", "       gridNum    ", 0));
         infoTab->setTabText(infoTab->indexOf(choose), QApplication::translate("MainWindow", "\351\241\265", 0));

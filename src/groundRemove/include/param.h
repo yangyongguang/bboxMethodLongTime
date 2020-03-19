@@ -7,6 +7,8 @@
 #include <vector>
 #include <math.h>
 
+#define DEBUG true
+
 class params
 {
 public:

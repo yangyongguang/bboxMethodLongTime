@@ -1,7 +1,7 @@
 #include "imm_ukf_pda.h"
 
 ImmUkfPda::ImmUkfPda()
-  : target_id_(0)
+  : target_id_(1)  // target_id_ 0
   ,  // assign unique ukf_id_ to each tracking targets
   init_(false),
   frame_count_(0),
@@ -108,18 +108,16 @@ ImmUkfPda::ImmUkfPda()
 // 直接使用其回调函数
 void ImmUkfPda::callback(const std::vector<BBox>& input, 
       const size_t & currentFrame, 
-      vector<Cloud::Ptr> & trackerBBox)
+      vector<Cloud::Ptr> & trackerBBox,
+      const int & trackID)
 {
   if (DEBUG)
-  {
-    for (int idx = 0; idx < input.size(); ++idx)
-    {
-      fprintf(stderr, "callback min max Z: %f, %f\n", input[idx].minZ, input[idx].maxZ);
-    }
-  }
-  // fprintf(stderr, "ImmUkfPda::callback() start\n");
+    fprintf(stderr, "ImmUkfPda::callback() start\n");
+  trackId_ = trackID;
   std::vector<BBox> transformed_input;
   std::vector<BBox> detected_objects_output;
+  // update trans matrix
+  updateTransMatrix(currentFrame);
   transformPoseToGlobal(input, transformed_input, currentFrame);
   // 全局 bbox 输入跟踪
   tracker(transformed_input, detected_objects_output, currentFrame);
@@ -130,6 +128,8 @@ void ImmUkfPda::callback(const std::vector<BBox>& input,
   {
     dumpResultText(detected_objects_output);
   }
+  if (DEBUG)
+    fprintf(stderr, "current track ID: %d\n", trackID);
   // fprintf(stderr, "ImmUkfPda::callback() finished\n");
 }
 
@@ -138,16 +138,16 @@ void ImmUkfPda::transformPoseToGlobal(const std::vector<BBox>& input,
                                       const size_t & currentFrame)
 {
   //------------------------------------------------------
-  float theta = selfCarPose[currentFrame][0];
-  float detX = selfCarPose[currentFrame][1];
-  float detY = selfCarPose[currentFrame][2];
+  // float theta = selfCarPose[currentFrame][0];
+  // float detX = selfCarPose[currentFrame][1];
+  // float detY = selfCarPose[currentFrame][2];
 
   // Eigen::Matrix3f trans;
   // trans << cos(theta),   sin(theta),    0,
   //          -sin(theta),  cos(theta),    0,
   //          detX,         detY,          1;
-  float cos_theta = cos(theta);
-  float sin_theta = sin(theta);
+  // float cos_theta = cos(theta);
+  // float sin_theta = sin(theta);
   for (int bboxIdx = 0; bboxIdx < input.size(); ++bboxIdx)
   {
     auto & bbox = input[bboxIdx];
@@ -155,8 +155,9 @@ void ImmUkfPda::transformPoseToGlobal(const std::vector<BBox>& input,
     for (size_t idx = 0; idx < 4; ++idx)
     {
       // use pass2
-      tmpPt[idx].x() = bbox[idx].x() * cos_theta - bbox[idx].y() * sin_theta + detX;
-      tmpPt[idx].y() = bbox[idx].x() * sin_theta + bbox[idx].y() * cos_theta + detY;
+      // tmpPt[idx].x() = bbox[idx].x() * cos_theta - bbox[idx].y() * sin_theta + detX;
+      // tmpPt[idx].y() = bbox[idx].x() * sin_theta + bbox[idx].y() * cos_theta + detY;
+      tmpPt[idx] = transPointL2G(bbox[idx]);
       // fprintf(stderr, "%f, %f\n", tmpPt[idx].x(), tmpPt[idx].y());
     }
     BBox dd(tmpPt);
@@ -194,24 +195,21 @@ void ImmUkfPda::transformPoseToLocal(std::vector<BBox>& detected_objects_output,
                                       const size_t & currentFrame,
                                       vector<Cloud::Ptr> & trackerBBox)
 {
-
   //------------------------------------------------------
   // float theta = 40.0f / 180 * M_PI;
   // 需要将全局坐标系旋转为正的朝向， 这样后面的计算会容易很多
   float theta = (selfCarPose[currentFrame][0]);  
-  float detX = selfCarPose[currentFrame][1];
-  float detY = selfCarPose[currentFrame][2];
+  // float detX = selfCarPose[currentFrame][1];
+  // float detY = selfCarPose[currentFrame][2];
 
-  Eigen::Matrix3f transG2L, transL2G;
-  float cos_theta = cos(theta);
-  float sin_theta = sin(theta);
-  transL2G << cos_theta, sin_theta, 0,
-              -sin_theta, cos_theta, 0,
-              detX, detY, 1;
-  // 求逆矩阵
-  transG2L = transL2G.inverse();
-  if (DEBUG)
-    fprintf(stderr, "theta : %f\n", theta / M_PI * 180);
+  // Eigen::Matrix3f transG2L, transL2G;
+  // float cos_theta = cos(theta);
+  // float sin_theta = sin(theta);
+  // transL2G << cos_theta, sin_theta, 0,
+  //             -sin_theta, cos_theta, 0,
+  //             detX, detY, 1;
+  // // 求逆矩阵
+  // transG2L = transL2G.inverse();
 
   for (int bboxIdx = 0; bboxIdx < detected_objects_output.size(); ++bboxIdx)
   {
@@ -224,11 +222,12 @@ void ImmUkfPda::transformPoseToLocal(std::vector<BBox>& detected_objects_output,
     cloudBBox->acceleration = bbox.acceleration.linear.x;
     cloudBBox->minZ = bbox.minZ;
     cloudBBox->maxZ = bbox.maxZ;
-    cloudBBox->yaw = bbox.yaw;
-    if (DEBUG)
+    cloudBBox->yaw = bbox.yaw - theta;
+    if (trackId_ == bbox.id)
     {
       fprintf(stderr, "minZ : %f, maxZ : %f\n", bbox.minZ, bbox.maxZ);
-      fprintf(stderr, "yaw : %f\n", bbox.yaw);
+      fprintf(stderr, "yaw : %f\n", bbox.yaw / M_PI * 180);
+      fprintf(stderr, "self car theta : %f\n", theta / M_PI * 180);
     }
     for (size_t idx = 0; idx < 4; ++idx)
     {
@@ -243,9 +242,13 @@ void ImmUkfPda::transformPoseToLocal(std::vector<BBox>& detected_objects_output,
       // bbox[idx].y() = bbox[idx].x() * sin_theta + bbox[idx].y() * cos_theta;
       // bug 此处 因为 bbox[idx].x() 在下一行已经提前改变了， 而 在下俩行， 需要的是一个 x 值未改变的相称
       // 所以 需要申请一个临时变量， 待俩者都结束后进行赋值, 参考上俩行的注释错误 提前改变了后面还需要使用的 x 值
-      point tmp;
-      tmp.x() = bbox[idx].x() * transG2L(0, 0) + bbox[idx].y() * transG2L(1, 0) + transG2L(2, 0);
-      tmp.y() = bbox[idx].x() * transG2L(0, 1) + bbox[idx].y() * transG2L(1, 1) + transG2L(2, 1);
+      // ----------------------------------------------------------------------------------------
+      point tmp = transPointG2L(bbox[idx]);
+      // point tmp = bbox[idx];
+      // -----------------------------------------------------------------------------------------
+      // point tmp;
+      // tmp.x() = bbox[idx].x() * transG2L(0, 0) + bbox[idx].y() * transG2L(1, 0) + transG2L(2, 0);
+      // tmp.y() = bbox[idx].x() * transG2L(0, 1) + bbox[idx].y() * transG2L(1, 1) + transG2L(2, 1);
       bbox[idx].x() = tmp.x();
       bbox[idx].y() = tmp.y();
       // fprintf(stderr, "rotate after theta (%f, %f)(%f)\n", 
@@ -405,6 +408,12 @@ void ImmUkfPda::initTracker(const std::vector<BBox>& input, double timestamp)
     init_meas << px, py;
 
     UKF ukf;
+    if (target_id_ == trackId_)
+    {
+      fprintf(stderr, "init_meas << %f, %f\n", init_meas(0), init_meas(1));
+      fprintf(stderr, "traget_id_ : %d\n", target_id_);
+    }
+    // 初始化只用到了 x， y 信息， 并没有用到其他信息
     ukf.initialize(init_meas, timestamp, target_id_);
     targets_.push_back(ukf);
     target_id_++;
@@ -527,6 +536,7 @@ bool ImmUkfPda::probabilisticDataAssociation(const std::vector<BBox>& input, con
 
   bool is_second_init;
   //  对于新生的 tracking 需要二次
+  //  输入的是 每个预测的值， 关联测量的值
   if (target.tracking_num_ == TrackingState::Init)
   {
     is_second_init = true;
@@ -785,6 +795,13 @@ void ImmUkfPda::makeOutput(const std::vector<BBox>& input,
     // 根据概率， 判断使用了哪一个模型
     updateBehaviorState(targets_[i], use_sukf_, dd);
 
+    if (trackId_ == targets_[i].ukf_id_)
+    {
+      // 打印当前 ukf 信息
+      Eigen::VectorXd x_merge = targets_[i].printUKFInfo();
+      point toLocal = transPointG2L(point(x_merge(0), x_merge(1), 0.0f));
+      fprintf(stderr, "Local state : %f, %f\n", toLocal.x(), toLocal.y());
+    }
     // 保留稳定的跟踪对象， 和处于初始化与稳定之间的跟踪对象
     if (targets_[i].is_stable_ || (targets_[i].tracking_num_ >= TrackingState::Init &&
                                    targets_[i].tracking_num_ < TrackingState::Stable))
@@ -854,16 +871,23 @@ void ImmUkfPda::tracker(const std::vector<BBox>& input,
                         std::vector<BBox>& detected_objects_output,
                         const size_t & currentFrame)
 {
+  // 与上一帧相同， 所以只打印信息， 不更新信息
+  bool debugFrame = false;
   // 时间戳， 并不一定是 0.1 s 一个 单位 秒
   // double timestamp = input.header.stamp.toSec();
   if (DEBUG)
   {
-    for (int idx = 0; idx < input.size(); ++idx)
-    {
-      fprintf(stderr, "input min max Z: %f, %f\n", input[idx].minZ, input[idx].maxZ);
-    }
+    fprintf(stderr, "ImmUkfPda::tracker()\n");
   }
-  float timestamp = timestampVec[currentFrame];
+  if (currentFrame_ == currentFrame)
+  {
+    debugFrame = true;
+  }
+  float timestamp;
+  if (!debugFrame)
+    timestamp = timestampVec[currentFrame];
+  else
+    timestamp = timestamp_;
   // 当前对象是否被别人匹配得到
   std::vector<bool> matching_vec(input.size(), false);
 
@@ -872,41 +896,52 @@ void ImmUkfPda::tracker(const std::vector<BBox>& input,
   {
     // tracks_ ==>  vector<UKF> 初始化
     initTracker(input, timestamp);
+    if (DEBUG)
+      fprintf(stderr, "initTracker(input, timestamp)\n");
     // 丢弃无用测量， 合并对象， 制作输出等
     makeOutput(input, matching_vec, detected_objects_output);
+    if (DEBUG)
+      fprintf(stderr, "makeOutput(input, matching_vec, detected_objects_output);\n");
     return;
-  }
-
-  double dt = (timestamp - timestamp_);
+    }
+  double dt;
+  if (debugFrame)
+    dt = dt_; 
+  else
+    dt = (timestamp - timestamp_);
   // 新旧时间间隔 利用俩帧时间戳
-  if (DEBUG)
-  {
-    fprintf(stderr, "currnt timestamp : %f, last timestamp_ : %f , dt : %f\n", timestamp, timestamp_, dt);
-  }
-
   // 跟新时间帧
-  timestamp_ = timestamp;
+  if (!debugFrame)
+    timestamp_ = timestamp;
 
   // start UKF process
   for (size_t i = 0; i < targets_.size(); i++)
   {
+    if (trackId_ == targets_[i].ukf_id_)
+      targets_[i].debugBool = true;
     targets_[i].is_stable_ = false;
     targets_[i].is_static_ = false;
     // 稳定， 静态
 
     // tracking_num_  表示持续的跟踪帧数
+    // 每个对象初始化结束后，其 tracking_num_ 都会是 1, 
+    // 只有经过后面程序判定给予其赋值为 Die
     if (targets_[i].tracking_num_ == TrackingState::Die)
     {
       continue;
     }
     // 方差越小估计的越好
     // prevent ukf not to explode
-    if (targets_[i].p_merge_.determinant() > prevent_explosion_threshold_ ||
+    float pDete = targets_[i].p_merge_.determinant();
+    // targets_[i].p_merge_(4, 4) 代表的是角度的方差
+    if (trackId_ == targets_[i].ukf_id_)
+      fprintf(stderr, "targets_[i].p_merge_.determinant %f\n", pDete);
+    if (pDete > prevent_explosion_threshold_ ||
         targets_[i].p_merge_(4, 4) > prevent_explosion_threshold_)
     {
       // 直接判定其死亡
       targets_[i].tracking_num_ = TrackingState::Die;
-      continue;
+      continue; // 为下一个目标做准备
     }
 
     // 只预测， 并没有用到测量值， 绘制相邻居俩帧的测量运动模型
@@ -918,6 +953,7 @@ void ImmUkfPda::tracker(const std::vector<BBox>& input,
     // targets_ 包含对当前帧的预测
     // object_vec 应该为当前帧预测对象所关联的测量对象
     // matching_vec 记录输入对象是否都有与之匹配的预测对象， 可能会有新生的， 也可能会有死亡的
+    // 关联
     bool success = probabilisticDataAssociation(input, dt, matching_vec, object_vec, targets_[i]);
     if (!success)
     {
@@ -941,4 +977,35 @@ void ImmUkfPda::tracker(const std::vector<BBox>& input,
 
   // remove unnecessary ukf object
   removeUnnecessaryTarget();
+}
+
+void ImmUkfPda::updateTransMatrix(const int & currentFrame)
+{
+  float theta = (selfCarPose[currentFrame][0]);  
+  float detX = selfCarPose[currentFrame][1];
+  float detY = selfCarPose[currentFrame][2];
+
+  float cos_theta = cos(theta);
+  float sin_theta = sin(theta);
+  transL2G_ << cos_theta, sin_theta, 0,
+              -sin_theta, cos_theta, 0,
+              detX, detY, 1;
+  // 求逆矩阵
+  transG2L_ = transL2G_.inverse();
+}
+
+point ImmUkfPda::transPointG2L(const point & input)
+{
+  point tmp;
+  tmp.x() = input.x() * transG2L_(0, 0) + input.y() * transG2L_(1, 0) + transG2L_(2, 0);
+  tmp.y() = input.x() * transG2L_(0, 1) + input.y() * transG2L_(1, 1) + transG2L_(2, 1);
+  return tmp;
+}
+
+point ImmUkfPda::transPointL2G(const point & input)
+{
+  point tmp;
+  tmp.x() = input.x() * transL2G_(0, 0) + input.y() * transL2G_(1, 0) + transL2G_(2, 0);
+  tmp.y() = input.x() * transL2G_(0, 1) + input.y() * transL2G_(1, 1) + transL2G_(2, 1);
+  return tmp;
 }

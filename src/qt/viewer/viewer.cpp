@@ -231,7 +231,7 @@ void Viewer::displayText()
         QString strID = QString("ID:") + QString::number(bboxs[idx]->id);// + "m/s";
         float x = 0.5 * (pt1.x() + pt2.x());
         float y = 0.5 * (pt1.y() + pt2.y());
-        float z = 0.5 * (pt1.z() + pt2.z());
+        float z = 0.5 * (bbox.minZ + bbox.maxZ);
         float v = bbox.velocity * 3.6;
         float yaw = bbox.yaw;
         const qglviewer::Vec point2dID = camera()->projectedCoordinatesOf(qglviewer::Vec(x, y + 0.1, bbox.maxZ));
@@ -243,8 +243,8 @@ void Viewer::displayText()
 
         // 显示角度信息        
         point ArrowTo;
-        ArrowTo.x() = x + 0.15 * v * cos(yaw);
-        ArrowTo.y() = y + 0.15 * v * sin(yaw);
+        ArrowTo.x() = x + 0.4 * v * cos(yaw);
+        ArrowTo.y() = y + 0.4 * v * sin(yaw);
         glColor3f(0.0f, 1.0f, 0.0f);
         QGLViewer::drawArrow(qglviewer::Vec(x, y, z), qglviewer::Vec(ArrowTo.x(), ArrowTo.y(), z), 0.1);
 

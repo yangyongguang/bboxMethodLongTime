@@ -1,6 +1,5 @@
 #ifndef OBJECT_TRACKING_IMM_UKF_JPDAF_H
 #define OBJECT_TRACKING_IMM_UKF_JPDAF_H
-#define DEBUG false
 
 #include <vector>
 #include <chrono>
@@ -11,10 +10,13 @@
 #include "param.h"
 #include <math.h>
 #include "ukf.h"
+#include "Eigen/Dense"
+
 using std::stringstream;
 using std::array;
 using std::vector;
 using std::ofstream;
+
 
 class ImmUkfPda
 {
@@ -72,8 +74,17 @@ private:
   params param;
 	vector<float> timestampVec;
 	vector<std::array<float, 3>> selfCarPose;
-  // -------------------------
 
+  // 记录但前处理到那一帧点云对象了
+  int currentFrame_ = -1;
+  double dt_ = 0.001f;
+  int trackId_;
+  Eigen::Matrix3f transG2L_, transL2G_;
+  // -------------------------
+  // 更新转换矩阵
+  void updateTransMatrix(const int & currentFrame);
+  point transPointG2L(const point & input);
+  point transPointL2G(const point & input);
   void transformPoseToGlobal(const std::vector<BBox>& input,
                              std::vector<BBox>& transformed_input,
                              const size_t & currentFrame);
@@ -151,7 +162,8 @@ public:
   ImmUkfPda();
   void callback(const std::vector<BBox>& input, 
                 const size_t & currentFrame,
-                vector<Cloud::Ptr> & trackerBBox);
+                vector<Cloud::Ptr> & trackerBBox,
+                const int & trackID);
 };
 
 #endif /* OBJECT_TRACKING_IMM_UKF_JPDAF_H */

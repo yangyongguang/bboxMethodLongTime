@@ -43,6 +43,8 @@ math.h
 -
 ukf.h
 ../src/groundRemove/include/ukf.h
+Eigen/Dense
+../src/groundRemove/include/Eigen/Dense
 
 ../src/groundRemove/include/param.h
 string
@@ -69,6 +71,10 @@ fstream
 -
 cloud.h
 ../src/groundRemove/include/cloud.h
+paths.h
+../src/groundRemove/include/paths.h
+param.h
+../src/groundRemove/include/param.h
 
 /home/yyg/code/lidarCode/src/groundRemove/src/imm_ukf_pda.cpp
 imm_ukf_pda.h

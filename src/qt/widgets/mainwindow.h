@@ -13,7 +13,7 @@
 #include <QFileDialog>
 #include <QTextCursor>
 #include <QComboBox>
-
+#include <QHBoxLayout>
 #include "utils.h"
 #include "groundRemove/include/cloud.h"
 
@@ -43,6 +43,7 @@
 #include <opencv2/imgproc.hpp>
 #include <QLabel>
 #include <QDockWidget>
+#include <QSpinBox>
 #include <unordered_map>
 
 #include <QDesktopWidget>
@@ -144,7 +145,10 @@ private:
     QLabel *cluster_image;
     QLabel *depth_image;
     QLabel *depth_image2;
-    
+    QHBoxLayout *horizontalLayout_tracking;
+    QSpinBox *trackIDSB;
+    // QLabel *trackLB;
+
     // 新建一个窗口试试
 
     // 创建要显示的 gird rect
@@ -152,6 +156,7 @@ private:
 public:
     bool isFullScreen;
     QRect subWindSize;
+    // int trackId;
 signals:
     void fullScreenSignals();
 };
