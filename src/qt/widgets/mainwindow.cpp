@@ -138,6 +138,59 @@ MainWindow::MainWindow(QWidget *parent):
     imgLabel = new QLabel(dock_Image);
     imgLabel->setScaledContents(true);
     dock_Image->setFloating(true);
+
+    // ----------------------  update matrix --------------------
+      // 读取参数信息
+    std::ifstream timeStream;
+	std::ifstream poseStream;
+	string lineStr;
+	char ch;
+	string timeFileDir = _params.kitti_base_velo_dir + "20/info/timestamp.txt";
+	std::cout << timeFileDir <<std::endl;
+	timeStream.open(timeFileDir, std::ios::in);
+	if (timeStream.fail())
+	{
+		fprintf(stderr, "open timeStream error\n");
+        exit(0);
+	}
+	// while(timeStream >> ch)
+	while(timeStream >> lineStr)
+	{
+		// std::cout << ch << std::endl;
+		// std::cout << lineStr << std::endl;
+		timestampVec.emplace_back(std::stof(lineStr));
+	}
+	// for (int idx = 0; idx < timestamp.size(); ++idx)
+	// {
+	// 	fprintf(stderr, "%f\n", timestamp[idx]);
+	// }
+	// fprintf(stderr, "num of timestamp : %d\n", timestamp.size());
+	timeStream.close();
+	// -------------------------------------------------------------
+	string poseFileDir = _params.kitti_base_velo_dir + "20/info/pose.txt";
+	poseStream.open(poseFileDir, std::ios::in);
+	if (poseStream.fail())
+	{
+		fprintf(stderr, "open poseStream error\n");
+		exit(1);
+	}
+	int count = 0;
+	while (getline(poseStream, lineStr, '\n'))
+	{
+		string str;
+		int strIdx = 0;
+		std::array<float, 3> ps;
+		stringstream ss(lineStr);
+		// while(getline(ss, str, ' '))
+		// {
+		// 	ps[strIdx] = std::stof(str);
+		// 	strIdx++;
+		// }
+		ss >> ps[0] >> ps[1] >> ps[2];
+		selfCarPose.emplace_back(ps);
+	}
+    
+    // ----------------------------------------------------------
     // dock_Image->setWindowFlags(Qt::WindowStaysOnTopHint);
 
     // dock_cluster_image = new QDockWidget(tr("Imagecluster"), this);
@@ -162,9 +215,7 @@ MainWindow::MainWindow(QWidget *parent):
     // dockshow_depth_image2->setAllowedAreas(Qt::AllDockWidgetAreas);
     // depth_image2 = new QLabel(dockshow_depth_image2);
     // depth_image2->setScaledContents(true);
-    // dockshow_depth_image2->setFloating(true);
-    
-    
+    // dockshow_depth_image2->setFloating(true); 
 
     // dockshow_depth_image->close();
     // dockshow_depth_image2->close();
@@ -425,10 +476,7 @@ void MainWindow::onSliderMovedTo(int cloud_number)
         }
         Cloud::Ptr lShapePoints (new Cloud);
         // cluster.getLShapePoints(clusters, lShapePoints, bboxDebugId, lShpaeHorizonResolution);
-        Eigen::Vector3f color;
-        float pointSize = 3.2f;
-        color << 1.0, 0.0, 0.0;
-        _viewer->AddDrawable(DrawableCloud::FromCloud(lShapePoints, color, pointSize), "lShapePoints");
+        
         // fprintf(stderr, "------------------2\n");
         rect2DVec = cluster.getRectVec();
         if (ui->voxelCB->isChecked())
@@ -449,9 +497,16 @@ void MainWindow::onSliderMovedTo(int cloud_number)
             // {
             //     bboxDebugId = bboxToCluster[_viewer->bboxSelection[0]];
             // }
+            // 将 bboxPts 投影到全局坐标系
+            updateTransMatrix(curr_data_idx);
+            // fprintf(stderr, "updateTransMatrix(curr_data_idx);--------->\n");
             std::chrono::high_resolution_clock::time_point start_bbox = std::chrono::high_resolution_clock::now();
             getBBox(clusters, bboxPts, markPoints, lShapePoints ,bboxToCluster, lShpaeHorizonResolution ,bboxDebugId);
-
+            Eigen::Vector3f color;
+            float pointSize = 3.2f;
+            color << 1.0, 1.0, 1.0;
+            transCloudL2G(lShapePoints);
+            _viewer->AddDrawable(DrawableCloud::FromCloud(lShapePoints, color, pointSize), "lShapePoints");
             // 对比方法
             // getOrientedBBox(clusters, bboxPts2);
             std::chrono::high_resolution_clock::time_point end_bbox = std::chrono::high_resolution_clock::now();
@@ -460,13 +515,16 @@ void MainWindow::onSliderMovedTo(int cloud_number)
             // fprintf(stderr, "------------------4\n");
             // fprintf(stderr, "drawSelectedBBox objects size : %d\n", _viewer->drawSelectableBBox.objects.size());
             // _viewer->AddDrawable(DrawableBBox::FromCloud(bboxPts, true));
+            // 转换到全局坐标系
+            transCloudL2G(bboxPts);
+            // fprintf(stderr, "transCloudL2G(bboxPts);------------->\n");
             _viewer->drawSelectableBBox = DrawSelectAbleBBox(bboxPts, true);
             // _viewer->setBBoxs(bboxPts);  为了显示 id 设置给全局使用的
             // 检测可选择的框
             Eigen::Vector3f detectBBoxColor(67.0f/255, 141.0f/255, 43.0f/255);
             // Eigen::Vector3f detectBBoxColor(0.0f, 0.0f, 0.0f);
             // fprintf(stderr, "drawSelectedBBox objects size : %d\n", _viewer->drawSelectableBBox.objects.size());
-            _viewer->AddDrawable(DrawSelectAbleBBox::FromCloud(bboxPts, true, detectBBoxColor), "DrawSelectAbleBBox");
+            _viewer->AddDrawable(DrawSelectAbleBBox::FromCloud(bboxPts, false, detectBBoxColor), "DrawSelectAbleBBox");
             // 对比方法 bbox
             // _viewer->AddDrawable(DrawableBBox::FromCloud(bboxPts2, true, 1));
             // 显示三个端点
@@ -483,7 +541,8 @@ void MainWindow::onSliderMovedTo(int cloud_number)
         std::vector<Cloud::Ptr> trackerBBoxPts;  // minAre + pca
         Eigen::Vector3f trackerBBoxColor(0.0f, 1.0f, 0.0f);
         // fprintf(stderr, "tracker start\n");
-        tracker.callback(CloudToBBoxs(bboxPts), curr_data_idx, trackerBBoxPts, trackIDSB->value());
+        tracker.callback(CloudToBBoxs(bboxPts), curr_data_idx, 
+                    trackerBBoxPts, timestampVec[curr_data_idx],trackIDSB->value());
         // fprintf(stderr, "tracker finished with tracker bbox : %d\n", trackerBBoxPts.size());
         // _viewer->AddDrawable(DrawSelectAbleBBox::FromCloud(trackerBBoxPts, false, trackerBBoxColor), "DrawSelectAbleTrackerBBox");
         // for (int idx = 0; idx < trackerBBoxPts.size(); ++idx)
@@ -492,8 +551,12 @@ void MainWindow::onSliderMovedTo(int cloud_number)
         //     fprintf(stderr, "trackerBBoxPts size %d\n", trackerBBoxPts.size());
         //     fprintf(stderr, "(%f, %f)\n", bbox[0].x(), bbox[0].y());
         // }
+        _viewer->AddDrawable(DrawableBBox::FromCloud(hisBBoxs, false, 1), "DrawSelectAbleTrackerBBox");
+        std::vector<Cloud::Ptr>().swap(hisBBoxs); // 清除历史记录 bbox
+        hisBBoxs = trackerBBoxPts;
+        // ---------------------------------   显示历史 bbox ----------------------------------------------
         _viewer->setBBoxs(trackerBBoxPts); // 可视化id velocity 等信息 提供给全局使用
-        _viewer->AddDrawable(DrawableBBox::FromCloud(trackerBBoxPts, true, 0), "DrawSelectAbleTrackerBBox");
+        _viewer->AddDrawable(DrawableBBox::FromCloud(trackerBBoxPts, false, 0), "DrawSelectAbleTrackerBBox");
         std::chrono::high_resolution_clock::time_point end_tracker = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> fp_ms_tracker = end_tracker - start_tracker;
         std::cout << "ImmUkfPda tracker took about " << fp_ms_tracker.count() << " ms" << std::endl;  
@@ -528,6 +591,7 @@ void MainWindow::onSliderMovedTo(int cloud_number)
         color << 0.0f, 0.0f, 0.0f;
         // _viewer->AddDrawable(DrawableCloud::FromCloud(_cloud));
         // _viewer->AddDrawable(DrawSelectAbleCloud::FromCloud(_cloud, color, 2), "DrawSelectAbleCloud");
+        transCloudL2G(_cloud);
         _viewer->AddDrawable(DrawableCloud::FromCloud(_cloud, color, 2.5f), "DrawSelectAbleCloud");
         // 为 viewer 的 drawSelectableCloud 赋值
         // _viewer->selection.clear();
@@ -538,6 +602,7 @@ void MainWindow::onSliderMovedTo(int cloud_number)
         Eigen::Vector3f color;
         // color << 0.0, 1.0, 0.0;
         color << 6.0f / 255, 4.0f / 255, 110.0f / 255;  // 蓝色地面
+        transCloudL2G(ground_cloud);
         _viewer->AddDrawable(DrawableCloud::FromCloud(ground_cloud, color, pointSize), "DrawableCloud ground");
     }
     
@@ -546,6 +611,7 @@ void MainWindow::onSliderMovedTo(int cloud_number)
         Eigen::Vector3f color;
         // color << 1.0, 0.0, 0.0;
         color << 0.0f, 0.0f, 0.0f;
+        transCloudL2G(obstacle_cloud);
         _viewer->AddDrawable(DrawableCloud::FromCloud(obstacle_cloud, color, pointSize), "DrawableCloud obstacle");
     }
 
@@ -554,6 +620,7 @@ void MainWindow::onSliderMovedTo(int cloud_number)
         ui->depthClusterCB->setChecked(false);
         Eigen::Vector3f color;
         color << 0.5, 0.5, 0.3;
+        transCloudL2G(obstacle_cloud);
         _viewer->AddDrawable(DrawableCloud::FromCloud(obstacle_cloud, color, pointSize, cluster.getNumCluster()), "clsuter cloud");
     }
         
@@ -644,8 +711,11 @@ std::vector<BBox> MainWindow::CloudToBBoxs(const std::vector<Cloud::Ptr> & bboxP
         res[idx].maxZ = cloud[4].z();
     }
     // 添加子车的跟踪轨迹
-    res[bboxPts.size()] = BBox(point(2.5f, 1.4f, 0.0f), point(2.5f, -1.4f, 0.0f), 
-            point(-2.5f, -1.4f, 0.0f), point(-2.5f, 1.4f, 0.0f));
+    point pt1 = transPointL2G(point(2.5f, 1.4f, 0.0f));
+    point pt2 = transPointL2G(point(2.5f, -1.4f, 0.0f));
+    point pt3 = transPointL2G(point(-2.5f, -1.4f, 0.0f));
+    point pt4 = transPointL2G(point(-2.5f, 1.4f, 0.0f));
+    res[bboxPts.size()] = BBox(pt1, pt2, pt3, pt4);
     res[bboxPts.size()].minZ = -1.73f;
     res[bboxPts.size()].maxZ = 0.0f;
     
@@ -783,5 +853,76 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     // dockshow_depth_image->resize(depth_image->width(), depth_image->height());
     // int showImageGV_x = (ui->CloudViewer->width() - ui->showImageGV->width()) / 2;
     // ui->showImageGV->move(showImageGV_x, 0);
+}
+
+void MainWindow::updateTransMatrix(const int & currentFrame)
+{
+  float theta = (selfCarPose[currentFrame][0]);  
+  float detX = selfCarPose[currentFrame][1];
+  float detY = selfCarPose[currentFrame][2];
+
+  float cos_theta = cos(theta);
+  float sin_theta = sin(theta);
+  transL2G_ << cos_theta, sin_theta, 0,
+              -sin_theta, cos_theta, 0,
+              detX, detY, 1;
+  // 求逆矩阵
+  transG2L_ = transL2G_.inverse();
+}
+
+point MainWindow::transPointG2L(const point & input)
+{
+  point tmp;
+  tmp.x() = input.x() * transG2L_(0, 0) + input.y() * transG2L_(1, 0) + transG2L_(2, 0);
+  tmp.y() = input.x() * transG2L_(0, 1) + input.y() * transG2L_(1, 1) + transG2L_(2, 1);
+  return tmp;
+}
+
+point MainWindow::transPointL2G(const point & input)
+{
+  point tmp;
+  tmp.x() = input.x() * transL2G_(0, 0) + input.y() * transL2G_(1, 0) + transL2G_(2, 0);
+  tmp.y() = input.x() * transL2G_(0, 1) + input.y() * transL2G_(1, 1) + transL2G_(2, 1);
+  return tmp;
+}
+
+void MainWindow::transformPoseToGlobal(const std::vector<BBox>& input,
+                                      std::vector<BBox>& transformed_input,
+                                      const size_t & currentFrame)
+{
+  for (int bboxIdx = 0; bboxIdx < input.size(); ++bboxIdx)
+  {
+    auto & bbox = input[bboxIdx];
+    std::vector<point> tmpPt(4);
+    for (size_t idx = 0; idx < 4; ++idx)
+    {
+      tmpPt[idx] = transPointL2G(bbox[idx]);
+    }
+    BBox dd(tmpPt);
+    dd.minZ = bbox.minZ;
+    dd.maxZ = bbox.maxZ;
+    transformed_input.emplace_back(dd);
+  }
+}
+
+void MainWindow::transCloudL2G(std::vector<Cloud::Ptr> & input)
+{
+    for (int bboxIdx = 0; bboxIdx < input.size(); ++bboxIdx)
+    {
+        auto & bbox = (*input[bboxIdx]);
+        for (int idx = 0; idx < 4; ++idx)
+        {
+            bbox[idx] = transPointL2G(bbox[idx]);
+        }
+    }
+}
+
+void MainWindow::transCloudL2G(Cloud::Ptr & input)
+{
+    auto & cloud = (*input);
+    for (int idx = 0; idx < cloud.size(); ++idx)
+    {
+        cloud[idx] = transPointL2G(cloud[idx]);
+    }
 }
 

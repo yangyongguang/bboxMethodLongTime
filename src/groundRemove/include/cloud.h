@@ -126,9 +126,13 @@ public:
     // 存储 L-shape 的俩个拐点的坐标的索引
     int minLPoint = -1;
     int maxLPoint = -1;
+    // 处于最大点最小角度的边缘点， 
+    // 其是否是观察完全的， 或者是阻塞的, 默认堵塞
+    bool occlusionMin = true;
+    bool occlusionMax = true;
     // 拐角坐标索引
     int minOPoint = -1;
-        
+    int detectID = -2;
     // 对称点的对数
     size_t numSymPoints = 0;
     size_t numNoneEmptyLShapePoint = 0;

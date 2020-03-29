@@ -36,9 +36,9 @@ void DrawableCloud::Draw() const
         }        
         auto real_point = point.AsEigenVector();
         // fprintf(stderr, "(%f, %f, %f)\n", real_point.x(), real_point.y(), real_point.z());
-        glVertex3f(real_point.x(), real_point.y(), real_point.z());
+        // glVertex3f(real_point.x(), real_point.y(), real_point.z());
         // 二维显示
-        // glVertex3f(real_point.x(), real_point.y(), -1.721f); // 点云二维显示
+        glVertex3f(real_point.x(), real_point.y(), -1.73f); // 点云二维显示
     }
     glEnd();
     glPopMatrix();    
@@ -116,6 +116,7 @@ void DrawableBBox::Draw() const
 {
     glPushMatrix();
     glLineWidth(2.0f);
+    glPointSize(6.0f);
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //指定混合函数
     // glEnable(GL_BLEND);
     // glDisable(GL_LIGHTING);
@@ -126,7 +127,11 @@ void DrawableBBox::Draw() const
         Cloud bboxPt = (*rectPosVec[iBBox]);
         // fprintf(stderr, "bboxPt size %d\n", bboxPt.size());
         // glColor3f(0.0f, 1.0f, 0.0f); // 绿色
-        glColor3f(181.0/255, 124.0/255, 7.0/255);  // 金色
+        // glColor3f(181.0/255, 124.0/255, 7.0/255);  // 金色
+        if (_color == 0)
+            glColor3f(181.0/255, 124.0/255, 7.0/255);
+        else
+            glColor3f(215.0f / 255, 46.0f / 255, 202.0f / 255);
         // glBegin(GL_QUAD_STRIP);
         // std::array<int, 4> bottom = {1, 2, 0, 3};
         // for (int idx = 0; idx < 4; ++idx)
@@ -143,15 +148,20 @@ void DrawableBBox::Draw() const
         std::array<int, 5> bottom = {0, 1, 2, 3, 0};
         for (int idx = 0; idx < 5; ++idx)
         {
-            glVertex3f(bboxPt[bottom[idx]].x(), 
-                        bboxPt[bottom[idx]].y(), 
-                        bboxPt[bottom[idx]].z());
-
-            // -1.721f
             // glVertex3f(bboxPt[bottom[idx]].x(), 
             //             bboxPt[bottom[idx]].y(), 
-            //             -1.721f);
+            //             bboxPt[bottom[idx]].z());
+
+            // -1.721f
+            glVertex3f(bboxPt[bottom[idx]].x(), 
+                        bboxPt[bottom[idx]].y(), 
+                        -1.721f);
         }
+        glEnd();
+        glBegin(GL_POINTS);
+        glVertex3f(0.5 * (bboxPt[0].x() + bboxPt[2].x()), 
+                    0.5 * (bboxPt[0].y() + bboxPt[2].y()), 
+                    -1.7f);
         glEnd();
         // fprintf(stderr, "void DrawableBBox::Draw() const end\n");
         //  ----------------------------------------------------
@@ -160,7 +170,7 @@ void DrawableBBox::Draw() const
             if (_color == 0)
                 glColor3f(181.0/255, 124.0/255, 7.0/255);
             else
-                glColor3f(1.0f, 0.0f, 0.0f);
+                glColor3f(215.0f / 255, 46.0f / 255, 202.0f / 255);
                 
             glBegin(GL_LINE_STRIP);
             for (int idx = 4; idx < 8;++idx)

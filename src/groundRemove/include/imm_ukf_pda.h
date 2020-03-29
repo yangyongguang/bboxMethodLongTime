@@ -11,12 +11,12 @@
 #include <math.h>
 #include "ukf.h"
 #include "Eigen/Dense"
-
+#include <stack>
 using std::stringstream;
 using std::array;
 using std::vector;
 using std::ofstream;
-
+using std::stack;
 
 class ImmUkfPda
 {
@@ -72,14 +72,19 @@ private:
 
   // add by yyg
   params param;
-	vector<float> timestampVec;
-	vector<std::array<float, 3>> selfCarPose;
 
   // 记录但前处理到那一帧点云对象了
   int currentFrame_ = -1;
   double dt_ = 0.001f;
   int trackId_;
   Eigen::Matrix3f transG2L_, transL2G_;
+  vector<float> timestampVec;
+	vector<std::array<float, 3>> selfCarPose;
+  // id 资源分配问题， 主要逻辑是， 如果当前栈中有值， 那么使用栈顶值提供新生的 ukf
+  // 如果当前栈中无可分配ID， 则说明所有ID使用完毕， 总的 ukf 数量加一， 分配 ID 为总的 ukf 数量 加一，
+  // 同时当死亡发生时候， 回收 ID 给栈， 同时总的 ukf 数量减少
+  stack<int> idStack_;
+  int numMaxUKF_ = 0;
   // -------------------------
   // 更新转换矩阵
   void updateTransMatrix(const int & currentFrame);
@@ -124,7 +129,8 @@ private:
 
   void tracker(const std::vector<BBox>& transformed_input,
                std::vector<BBox>& detected_objects_output,
-               const size_t & currentFrame);
+               const size_t & currentFrame,
+               const double & ts);
 
   bool updateDirection(const double smallest_nis, const BBox& in_object,
                            BBox& out_object, UKF& target);
@@ -158,11 +164,14 @@ private:
   void updateTargetWithAssociatedObject(const std::vector<BBox>& object_vec,
                                         UKF& target);
 
+  BBox makeNewBBoxSize(const UKF & target,
+                       const float & yaw);
 public:
   ImmUkfPda();
   void callback(const std::vector<BBox>& input, 
                 const size_t & currentFrame,
                 vector<Cloud::Ptr> & trackerBBox,
+                const double & ts,
                 const int & trackID);
 };
 

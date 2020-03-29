@@ -16,7 +16,7 @@
 #include <QHBoxLayout>
 #include "utils.h"
 #include "groundRemove/include/cloud.h"
-
+#include "Eigen/Dense"
 #include <QKeyEvent>
 
 #include "viewer.h"
@@ -64,6 +64,15 @@ public:
 
     // log 光标移动到最后
     void moveCursorToEnd();
+    void updateTransMatrix(const int & currentFrame);
+    point transPointG2L(const point & input);
+    point transPointL2G(const point & input);
+    void transformPoseToGlobal(const std::vector<BBox>& input,
+                             std::vector<BBox>& transformed_input,
+                             const size_t & currentFrame);
+
+    void transCloudL2G(std::vector<Cloud::Ptr> & input);
+    void transCloudL2G(Cloud::Ptr & input);
     // std::vector<std::string> fileNameBin;
     // std::vector<std::string> fileNameImage;
     Cloud cloud;
@@ -148,7 +157,10 @@ private:
     QHBoxLayout *horizontalLayout_tracking;
     QSpinBox *trackIDSB;
     // QLabel *trackLB;
-
+    // tracking matrix
+    vector<float> timestampVec;
+	vector<std::array<float, 3>> selfCarPose;
+    Eigen::Matrix3f transG2L_, transL2G_;
     // 新建一个窗口试试
 
     // 创建要显示的 gird rect
@@ -157,6 +169,7 @@ public:
     bool isFullScreen;
     QRect subWindSize;
     // int trackId;
+    std::vector<Cloud::Ptr> hisBBoxs;
 signals:
     void fullScreenSignals();
 };

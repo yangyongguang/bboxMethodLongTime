@@ -26,54 +26,6 @@ ImmUkfPda::ImmUkfPda()
   is_benchmark_ = false;
   kitti_data_dir_ = "";
 
-  std::ifstream timeStream;
-	std::ifstream poseStream;
-	string lineStr;
-	char ch;
-	string timeFileDir = param.kitti_base_velo_dir + "20/info/timestamp.txt";
-	std::cout << timeFileDir <<std::endl;
-	timeStream.open(timeFileDir, std::ios::in);
-	if (timeStream.fail())
-	{
-		fprintf(stderr, "open timeStream error\n");
-    exit(0);
-	}
-	// while(timeStream >> ch)
-	while(timeStream >> lineStr)
-	{
-		// std::cout << ch << std::endl;
-		// std::cout << lineStr << std::endl;
-		timestampVec.emplace_back(std::stof(lineStr));
-	}
-	// for (int idx = 0; idx < timestamp.size(); ++idx)
-	// {
-	// 	fprintf(stderr, "%f\n", timestamp[idx]);
-	// }
-	// fprintf(stderr, "num of timestamp : %d\n", timestamp.size());
-	timeStream.close();
-	// -------------------------------------------------------------
-	string poseFileDir = param.kitti_base_velo_dir + "20/info/pose.txt";
-	poseStream.open(poseFileDir, std::ios::in);
-	if (poseStream.fail())
-	{
-		fprintf(stderr, "open poseStream error\n");
-		exit(1);
-	}
-	int count = 0;
-	while (getline(poseStream, lineStr, '\n'))
-	{
-		string str;
-		int strIdx = 0;
-		std::array<float, 3> ps;
-		stringstream ss(lineStr);
-		// while(getline(ss, str, ' '))
-		// {
-		// 	ps[strIdx] = std::stof(str);
-		// 	strIdx++;
-		// }
-		ss >> ps[0] >> ps[1] >> ps[2];
-		selfCarPose.emplace_back(ps);
-	}
   // for (int idx = 0; idx < selfCarPose.size(); ++idx)
   // {
   //   selfCarPose[idx][0] -= selfCarPose[0][0];
@@ -83,7 +35,7 @@ ImmUkfPda::ImmUkfPda()
 	// {
 	// 	fprintf(stderr, "%f, %f, %f\n", selfCarPose[idx][0], selfCarPose[idx][1], selfCarPose[idx][2]);
 	// }
-	poseStream.close();
+	// poseStream.close();
   if (is_benchmark_)
   {
       result_file_path_ = kitti_data_dir_ + "benchmark_results.txt";
@@ -109,6 +61,7 @@ ImmUkfPda::ImmUkfPda()
 void ImmUkfPda::callback(const std::vector<BBox>& input, 
       const size_t & currentFrame, 
       vector<Cloud::Ptr> & trackerBBox,
+      const double & ts,
       const int & trackID)
 {
   if (DEBUG)
@@ -117,10 +70,11 @@ void ImmUkfPda::callback(const std::vector<BBox>& input,
   std::vector<BBox> transformed_input;
   std::vector<BBox> detected_objects_output;
   // update trans matrix
-  updateTransMatrix(currentFrame);
-  transformPoseToGlobal(input, transformed_input, currentFrame);
+  // updateTransMatrix(currentFrame);
+  // transformPoseToGlobal(input, transformed_input, currentFrame);
+  transformed_input.assign(input.begin(), input.end());
   // 全局 bbox 输入跟踪
-  tracker(transformed_input, detected_objects_output, currentFrame);
+  tracker(transformed_input, detected_objects_output, currentFrame, ts);
   // 还原
   transformPoseToLocal(detected_objects_output, currentFrame, trackerBBox);
 
@@ -198,7 +152,9 @@ void ImmUkfPda::transformPoseToLocal(std::vector<BBox>& detected_objects_output,
   //------------------------------------------------------
   // float theta = 40.0f / 180 * M_PI;
   // 需要将全局坐标系旋转为正的朝向， 这样后面的计算会容易很多
-  float theta = (selfCarPose[currentFrame][0]);  
+  // float theta = (selfCarPose[currentFrame][0]);  
+
+  float theta = 0.0f;
   // float detX = selfCarPose[currentFrame][1];
   // float detY = selfCarPose[currentFrame][2];
 
@@ -231,24 +187,11 @@ void ImmUkfPda::transformPoseToLocal(std::vector<BBox>& detected_objects_output,
     }
     for (size_t idx = 0; idx < 4; ++idx)
     {
-      // use pass2 transform
-      // fprintf(stderr, "transform befor (%f, %f)\n", bbox[idx].x(), bbox[idx].y());
-      // bug  bbox[idx] 访问的可能是一份复制的值， 并非原 bbox 对象的引用， 因为 operator[] 忘记加 前缀 & 符号
-      // bbox[idx].x() = bbox[idx].x() + detX;
-      // bbox[idx].y() = bbox[idx].y() + detY;  // rotate
-      // // fprintf(stderr, "transform after detX detY (%f, %f)(%f, %f)\n", 
-      //           //  bbox[idx].x(), bbox[idx].y(), detX, detY);
-      // bbox[idx].x() = bbox[idx].x() * cos_theta - bbox[idx].y() * sin_theta;
-      // bbox[idx].y() = bbox[idx].x() * sin_theta + bbox[idx].y() * cos_theta;
       // bug 此处 因为 bbox[idx].x() 在下一行已经提前改变了， 而 在下俩行， 需要的是一个 x 值未改变的相称
       // 所以 需要申请一个临时变量， 待俩者都结束后进行赋值, 参考上俩行的注释错误 提前改变了后面还需要使用的 x 值
       // ----------------------------------------------------------------------------------------
-      point tmp = transPointG2L(bbox[idx]);
-      // point tmp = bbox[idx];
-      // -----------------------------------------------------------------------------------------
-      // point tmp;
-      // tmp.x() = bbox[idx].x() * transG2L(0, 0) + bbox[idx].y() * transG2L(1, 0) + transG2L(2, 0);
-      // tmp.y() = bbox[idx].x() * transG2L(0, 1) + bbox[idx].y() * transG2L(1, 1) + transG2L(2, 1);
+      // point tmp = transPointG2L(bbox[idx]);
+      point tmp = bbox[idx];
       bbox[idx].x() = tmp.x();
       bbox[idx].y() = tmp.y();
       // fprintf(stderr, "rotate after theta (%f, %f)(%f)\n", 
@@ -261,7 +204,10 @@ void ImmUkfPda::transformPoseToLocal(std::vector<BBox>& detected_objects_output,
 
       bboxPt2.x() = tmp.x();
       bboxPt2.y() = tmp.y();
-      bboxPt2.z() = bbox.maxZ;
+      if (trackId_ == bbox.id)
+        bboxPt2.z() = bbox.maxZ + 2.0f; // 为了找ID
+      else
+        bboxPt2.z() = bbox.maxZ;
       // cloudBBox->emplace_back(bboxPt);
       (*cloudBBox)[idx] = bboxPt;
       (*cloudBBox)[idx + 4] = bboxPt2;
@@ -321,6 +267,24 @@ void ImmUkfPda::measurementValidation(const std::vector<BBox>& input, UKF& targe
       }
     }
   }
+  // yyg 添加 tracking bbox 大小保持
+  // if (target.ukf_id_ == trackId_)
+  // {
+    // fprintf(stderr, "-------------------------------------\n");
+    // fprintf(stderr, "target.object size (%f, %f)\n", target.object_.dimensions.x, target.object_.dimensions.y);
+    // fprintf(stderr, "length %f, width %f\n", target.length_, target.width_);
+  // }
+  if (target.object_.dimensions.x > target.length_)
+  {
+    target.length_ = target.object_.dimensions.x;
+  }
+  if (target.object_.dimensions.y > target.width_)
+  {
+    target.width_ = target.object_.dimensions.y;
+  }
+  // fprintf(stderr, "after length %f, width %f\n", target.length_, target.width_);
+  // fprintf(stderr, "-------------------------------------\n\n\n");
+  //  ----
   if (exists_smallest_nis_object)
   {
     // 将已经被选择的测量对象标记为已经被匹配了
@@ -376,6 +340,50 @@ void ImmUkfPda::updateTargetWithAssociatedObject(const std::vector<BBox>& object
   }
 }
 
+BBox ImmUkfPda::makeNewBBoxSize(const UKF & target,
+                       const float & yaw)
+{
+  float length = target.length_;
+  float width = target.width_;
+  float xC, yC;
+  // ---------------------------
+  // 预测速度， 与测量方向， 测量方向
+  float yawNew = target.object_.pose.yaw;
+  // ---------------------------
+  float cosYaw = cos(yawNew);
+  float sinYaw = sin(yawNew);
+  xC = target.object_.pose.position.x;
+  yC = target.object_.pose.position.y;
+  point p1, p2, p3, p4;
+  // (l / 2, w / 2), (l / 2, -w / 2), (-l / 2, -w / 2), (-l / 2, w / 2)
+  float l = length / 2;
+  float w = width / 2;
+  if (l < w)
+   std::swap(l, w);
+  p1.x() = l;
+  p1.y() = w;
+
+  p2.x() = l;
+  p2.y() = -w;
+
+  p3.x() = -l;
+  p3.y() = -w;
+
+  p4.x() = -l;
+  p4.y() = w;
+
+  BBox res(p1, p2, p3, p4);
+  for (int idx = 0; idx < 4; ++idx)
+  {
+    point tmp;
+    tmp.x() = res[idx].x() * cosYaw - res[idx].y() * sinYaw + xC;
+    tmp.y() = res[idx].x() * sinYaw + res[idx].y() * cosYaw + yC;
+    res[idx] = tmp;
+  }
+  res.updateCenterAndYaw();  // 更新中心点和角度
+  return res;
+}
+
 void ImmUkfPda::updateBehaviorState(const UKF& target, const bool use_sukf, BBox& object)
 {
   if(use_sukf)
@@ -414,9 +422,23 @@ void ImmUkfPda::initTracker(const std::vector<BBox>& input, double timestamp)
       fprintf(stderr, "traget_id_ : %d\n", target_id_);
     }
     // 初始化只用到了 x， y 信息， 并没有用到其他信息
-    ukf.initialize(init_meas, timestamp, target_id_);
+    int allocteID;
+    if (idStack_.size() == 0)
+    {
+      numMaxUKF_++;
+      allocteID = numMaxUKF_;
+    }
+    else
+    {
+      allocteID = idStack_.top();
+      idStack_.pop(); // 使用了就弹出
+    }
+    
+    // ukf.initialize(init_meas, timestamp, target_id_);
+    ukf.initialize(init_meas, timestamp, allocteID);
+    
     targets_.push_back(ukf);
-    target_id_++;
+    // target_id_++;
   }
   timestamp_ = timestamp;
   init_ = true;
@@ -580,11 +602,24 @@ void ImmUkfPda::makeNewTargets(const double timestamp, const std::vector<BBox>& 
       Eigen::VectorXd init_meas = Eigen::VectorXd(2);
       init_meas << px, py;
 
+      int allocteID;
+      if (idStack_.size() == 0)
+      {
+        numMaxUKF_++;
+        allocteID = numMaxUKF_;
+      }
+      else
+      {
+        allocteID = idStack_.top();
+        idStack_.pop(); // 使用了就弹出
+      }
+
       UKF ukf;
-      ukf.initialize(init_meas, timestamp, target_id_);
+      // ukf.initialize(init_meas, timestamp, target_id_);
+      ukf.initialize(init_meas, timestamp, allocteID);
       ukf.object_ = input[i];
       targets_.push_back(ukf);
-      target_id_++;
+      // target_id_++;
     }
   }
 }
@@ -655,10 +690,17 @@ ImmUkfPda::removeRedundantObjects(const std::vector<BBox>& in_detected_objects,
 {
   if (in_detected_objects.size() != in_tracker_indices.size())
     return in_detected_objects;
-
+  // -----------------------------------------------------------
+  // for (int idx = 0; idx < in_detected_objects.size(); ++idx)
+  // {
+  //   fprintf(stderr, "center :(%f, %f)\n", 
+  //           in_detected_objects[idx].pose.position.x, in_detected_objects[idx].pose.position.y);
+  // }
+  // --------------------------- yyg ---------------------------
   std::vector<BBox> resulting_objects;
 
   std::vector<point> centroids;
+  // 收集所有的检测中心点
   //create unique points
   for(size_t i=0; i<in_detected_objects.size(); i++)
   {
@@ -681,13 +723,39 @@ ImmUkfPda::removeRedundantObjects(const std::vector<BBox>& in_detected_objects,
     for(size_t i=0; i< centroids.size(); i++)
     {
       point pt(object.pose.position.x, object.pose.position.y, object.pose.position.z);
+      // merge_distance_threshold_ ==> 0.5
       if (arePointsClose(pt, centroids[i], merge_distance_threshold_))
       {
-        matching_objects[i].push_back(k);//store index of matched object to this point
+        //store index of matched object to this point
+        matching_objects[i].push_back(k);
       }
     }
   }
-  //get oldest object on each point
+  //  -------------------------
+  // ------------------------------------------  indetected_object --------------------------------------
+  // center point x1
+  //      |            2           4        9
+  //      |            1           7        
+  //      |            0
+  //      |            8           3
+  //      |            5
+  // get oldest object on each point
+  /*
+  {
+    fprintf(stderr, "======================================\n");
+    for(size_t i=0; i< matching_objects.size(); i++)
+    {
+      for(size_t j=0; j<matching_objects[i].size(); j++)
+      {
+        size_t current_index = matching_objects[i][j];
+        fprintf(stderr, "%d ", current_index);
+      }
+      fprintf(stderr, "\n");
+    }
+    fprintf(stderr, "======================================\n");
+  }
+  */
+
   for(size_t i=0; i< matching_objects.size(); i++)
   {
     size_t oldest_object_index = 0;
@@ -702,6 +770,7 @@ ImmUkfPda::removeRedundantObjects(const std::vector<BBox>& in_detected_objects,
         oldest_lifespan = current_lifespan;
         oldest_object_index = current_index;
       }
+      // 最优标签 非空 且不是 unkonwn
       if (!targets_[in_tracker_indices[current_index]].label_.empty() &&
         targets_[in_tracker_indices[current_index]].label_ != "unknown")
       {
@@ -709,6 +778,7 @@ ImmUkfPda::removeRedundantObjects(const std::vector<BBox>& in_detected_objects,
       }
     }
     // delete nearby targets except for the oldest target
+    // 除了最优的， 其他匹配与最优点相近的都判定其死亡， 选取了一个 lifespan 时间最长的
     for(size_t j=0; j<matching_objects[i].size(); j++)
     {
       size_t current_index = matching_objects[i][j];
@@ -755,7 +825,11 @@ void ImmUkfPda::makeOutput(const std::vector<BBox>& input,
     // tf::Quaternion q = tf::createQuaternionFromYaw(tyaw);
 
     BBox dd;
-    dd = targets_[i].object_;
+    // if (targets_[i].width_ < 0.5f)
+    // dd = targets_[i].object_;
+    // else
+    dd = makeNewBBoxSize(targets_[i], tyaw);     // yyg 跟新新的 bbox 根据长宽高
+    //   dd = makeNewBBoxSize(targets_[i].object_, 2, 1, tyaw); 
     dd.id = targets_[i].ukf_id_;
     dd.velocity.linear.x = tv;
     dd.acceleration.linear.y = tyaw_rate;
@@ -767,6 +841,11 @@ void ImmUkfPda::makeOutput(const std::vector<BBox>& input,
 
     // 预测方向
     dd.yaw = tyaw;
+    if (trackId_ == targets_[i].ukf_id_)
+    {
+      fprintf(stderr, "targets_[i].length_ %f, targets_[i].width_ %f\n", 
+            targets_[i].length_, targets_[i].width_);
+    }
     
     // 目标稳定与否
     // 目标是否是动态的目标， 静态目标不跟踪
@@ -823,8 +902,14 @@ void ImmUkfPda::removeUnnecessaryTarget()
     {
       temp_targets.push_back(targets_[i]);
     }
+    else
+    {
+      // 如果目标死亡， 回收其 ID
+      idStack_.push(targets_[i].ukf_id_);
+    }
+    
   }
-  // 清楚 targets_ 的所有元素， 并将其空间缩短直至最小， 如果不考虑使用 list
+  // 清除 targets_ 的所有元素， 并将其空间缩短直至最小， 如果不考虑使用 list
   std::vector<UKF>().swap(targets_);
   targets_ = temp_targets;
 }
@@ -869,7 +954,8 @@ void ImmUkfPda::dumpResultText(std::vector<BBox>& detected_objects)
 
 void ImmUkfPda::tracker(const std::vector<BBox>& input,
                         std::vector<BBox>& detected_objects_output,
-                        const size_t & currentFrame)
+                        const size_t & currentFrame,
+                        const double & ts)
 {
   // 与上一帧相同， 所以只打印信息， 不更新信息
   bool debugFrame = false;
@@ -878,6 +964,7 @@ void ImmUkfPda::tracker(const std::vector<BBox>& input,
   if (DEBUG)
   {
     fprintf(stderr, "ImmUkfPda::tracker()\n");
+    fprintf(stderr, "input bbox size : %d\n", input.size());
   }
   if (currentFrame_ == currentFrame)
   {
@@ -885,12 +972,13 @@ void ImmUkfPda::tracker(const std::vector<BBox>& input,
   }
   float timestamp;
   if (!debugFrame)
-    timestamp = timestampVec[currentFrame];
+    // timestamp = timestampVec[currentFrame];
+    timestamp = ts;
   else
     timestamp = timestamp_;
   // 当前对象是否被别人匹配得到
   std::vector<bool> matching_vec(input.size(), false);
-
+  // fprintf(stderr, "std::vector<bool> matching_vec(input.size(), false)\n");
   // 未初始化则执行
   if (!init_)
   {
@@ -903,7 +991,7 @@ void ImmUkfPda::tracker(const std::vector<BBox>& input,
     if (DEBUG)
       fprintf(stderr, "makeOutput(input, matching_vec, detected_objects_output);\n");
     return;
-    }
+  }
   double dt;
   if (debugFrame)
     dt = dt_; 
@@ -913,10 +1001,13 @@ void ImmUkfPda::tracker(const std::vector<BBox>& input,
   // 跟新时间帧
   if (!debugFrame)
     timestamp_ = timestamp;
-
+  // fprintf(stderr, "--------- timestamp_ = timestamp; ---------\n");
   // start UKF process
+  // 处理当前 所有的 ukf 如果满足死亡条件， 则判定其死亡 Die
+  // 当循环结束之后， removeUnnecessaryTarget， 统一回收其 ID
   for (size_t i = 0; i < targets_.size(); i++)
   {
+    // fprintf(stderr, "total track %d, current target %d\n", targets_.size(), i);
     if (trackId_ == targets_[i].ukf_id_)
       targets_[i].debugBool = true;
     targets_[i].is_stable_ = false;
@@ -928,7 +1019,7 @@ void ImmUkfPda::tracker(const std::vector<BBox>& input,
     // 只有经过后面程序判定给予其赋值为 Die
     if (targets_[i].tracking_num_ == TrackingState::Die)
     {
-      continue;
+      continue;      
     }
     // 方差越小估计的越好
     // prevent ukf not to explode
@@ -957,10 +1048,12 @@ void ImmUkfPda::tracker(const std::vector<BBox>& input,
     bool success = probabilisticDataAssociation(input, dt, matching_vec, object_vec, targets_[i]);
     if (!success)
     {
+      // 可能只丢失了一帧， 还并未死亡
       continue;
     }
     // 
     targets_[i].update(use_sukf_, detection_probability_, gate_probability_, gating_threshold_, object_vec);
+    // fprintf(stderr, "target id %d, length %f, width %f\n", i, targets_[i].length_, targets_[i].width_);
   }
   // end UKF process
 

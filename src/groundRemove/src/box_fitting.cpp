@@ -302,6 +302,14 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
     // fprintf(stderr, "current choose iCluster %d\n", debugID);
     if (debugID != -1)
         fprintf(stderr, "clusteredPoints.size %d, debugID %d\n", clusteredPoints.size(), debugID);
+    
+    float lshapeResRad = 25 * lShapeHorizonResolution / 180 * M_PI;
+    int numShapePoints = 2 * M_PI / lshapeResRad;
+    // 存储当前 seg 距离最小距离
+    std::vector<float> shapeToDist(numShapePoints + 1, 999.0f);
+    // 存储当前 seg 所属 cluster 的 ID 如 22222244444333338888555
+    std::vector<int> shapeToClusterID(numShapePoints + 1, -1);
+    std::vector<float> shapeAngleRef(numShapePoints + 1, 0.0f);
     for (size_t iCluster = 0; iCluster < clusteredPoints.size(); iCluster++)
     {   
         // fprintf(stderr, "---iCluster %d, total %d\n", iCluster, clusteredPoints.size());
@@ -311,7 +319,7 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
         //遍历每个物体
         // Check lidar points number
         // random variable
-        auto cluster = (*clusteredPoints[iCluster]);
+        auto & cluster = (*clusteredPoints[iCluster]);
         int numPoints = cluster.size();
         if (numPoints == 0)
             continue;
@@ -430,6 +438,7 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
         // 找到拐点后， 直接切割 旋转 LShape 点云
         // 等分， 或者调整大侧边点云
         getLShapePoints(cluster, maxDx, maxDy, needFixed , debugBool, lShapeHorizonResolution);
+        cluster.detectID = iCluster;
         //---------------------------------------------------
 
         Cloud clusterTmp;
@@ -441,6 +450,11 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
                 lShapePoints->emplace_back(cluster[idx]);
             }
         }
+        clusterTmp.detectID = iCluster;
+        // 这里分配是否是检测完全的边缘点
+        // fprintf(stderr, "setShapeOcclusionCheck before\n");
+        setShapeOcclusionCheck(shapeToDist, shapeToClusterID, shapeAngleRef,clusterTmp, lshapeResRad);
+        // fprintf(stderr, "setShapeOcclusionCheck after\n");
         if (debugBool)
         {
             fprintf(stderr, "clusterTmp mean lshape Points size %d\n", clusterTmp.size());
@@ -910,8 +924,90 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
         // fprintf(stderr, "--------------783\n");
         numCorrect++;
     }
+
+    // 开始判断端点是否被遮挡    
+    for (int iCluster = 0; iCluster < clusteredPoints.size(); ++iCluster)
+    {
+        // fprintf(stderr, "num %d cluster\n", clusteredPoints.size());
+        auto &cluster = (*clusteredPoints[iCluster]);
+        if (cluster.size() < 3)
+            continue;
+        // fprintf(stderr, "开始判断端点是否被遮挡: %d, cluster size %d\n", iCluster, cluster.size());
+        // fprintf(stderr, "minLpoint %d, maxLPoint %d, shapeToClusterID size %d\n", 
+                // cluster.minLPoint, cluster.maxLPoint, shapeToClusterID.size());
+        // -pi ~ pi   =>   0 ~ 2 * pi
+        int minLIdx = (cluster[cluster.minLPoint].atan2Val + M_PI) / lshapeResRad;
+        int maxLIdx = (cluster[cluster.maxLPoint].atan2Val + M_PI) / lshapeResRad;
+        // fprintf(stderr, "minLIdx %d, maxLIdx %d\n", minLIdx, maxLIdx);
+        // 当掐的端点记录的 检测目标索引 ID 已经被替换掉了， 所以被替换意味着被遮挡
+        // 替换意味着其记录的值不再是当前 cluster 记录的 icluster.detectID
+        assert(minLIdx >= 0);
+        assert(maxLIdx < shapeToClusterID.size());
+        if (iCluster == debugID)
+        {
+            fprintf(stderr, "cluster size %d\n", cluster.size()); 
+            fprintf(stderr, "cluster.detectID %d\n", cluster.detectID); 
+            fprintf(stderr, "shapeToClusterID[minLIdx] %d, angle : %f, dist : %f\n", 
+                        shapeToClusterID[minLIdx],
+                        cluster[cluster.minLPoint].atan2Val,
+                        cluster[cluster.minLPoint].toSensor2D);
+            fprintf(stderr, "shapeToClusterID[maxLIdx] %d, angle : %f, dist : %f\n", 
+                        shapeToClusterID[maxLIdx],
+                        cluster[cluster.maxLPoint].atan2Val,
+                        cluster[cluster.minLPoint].toSensor2D);
+        }
+        if (shapeToClusterID[minLIdx] == cluster.detectID)
+        {
+            // 相等， 意味着检测未堵塞， 是可信赖的
+            cluster.occlusionMin = false;
+        }
+        if (shapeToClusterID[maxLIdx] == cluster.detectID)
+        {
+            cluster.occlusionMax = false;
+        }
+
+        if (iCluster == debugID)
+        {
+            for (int idx = 0; idx < shapeToClusterID.size(); ++idx)
+            {
+                fprintf(stderr, "idx:%d [%d] [%f] [%f]\n", idx, shapeToClusterID[idx], shapeAngleRef[idx], shapeToDist[idx]);
+            }
+            fprintf(stderr, "\n");
+            fprintf(stderr, "current cluster occlustion:\n");
+            fprintf(stderr, "min point: %d\n", cluster.occlusionMin);
+            fprintf(stderr, "max point: %d\n", cluster.occlusionMax);
+            fprintf(stderr, "numShape points %d\n", numShapePoints);
+            fprintf(stderr, "-------------------\n", numShapePoints);
+        }
+    }
+    
+    
 }
 
+void setShapeOcclusionCheck(std::vector<float> & shapeToDist,
+                std::vector<int> & shapeToClusterID,
+                std::vector<float> & shapeAngleRef,
+                const Cloud & cluster,
+                const float & lshapeResRad
+            )
+{
+    int detectID = cluster.detectID;
+    for (int ptIdx = 0; ptIdx < cluster.size(); ++ptIdx)
+    {
+        int colIdx = (cluster[ptIdx].atan2Val + M_PI) / lshapeResRad;
+        if (cluster[ptIdx].toSensor2D < shapeToDist[colIdx])
+        {
+            // if (detectID == 99)
+            //     fprintf(stderr, "cluster[ptIdx].toSensor2D %f, shapeToDist[colIdx] %f\n",
+            //         cluster[ptIdx].toSensor2D, shapeToDist[colIdx]);
+            // fprintf(stderr, "colIdx: %d\n", colIdx);
+            // fprintf(stderr, "detectID: %d\n", detectID);
+            shapeToDist[colIdx] = cluster[ptIdx].toSensor2D;
+            shapeToClusterID[colIdx] = detectID;
+            shapeAngleRef[colIdx] = cluster[ptIdx].atan2Val;
+        }
+    }
+}
 
 // std::vector<Vertex> CloudToVertexs(const Cloud::Ptr & cloud, float & minZ, float & maxZ)
 void CloudToVertexs(const Cloud::Ptr & cloud, 

@@ -157,6 +157,8 @@ ukf.h
 ../src/groundRemove/include/ukf.h
 Eigen/Dense
 ../src/groundRemove/include/Eigen/Dense
+stack
+-
 
 ../src/groundRemove/include/param.h
 string
@@ -327,6 +329,8 @@ utils.h
 ../src/qt/widgets/utils.h
 groundRemove/include/cloud.h
 ../src/qt/widgets/groundRemove/include/cloud.h
+Eigen/Dense
+../src/qt/widgets/Eigen/Dense
 QKeyEvent
 -
 viewer.h

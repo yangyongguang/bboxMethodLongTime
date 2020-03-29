@@ -105,4 +105,13 @@ int ColFromAngle(const float & angle_cols,
                     
 // 俩个点之间的距离
 float distTwoPoint(const point & p1, const point & p2);
+
+// 遮挡检测
+void setShapeOcclusionCheck(
+                std::vector<float> & shapeToDist,
+                std::vector<int> & shapeToClusterID,
+                std::vector<float> & shapeAngleRef,
+                const Cloud & cluster,
+                const float & lshapeResRad
+            );
 #endif //MY_PCL_TUTORIAL_BOX_FITTING_H

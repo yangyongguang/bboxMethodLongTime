@@ -13,6 +13,8 @@ UKF::UKF()
   , is_direction_ctrv_available_(false)
   , is_direction_rm_available_(false)
   , std_lane_direction_(0.15)
+  , width_(0.0f)
+  , length_(0.0f)
 {
   // initial state vector
   x_merge_ = Eigen::MatrixXd(5, 1);

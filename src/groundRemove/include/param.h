@@ -7,7 +7,7 @@
 #include <vector>
 #include <math.h>
 
-#define DEBUG true
+#define DEBUG false
 
 class params
 {

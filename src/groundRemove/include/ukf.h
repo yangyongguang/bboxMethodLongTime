@@ -222,9 +222,10 @@ public:
   Eigen::VectorXd lidar_direction_ctrv_meas_;
 
   // yyg
+  float width_;
+  float length_;
 public:
   bool debugBool = false;
-
   /**
    * Constructor
    */
