@@ -363,11 +363,23 @@ void UKF::interaction()
   Eigen::MatrixXd p_pre_cv = p_cv_;
   Eigen::MatrixXd p_pre_ctrv = p_ctrv_;
   Eigen::MatrixXd p_pre_rm = p_rm_;
+  if (debugBool)
+  {
+    fprintf(stderr, "before interaction:\n");
+    fprintf(stderr, "(%f, %f)   (%f, %f)   (%f, %f)\n", 
+          x_cv_(0), x_cv_(1), x_ctrv_(0), x_ctrv_(1),x_rm_(0), x_rm_(1));
+  }
   x_cv_ = mode_match_prob_cv2cv_ * x_pre_cv + mode_match_prob_ctrv2cv_ * x_pre_ctrv + mode_match_prob_rm2cv_ * x_pre_rm;
   x_ctrv_ = mode_match_prob_cv2ctrv_ * x_pre_cv + mode_match_prob_ctrv2ctrv_ * x_pre_ctrv +
             mode_match_prob_rm2ctrv_ * x_pre_rm;
   x_rm_ = mode_match_prob_cv2rm_ * x_pre_cv + mode_match_prob_ctrv2rm_ * x_pre_ctrv + mode_match_prob_rm2rm_ * x_pre_rm;
 
+  if (debugBool)
+  {
+    fprintf(stderr, "after interaction:\n");
+    fprintf(stderr, "(%f, %f)   (%f, %f)   (%f, %f)\n", 
+          x_cv_(0), x_cv_(1), x_ctrv_(0), x_ctrv_(1),x_rm_(0), x_rm_(1));
+  }
   // not interacting yaw(-pi ~ pi)
   x_cv_(3) = x_pre_cv(3);
   x_ctrv_(3) = x_pre_ctrv(3);
@@ -431,11 +443,14 @@ void UKF::predictionIMMUKF(const double dt, const bool has_subscribed_vectormap)
   *  IMM Mixing and Interaction  
   *  混合与交互， 可以使用 手写概率尝试计算推到公式理解
   ****************************************************************************/
+  // 收集预测之前的点1 
+  // x_rm_ x_cv_, x_ctrv_, 这时候三个应该都是一个
   mixingProbability();
   interaction();
   /*****************************************************************************
   *  Prediction Motion Model
   ****************************************************************************/
+
   predictionMotion(dt, MotionModel::CV);
   predictionMotion(dt, MotionModel::CTRV);
   predictionMotion(dt, MotionModel::RM);
@@ -446,7 +461,8 @@ void UKF::predictionIMMUKF(const double dt, const bool has_subscribed_vectormap)
   predictionLidarMeasurement(MotionModel::CV, num_lidar_state_);
   predictionLidarMeasurement(MotionModel::CTRV, num_lidar_state_);
   predictionLidarMeasurement(MotionModel::RM, num_lidar_state_);
-
+  // 在预测结束之后 收集预测的三个点
+  // z_pred_rm_, z_pred_cv_, z_pred_ctrv_ 链接为虚线
   if (has_subscribed_vectormap)
   {
     predictionLidarMeasurement(MotionModel::CV, num_lidar_direction_state_);
@@ -496,7 +512,7 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
   // calculating association probability
   // 当前关联了多少个可能的测量
   if (debugBool)
-    fprintf(stderr, "num_meas %d\n", object_vec.size());
+    fprintf(stderr, "num_meas %ld\n", object_vec.size());
   double num_meas = object_vec.size();
   double b = 2 * num_meas * (1 - detection_probability * gate_probability) / (gating_threshold * detection_probability);
 
@@ -656,7 +672,7 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
     {
       std::cout << "predict x :" << x.transpose() << std::endl;
       std::cout << "measure x :" << likely_meas.transpose() << std::endl;
-      std::cout << "merge x :" << updated_x.transpose() << std::endl;
+      std::cout << "merge x :" << updated_x.transpose() << "\n\n";
     }
 
     updated_x(3) = normalizeAngle(updated_x(3));
@@ -938,6 +954,11 @@ void UKF::predictionMotion(const double delta_t, const int model_ind)
     x_sig_pred = x_sig_pred_rm_;
   }
 
+  if (debugBool)
+  {
+    fprintf(stderr, "current model is : %d (CV, CTRV, RM)\n", model_ind);
+    fprintf(stderr, "ukf input state : %f, %f, %f, %f, %f\n", x(0), x(1), x(2), x(3), x(4));
+  }
   /*****************************************************************************
   *  Create Sigma Points
   *  注意此处的 状态为上一个时刻的状态， 对当前时刻的状态估计
@@ -954,6 +975,7 @@ void UKF::predictionMotion(const double delta_t, const int model_ind)
   x_sig.col(0) = x;   // 上一时刻的状态与方差
   for (int i = 0; i < num_state_; i++)
   {
+    // x 为在上一时刻的更新的状态位置和方差
     Eigen::VectorXd pred1 = x + sqrt(lambda_ + num_state_) * L.col(i);
     Eigen::VectorXd pred2 = x - sqrt(lambda_ + num_state_) * L.col(i);
 
@@ -1040,6 +1062,7 @@ void UKF::predictionMotion(const double delta_t, const int model_ind)
   *  Update model parameters
   *  注意， 历史状态均由 MatrixXd 存储的
   ****************************************************************************/
+  // 预测结束后立刻跟新了 状态和方差
   if (model_ind == MotionModel::CV)
   {
     x_cv_.col(0) = x;
@@ -1060,8 +1083,8 @@ void UKF::predictionMotion(const double delta_t, const int model_ind)
   }
   if (debugBool)
   {
-    fprintf(stderr, "ccurrent model is : %d (CV, CTRV, RM)\n", model_ind);
-    fprintf(stderr, "ukf predicte state : %f, %f, %f, %f, %f\n", x(0), x(1), x(2), x(3), x(4));
+    fprintf(stderr, "current model is : %d (CV, CTRV, RM)\n", model_ind);
+    fprintf(stderr, "ukf predicte state : %f, %f, %f, %f, %f\n\n", x(0), x(1), x(2), x(3), x(4));
   }
 }
 

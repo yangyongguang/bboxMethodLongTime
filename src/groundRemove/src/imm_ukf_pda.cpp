@@ -16,7 +16,8 @@ ImmUkfPda::ImmUkfPda()
   static_num_history_threshold_ = 3;
   prevent_explosion_threshold_ = 1000;
   merge_distance_threshold_ = 0.5;
-  use_sukf_ = false;
+  // use_sukf_ = false;
+  use_sukf_ = true;
 
   use_vectormap_ = false;
   lane_direction_chi_threshold_ = 2.71;
@@ -62,7 +63,8 @@ void ImmUkfPda::callback(const std::vector<BBox>& input,
       const size_t & currentFrame, 
       vector<Cloud::Ptr> & trackerBBox,
       const double & ts,
-      const int & trackID)
+      const int & trackID,
+      Cloud::Ptr & connectPoints)
 {
   if (DEBUG)
     fprintf(stderr, "ImmUkfPda::callback() start\n");
@@ -74,7 +76,7 @@ void ImmUkfPda::callback(const std::vector<BBox>& input,
   // transformPoseToGlobal(input, transformed_input, currentFrame);
   transformed_input.assign(input.begin(), input.end());
   // 全局 bbox 输入跟踪
-  tracker(transformed_input, detected_objects_output, currentFrame, ts);
+  tracker(transformed_input, detected_objects_output, currentFrame, ts, connectPoints);
   // 还原
   transformPoseToLocal(detected_objects_output, currentFrame, trackerBBox);
 
@@ -231,7 +233,8 @@ void ImmUkfPda::transformPoseToLocal(std::vector<BBox>& detected_objects_output,
 }
 
 void ImmUkfPda::measurementValidation(const std::vector<BBox>& input, UKF& target,
-                                      const bool second_init, const Eigen::VectorXd& max_det_z,
+                                      const bool second_init, 
+                                      const Eigen::VectorXd& max_det_z,
                                       const Eigen::MatrixXd& max_det_s,
                                       std::vector<BBox>& object_vec,
                                       std::vector<bool>& matching_vec)
@@ -250,6 +253,7 @@ void ImmUkfPda::measurementValidation(const std::vector<BBox>& input, UKF& targe
     meas << x, y;
 
     // 使用到了测量值
+    // 归一化新息平方( Normalizedinnovationsquared,NIS)
     Eigen::VectorXd diff = meas - max_det_z;
     double nis = diff.transpose() * max_det_s.inverse() * diff;
     // nis 值越小就说明但前检测的值距离预测的值越近
@@ -543,11 +547,13 @@ bool ImmUkfPda::probabilisticDataAssociation(const std::vector<BBox>& input, con
   }
   else
   {
+    // ？ 为什么选择最大的 maxDetS 而不是最小的 maxDetS
     // find maxDetS associated with predZ
     target.findMaxZandS(max_det_z, max_det_s);
     det_s = max_det_s.determinant();
   }
 
+  // 搜集 max_det_z 与上个状态的位置的位置 搜集点2
   // prevent ukf not to explode
   if (std::isnan(det_s) || det_s > prevent_explosion_threshold_)
   {
@@ -795,9 +801,71 @@ ImmUkfPda::removeRedundantObjects(const std::vector<BBox>& in_detected_objects,
       best_object.label = best_label;
     }
 
-    resulting_objects.push_back(best_object);
+    resulting_objects.push_back(best_object);    
   }
+  // yyg add
+  int numBBoxs = in_detected_objects.size();
+  std::vector<bool> saveOrNot(numBBoxs, true);
+  // bool debug = false;
+  
+  for (int i = 0; i < numBBoxs; ++i)
+  {
+      if (!saveOrNot[i]) continue;
+      // if (debug) continue; // 为了调试找到第一个
+      BBox bboxCurr = in_detected_objects[i];        
 
+      // float len1 = (bboxCurr[0] - bboxCurr[2]).dist2D();
+      float Area1 = bboxCurr.dimensions.x * bboxCurr.dimensions.y;
+      for (int j = 0; j < numBBoxs; ++j)
+      {
+          bool debug = false;
+          // if (trackId_ == targets_[in_tracker_indices[i]].ukf_id_ || targets_[in_tracker_indices[j]].ukf_id_ == trackId_)
+          //   debug = true;
+          if (i == j) continue;
+          if (!saveOrNot[j]) continue;
+          BBox bboxComp = in_detected_objects[j];
+          bool insertBool = IsBBoxIntersecting(bboxCurr, bboxComp, debug);
+          if (insertBool)
+          {
+              // fprintf(stderr, "%f, %f, %f, %f\n %f, %f, %f, %f\n", 
+              //         bboxCurr[0].x(), bboxCurr[0].y(), bboxCurr[2].x(), bboxCurr[2].y(),
+              //         bboxComp[0].x(), bboxComp[0].y(), bboxComp[2].x(), bboxComp[2].y());
+              // debug = true;
+              // float len2 = (bboxComp[0] - bboxComp[2]).dist2D();  
+              float Area2 = bboxComp.dimensions.x * bboxComp.dimensions.y;
+              // if (len1 > 3 || len2 > 3)
+              // {
+                if (debug)
+                {
+                  fprintf(stderr, "\nID %d <------> %d interacted\n", 
+                              targets_[in_tracker_indices[i]].ukf_id_, targets_[in_tracker_indices[j]].ukf_id_);
+                  fprintf(stderr, "Area1 %f, Area2 %f\n", Area1, Area2);
+                  fprintf(stderr, "%f, %f, %f, %f\n %f, %f, %f, %f\n\n", 
+                      bboxCurr[0].x(), bboxCurr[0].y(), bboxCurr[2].x(), bboxCurr[2].y(),
+                      bboxComp[0].x(), bboxComp[0].y(), bboxComp[2].x(), bboxComp[2].y());
+
+                }
+                if (Area1 < Area2)
+                {
+                    saveOrNot[i] = false;
+                }
+                else
+                {
+                    saveOrNot[j] = false;
+                }
+              // }       
+          }
+      }
+  }
+  // 需要消灭的 ID
+  for (int idx = 0; idx < saveOrNot.size(); ++idx)
+  {
+    if (saveOrNot[idx] == false)
+    {
+      targets_[in_tracker_indices[idx]].tracking_num_ = TrackingState::Die;
+      // fprintf(stderr, "ID %d has merged -------\n\n", targets_[in_tracker_indices[idx]].ukf_id_);
+    }
+  }
   return resulting_objects;
 }
 
@@ -826,10 +894,9 @@ void ImmUkfPda::makeOutput(const std::vector<BBox>& input,
 
     BBox dd;
     // if (targets_[i].width_ < 0.5f)
-    // dd = targets_[i].object_;
+    dd = targets_[i].object_;
     // else
-    dd = makeNewBBoxSize(targets_[i], tyaw);     // yyg 跟新新的 bbox 根据长宽高
-    //   dd = makeNewBBoxSize(targets_[i].object_, 2, 1, tyaw); 
+    // dd = makeNewBBoxSize(targets_[i], tyaw);     // yyg 跟新新的 bbox 根据长宽高
     dd.id = targets_[i].ukf_id_;
     dd.velocity.linear.x = tv;
     dd.acceleration.linear.y = tyaw_rate;
@@ -955,7 +1022,8 @@ void ImmUkfPda::dumpResultText(std::vector<BBox>& detected_objects)
 void ImmUkfPda::tracker(const std::vector<BBox>& input,
                         std::vector<BBox>& detected_objects_output,
                         const size_t & currentFrame,
-                        const double & ts)
+                        const double & ts,
+                        Cloud::Ptr & connectPoints)
 {
   // 与上一帧相同， 所以只打印信息， 不更新信息
   bool debugFrame = false;
@@ -1010,6 +1078,8 @@ void ImmUkfPda::tracker(const std::vector<BBox>& input,
     // fprintf(stderr, "total track %d, current target %d\n", targets_.size(), i);
     if (trackId_ == targets_[i].ukf_id_)
       targets_[i].debugBool = true;
+    else
+      targets_[i].debugBool = false;
     targets_[i].is_stable_ = false;
     targets_[i].is_static_ = false;
     // 稳定， 静态
@@ -1037,8 +1107,17 @@ void ImmUkfPda::tracker(const std::vector<BBox>& input,
 
     // 只预测， 并没有用到测量值， 绘制相邻居俩帧的测量运动模型
     // 没有使用到当前测量
-    targets_[i].prediction(use_sukf_, has_subscribed_vectormap_, dt);
 
+    // connectPoints
+    // connectPoints->emplace_back(point(targets_[i].x_cv_(0),         targets_[i].x_cv_(1),         -1.72f));
+    connectPoints->emplace_back(point(targets_[i].x_ctrv_(0),       targets_[i].x_ctrv_(1),       -1.72f));
+    connectPoints->emplace_back(point(targets_[i].x_ctrv_(0),       targets_[i].x_ctrv_(1),       -1.72f));
+    // connectPoints->emplace_back(point(targets_[i].x_rm_(0),         targets_[i].x_rm_(1),         -1.72f));
+    targets_[i].prediction(use_sukf_, has_subscribed_vectormap_, dt);
+    // connectPoints->emplace_back(point(targets_[i].z_pred_cv_(0),    targets_[i].z_pred_cv_(1),    -1.72f));
+    // connectPoints->emplace_back(point(targets_[i].z_pred_ctrv_(0),  targets_[i].z_pred_ctrv_(1),  -1.62f));
+    // connectPoints->emplace_back(point(targets_[i].z_pred_rm_(0),    targets_[i].z_pred_rm_(1),    -1.52f));
+    connectPoints->emplace_back(point(targets_[i].x_ctrv_(0),       targets_[i].x_ctrv_(1),       -1.72f));
     std::vector<BBox> object_vec;
     // input 为但前帧测量
     // targets_ 包含对当前帧的预测
@@ -1048,11 +1127,18 @@ void ImmUkfPda::tracker(const std::vector<BBox>& input,
     bool success = probabilisticDataAssociation(input, dt, matching_vec, object_vec, targets_[i]);
     if (!success)
     {
+      // connectPoints->emplace_back(point(targets_[i].x_cv_(0),         targets_[i].x_cv_(1),         -1.72f));
+      connectPoints->emplace_back(point(targets_[i].x_ctrv_(0),       targets_[i].x_ctrv_(1),       -1.72f));
+      // connectPoints->emplace_back(point(targets_[i].x_rm_(0),         targets_[i].x_rm_(1),         -1.72f));
       // 可能只丢失了一帧， 还并未死亡
       continue;
     }
-    // 
+    // 这个是关联 merge 之后的状态值
     targets_[i].update(use_sukf_, detection_probability_, gate_probability_, gating_threshold_, object_vec);
+    // connectPoints->emplace_back(point(targets_[i].x_cv_(0),         targets_[i].x_cv_(1),         -1.72f));
+    // connectPoints->emplace_back(point(targets_[i].x_ctrv_(0),       targets_[i].x_ctrv_(1),       -1.72f));
+    connectPoints->emplace_back(point(targets_[i].x_merge_(0),      targets_[i].x_merge_(1),      -1.72f));
+    // connectPoints->emplace_back(point(targets_[i].x_rm_(0),         targets_[i].x_rm_(1),         -1.72f));
     // fprintf(stderr, "target id %d, length %f, width %f\n", i, targets_[i].length_, targets_[i].width_);
   }
   // end UKF process

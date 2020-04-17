@@ -6,6 +6,36 @@
 
 #IncludeRegexTransform: 
 
+../src/groundRemove/include/box_fitting.h
+array
+-
+vector
+-
+cloud.h
+../src/groundRemove/include/cloud.h
+param.h
+../src/groundRemove/include/param.h
+box_type.h
+../src/groundRemove/include/box_type.h
+convex_hull.h
+../src/groundRemove/include/convex_hull.h
+Eigen/Core
+-
+Eigen/Dense
+-
+GL/gl.h
+-
+GL/glu.h
+-
+
+../src/groundRemove/include/box_type.h
+iostream
+-
+string
+-
+vector
+-
+
 ../src/groundRemove/include/cloud.h
 iostream
 -
@@ -23,6 +53,26 @@ opencv2/core/core.hpp
 -
 string
 -
+array
+-
+
+../src/groundRemove/include/convex_hull.h
+algorithm
+-
+vector
+-
+ctime
+-
+opencv2/core/core.hpp
+../src/groundRemove/include/opencv2/core/core.hpp
+opencv2/opencv.hpp
+../src/groundRemove/include/opencv2/opencv.hpp
+opencv2/highgui.hpp
+-
+box_type.h
+../src/groundRemove/include/box_type.h
+cloud.h
+../src/groundRemove/include/cloud.h
 
 ../src/groundRemove/include/imm_ukf_pda.h
 vector
@@ -47,6 +97,8 @@ Eigen/Dense
 ../src/groundRemove/include/Eigen/Dense
 stack
 -
+groundRemove/include/box_fitting.h
+../src/groundRemove/include/groundRemove/include/box_fitting.h
 
 ../src/groundRemove/include/param.h
 string

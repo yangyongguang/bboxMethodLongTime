@@ -139,10 +139,10 @@ void DrawSelectAbleBBox::Draw() const
         }
         
         // 绘制中心点
-        glColor3f(1.0f, 1.0f, 1.0f);    
-        glBegin(GL_POINT);
-        glVertex3f(centerPoint.x() / 4, centerPoint.y() / 4, centerPoint.z() / 4 + 0.2);
-        glEnd();
+        // glColor3f(1.0f, 1.0f, 1.0f);    
+        // glBegin(GL_POINT);
+        // glVertex3f(centerPoint.x() / 4, centerPoint.y() / 4, centerPoint.z() / 4 + 0.2);
+        // glEnd();
         // --------
         if (_drawZAxis)
         {

@@ -65,6 +65,8 @@ opencv2/core/core.hpp
 -
 string
 -
+array
+-
 
 ../src/groundRemove/include/component_clustering.h
 iostream
@@ -159,6 +161,8 @@ Eigen/Dense
 ../src/groundRemove/include/Eigen/Dense
 stack
 -
+groundRemove/include/box_fitting.h
+../src/groundRemove/include/groundRemove/include/box_fitting.h
 
 ../src/groundRemove/include/param.h
 string
@@ -373,6 +377,8 @@ QDesktopWidget
 -
 QRect
 -
+groundRemove/include/box_fitting.h
+../src/qt/widgets/groundRemove/include/box_fitting.h
 
 /home/yyg/code/lidarCode/src/qt/main.cpp
 mainwindow.h

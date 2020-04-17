@@ -9,11 +9,27 @@
 #include <memory>
 #include <opencv2/core/core.hpp>
 #include <string>
+#include <array>
 
 using std::string;
 
 typedef std::pair<float, float> float2D;
 typedef std::vector<float2D> float2DVec;
+
+enum pointType : int
+{
+    STANDARD = 0, // 普通点
+    TRACK = 1,    // 跟踪点
+    MARK = 2,     // 标记点
+
+};
+enum shapeType : int
+{
+    SYMETRIC = 0, // 对称
+    LSHAPE = 1,
+    ISHAPE = 2,
+    MINAREA = 3,
+};
 
 // 聚类显示的 2D 矩形
 class Rect2D
@@ -47,6 +63,7 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     point() {_point = Eigen::Vector3f::Zero();_intensity = 0;}
     explicit point(float x, float y, float z): _point(x, y, z) {}
+    explicit point(float x, float y, float z, pointType ptType):_point(x, y, z), ptType(ptType){}
     // explicit point(const point & pt);
 
     virtual ~point(){}
@@ -62,19 +79,24 @@ public:
     inline float& y() { return _point.y(); }
     inline float& z() { return _point.z(); }
     inline float& i() { return _intensity; }
-
+    
+    inline float dist2D(){return sqrt(_point.x() * _point.x() + _point.y() * _point.y());}
     inline const Eigen::Vector3f& AsEigenVector() const {return _point; }
     inline Eigen::Vector3f& AsEigenVector() { return _point; }
 
     void operator=(const point& other);
     void operator=(const Eigen::Vector3f& other);
     bool operator==(const point& other) const;
+    inline point operator-(const point& other){
+        return point(this->x() - other.x(), this->y() - other.y(), this->z() - other.z());}
 public:
     int classID = -1;
     float toSensor2D = 0.0f;
     float atan2Val = 0.0f;
     // 是否是 lShapePoint
     int isLShapePoint = 0;
+
+    pointType ptType = pointType::STANDARD;
     
 
 private:
@@ -126,12 +148,13 @@ public:
     // 存储 L-shape 的俩个拐点的坐标的索引
     int minLPoint = -1;
     int maxLPoint = -1;
+    // 拐角坐标索引
+    int minOPoint = -1;
     // 处于最大点最小角度的边缘点， 
     // 其是否是观察完全的， 或者是阻塞的, 默认堵塞
     bool occlusionMin = true;
     bool occlusionMax = true;
-    // 拐角坐标索引
-    int minOPoint = -1;
+    // 检测目标的 ID
     int detectID = -2;
     // 对称点的对数
     size_t numSymPoints = 0;
@@ -143,6 +166,13 @@ public:
     float velocity = 0.0f;
     float acceleration = 0.0f;
     float yaw = 0.0f;
+
+    // 为了跟踪而添加的属性
+    shapeType shape = shapeType::LSHAPE;
+
+    // bbox 的 ref 点的索引, 或者坐标
+    float xRef = 0.0f;
+    float yRef = 0.0f;
 };
 
 struct point3d

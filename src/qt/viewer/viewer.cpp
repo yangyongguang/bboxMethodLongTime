@@ -199,7 +199,7 @@ void Viewer::draw()
     //     objects_.at(i)->draw();
     // test draw Text function
     displayText();
-        
+
 }
 
 void Viewer::displayText()
@@ -232,7 +232,7 @@ void Viewer::displayText()
         float x = 0.5 * (pt1.x() + pt2.x());
         float y = 0.5 * (pt1.y() + pt2.y());
         // float z = 0.5 * (bbox.minZ + bbox.maxZ);
-        float z = -1.80f;
+        float z = -1.90f;
         float v = bbox.velocity * 3.6;
         float yaw = bbox.yaw;
         const qglviewer::Vec point2dID = camera()->projectedCoordinatesOf(qglviewer::Vec(x, y + 0.1, z));
@@ -244,10 +244,10 @@ void Viewer::displayText()
 
         // 显示角度信息        
         point ArrowTo;
-        ArrowTo.x() = x + 0.4 * v * cos(yaw);
-        ArrowTo.y() = y + 0.4 * v * sin(yaw);
+        ArrowTo.x() = x + 0.3 * v * cos(yaw);
+        ArrowTo.y() = y + 0.3 * v * sin(yaw);
         glColor3f(0.0f, 1.0f, 0.0f);
-        QGLViewer::drawArrow(qglviewer::Vec(x, y, z), qglviewer::Vec(ArrowTo.x(), ArrowTo.y(), z), 0.02);
+        QGLViewer::drawArrow(qglviewer::Vec(x, y, z), qglviewer::Vec(ArrowTo.x(), ArrowTo.y(), z), 0.045);
 
     }    
     glEnable(GL_DEPTH_TEST);

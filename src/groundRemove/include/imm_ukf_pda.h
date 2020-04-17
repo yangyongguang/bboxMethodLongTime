@@ -12,6 +12,8 @@
 #include "ukf.h"
 #include "Eigen/Dense"
 #include <stack>
+#include "groundRemove/include/box_fitting.h"
+
 using std::stringstream;
 using std::array;
 using std::vector;
@@ -130,7 +132,8 @@ private:
   void tracker(const std::vector<BBox>& transformed_input,
                std::vector<BBox>& detected_objects_output,
                const size_t & currentFrame,
-               const double & ts);
+               const double & ts,
+               Cloud::Ptr & connectPoints);
 
   bool updateDirection(const double smallest_nis, const BBox& in_object,
                            BBox& out_object, UKF& target);
@@ -172,7 +175,8 @@ public:
                 const size_t & currentFrame,
                 vector<Cloud::Ptr> & trackerBBox,
                 const double & ts,
-                const int & trackID);
+                const int & trackID,
+                Cloud::Ptr & connectPoints);
 };
 
 #endif /* OBJECT_TRACKING_IMM_UKF_JPDAF_H */

@@ -39,6 +39,8 @@ extern float tRatioMax;
 extern float minLenRatio;
 extern float tPtPerM3;
 
+
+
 // 图像做的
 void getBoundingBox(const vector<Cloud::Ptr> & clusteredPoints,
                     vector<Cloud::Ptr> & bbPoints);
@@ -114,4 +116,16 @@ void setShapeOcclusionCheck(
                 const Cloud & cluster,
                 const float & lshapeResRad
             );
+
+// 判断俩个 bbox 是否相交
+bool IsBBoxIntersecting(const Cloud & boxA, const Cloud & boxB);
+bool IsBBoxIntersecting(const BBox & boxA, const BBox & boxB, bool debug);
+// 通过中心距离筛选俩个的相交
+// bool IsBBoxIntersectingFromDist(const Cloud &, const)
+
+// 判断 boundding box 的参考点函数属于 bbox 那个点
+// 输入为， 点云 I L S， 是否遮挡， 还有 cluster 信息
+void getBBoxRefPoint(vector<Cloud::Ptr> & clusteredPoints, 
+                     vector<Cloud::Ptr> & bbPoints,
+                     Cloud::Ptr & markPoints);
 #endif //MY_PCL_TUTORIAL_BOX_FITTING_H

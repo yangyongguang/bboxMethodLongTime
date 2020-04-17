@@ -302,6 +302,7 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
     // fprintf(stderr, "current choose iCluster %d\n", debugID);
     if (debugID != -1)
         fprintf(stderr, "clusteredPoints.size %d, debugID %d\n", clusteredPoints.size(), debugID);
+    std::array<string, 4> shapeName = {"SYMETRIC", "LSHAPE", "ISHAPE", "MINAREA"};
     
     float lshapeResRad = 25 * lShapeHorizonResolution / 180 * M_PI;
     int numShapePoints = 2 * M_PI / lshapeResRad;
@@ -427,6 +428,9 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
                 maxDist = distAbs;
                 maxDx = xI;
                 maxDy = yI;
+
+                // 存储拐点坐标索引
+                cluster.minOPoint = pInd;
             }
         }
 
@@ -535,7 +539,7 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
             }
             centerX = sumX / pointsOrig.size();
             centerY = sumY / pointsOrig.size();
-            markPoints->emplace_back(point(centerX, centerY, 0.0f));
+            markPoints->emplace_back(point(centerX, centerY, 0.0f, pointType::STANDARD));
             // 对点云对象排序， 根据距离， 从近到远
             // fprintf(stderr, "clusterTmp Size %d\n", clusterTmp.size());
             // fprintf(stderr, "------\n");
@@ -582,6 +586,8 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
             if (debugBool)
                 fprintf(stderr, "\ncurrent rectK : %f\n", rectK);
             hasRect = true;
+            // 判断点云轮廓类型
+            cluster.shape = shapeType::SYMETRIC;
             // fprintf(stderr, "has gone12 finish !\n");
         }
         if(!hasRect && slopeDist > lSlopeDist && numPoints > lnumPoints)
@@ -853,10 +859,30 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
             //     // fprintf(stderr, "rectK : %f\n", rectK);                  
             // }
             // 根据方向拟合 bbox 的
+            // 首先利用 轮廓点和指定方向来判断是 L 型 或者 I 型
+            fitRect(rectK, clusterTmp, pcPoints);
+            // 如果相邻俩边的比例 大于 5 或者 小于 1/5 判定为 I 型， 或则为 L 型
+            float bboxLength1 = sqrt((pcPoints[2].x - pcPoints[1].x) * (pcPoints[2].x - pcPoints[1].x) + 
+                                     (pcPoints[2].y - pcPoints[1].y) * (pcPoints[2].y - pcPoints[1].y));
+            float bboxLength2 = sqrt((pcPoints[1].x - pcPoints[0].x) * (pcPoints[1].x - pcPoints[0].x) + 
+                                     (pcPoints[1].y - pcPoints[0].y) * (pcPoints[1].y - pcPoints[0].y));
+
+            if (bboxLength1 / bboxLength2 > 5 | bboxLength1 / bboxLength2 < 1.0/5.0)
+            {
+                cluster.shape = shapeType::ISHAPE;
+            }
+            else
+            {
+                cluster.shape = shapeType::LSHAPE;
+            }
+
             fitRect(rectK, *clusteredPoints[iCluster],  pcPoints);
             hasRect = true;
             if (debugBool)
+            {
+                fprintf(stderr, "bboxLength1 %f, bboxLength2 %f\n", bboxLength1, bboxLength2);
                 fprintf(stderr, "\ncurrent 2 rectK : %f\n", rectK);
+            }
             // fprintf(stderr, "pcPoints:\n");
             // for (int idx = 0; idx < 4; ++idx)
             //     fprintf(stderr, "(%f, %f)\n", pcPoints[idx].x, pcPoints[idx].y);
@@ -890,6 +916,8 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
                 pcPoints[idx].x = rectPoints[idx].x;
                 pcPoints[idx].y = rectPoints[idx].y;
             }
+            // 设置点云类型
+            cluster.shape = shapeType::MINAREA;
         }
 
         // make pcl cloud for 3d bounding box
@@ -954,7 +982,7 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
             fprintf(stderr, "shapeToClusterID[maxLIdx] %d, angle : %f, dist : %f\n", 
                         shapeToClusterID[maxLIdx],
                         cluster[cluster.maxLPoint].atan2Val,
-                        cluster[cluster.minLPoint].toSensor2D);
+                        cluster[cluster.maxLPoint].toSensor2D);
         }
         if (shapeToClusterID[minLIdx] == cluster.detectID)
         {
@@ -976,12 +1004,146 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
             fprintf(stderr, "current cluster occlustion:\n");
             fprintf(stderr, "min point: %d\n", cluster.occlusionMin);
             fprintf(stderr, "max point: %d\n", cluster.occlusionMax);
+            fprintf(stderr, "shape tyep is : %s\n", shapeName[cluster.shape].c_str());
             fprintf(stderr, "numShape points %d\n", numShapePoints);
             fprintf(stderr, "-------------------\n", numShapePoints);
         }
+    }      
+
+    // 开始判断跟踪点的选择问题
+
+}
+
+bool IsBBoxIntersecting(const BBox & boxA, const BBox & boxB, bool debug)
+{
+    // fprintf(stderr, "\n\n\n\n");
+    
+    // 迭代俩个 bbox 每个都选俩个边
+    for (int bboxIdx = 0; bboxIdx < 2; ++bboxIdx)
+    {
+        // 迭代选择俩个边， 俩个 bbox 投影每个边的垂线
+        for (int idx = 0; idx < 2; ++idx)
+        {
+            point p1, p2;
+            if (bboxIdx == 0) // bboxA
+            {
+                p1 = boxA[idx];
+                p2 = boxA[idx + 1];
+            }
+            else // bboB
+            {
+                p1 = boxB[idx];
+                p2 = boxB[idx + 1];
+            }            
+
+
+            // 边的垂直投影向量
+            Point2f normal(p2.y() - p1.y(), p1.x() - p2.x());
+            if (debug)
+            {
+                fprintf(stderr, "normal %f,%f\n", normal.x, normal.y);
+            }
+            float minA = std::numeric_limits<float>::max();
+            // float maxA = std::numeric_limits<float>::min(); 理解错误， 最小值是 0， 使用 lowest 最合适
+            float maxA = std::numeric_limits<float>::lowest();
+
+            float minB = std::numeric_limits<float>::max();
+            float maxB = std::numeric_limits<float>::lowest();
+
+            if (debug)
+            {
+                fprintf(stderr, "initial: minA , maxA, minB, maxB, %f, %f, %f, %f\n", minA, maxA, minB, maxB);
+            }
+            // 计算每个 bbox 在投影上的距离，有正负之分
+            for (int j = 0; j < 4; ++j)
+            {
+
+                float projected = normal.x * boxA[j].x() + normal.y * boxA[j].y();
+                if (projected < minA) minA = projected;
+                if (projected > maxA) maxA = projected;
+                if (debug)
+                {
+                    fprintf(stderr, "projected %f, boxA[j].x() %f,  boxA[j].y() %f\n", 
+                            projected, boxA[j].x(), boxA[j].y());
+                }
+            }
+
+            for (int j = 0; j < 4; ++j)
+            {
+                float projected = normal.x * boxB[j].x() + normal.y * boxB[j].y();
+                if (projected < minB) minB = projected;
+                if (projected > maxB) maxB = projected;
+                if (debug)
+                {
+                    fprintf(stderr, "projected %f, boxB[j].x() %f,  boxB[j].y() %f\n", 
+                            projected, boxB[j].x(), boxB[j].y());
+                }
+            }
+            // 找到分离边， 不相交
+            if (debug)
+                fprintf(stderr, "minA , maxA, minB, maxB, %f, %f, %f, %f\n", minA, maxA, minB, maxB);
+            if (maxA < minB || maxB < minA) return false;            
+        }
     }
+    // 是相交的
+    return true;
+}
+
+void getBBoxRefPoint(vector<Cloud::Ptr> & clusteredPoints, 
+                     vector<Cloud::Ptr> & bbPoints, 
+                     Cloud::Ptr & markPoints)
+{
     
-    
+}
+
+bool IsBBoxIntersecting(const Cloud & boxA, const Cloud & boxB)
+{
+    // 迭代俩个 bbox 每个都选俩个
+    for (int bboxIdx = 0; bboxIdx < 2; ++bboxIdx)
+    {
+        // 迭代选择俩个边， 俩个 bbox 投影每个边的垂线
+        for (int idx = 0; idx < 2; ++idx)
+        {
+            point p1, p2;
+            if (bboxIdx == 0) // bboxA
+            {
+                p1 = boxA[idx];
+                p2 = boxA[idx + 1];
+            }
+            else // bboB
+            {
+                p1 = boxB[idx];
+                p2 = boxB[idx + 1];
+            }            
+
+            // 边的垂直投影向量
+            Point2f normal(p2.y() - p1.y(), p1.x() - p2.x());
+            float minA = std::numeric_limits<float>::max();
+            float maxA = std::numeric_limits<float>::min();
+
+            float minB = std::numeric_limits<float>::max();
+            float maxB = std::numeric_limits<float>::min();
+
+            // 计算每个 bbox 在投影上的距离，有正负之分
+            for (int j = 0; j < boxA.size(); ++j)
+            {
+                float projected = normal.x * boxA[j].x() + normal.y * boxA[j].y();
+                if (projected < minA) minA = projected;
+                if (projected > maxA) maxA = projected;
+            }
+
+            for (int j = 0; j < boxB.size(); ++j)
+            {
+                float projected = normal.x * boxB[j].x() + normal.y * boxB[j].y();
+                if (projected < minB) minB = projected;
+                if (projected > maxB) maxB = projected;
+            }
+            // 找到分离边， 不相交
+            if (maxA < minB || maxB < minA) return false;
+        }
+    }
+    // 是相交的
+    return true;
 }
 
 void setShapeOcclusionCheck(std::vector<float> & shapeToDist,

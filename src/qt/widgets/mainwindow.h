@@ -49,6 +49,7 @@
 #include <QDesktopWidget>
 #include <QRect>
 
+#include "groundRemove/include/box_fitting.h"
 namespace Ui {
 class MainWindow;
 }

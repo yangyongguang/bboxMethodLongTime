@@ -1,6 +1,110 @@
 #include "drawable_cloud.h"
 #include <math.h>
 
+void DrawableTracking::Draw() const
+{
+    // fprintf(stderr, "DrawableTracking::Draw()\n");
+    if (!_cloud_ptr)
+    {
+        throw std::runtime_error("DrawableTracking has no cloud to draw.");
+    }
+
+    // fprintf(stderr, "DrawableTracking::Draw() after _cloud_ptr check\n");
+    glPushMatrix();
+    glEnable(GL_LINE_STIPPLE);
+    glLineWidth(2.0f);
+    glLineStipple(2, 0x3F3F);
+    glPointSize(_pointSize);
+    // 绘制虚线
+    glBegin(GL_LINES);
+    bool multiColor = (_numCluster != -1);
+    // 点数是二的倍数
+    auto & points = _cloud_ptr->points();
+    // assert(points.size() % 6 == 0);
+    assert(points.size() % 4 == 0);
+    for (int idx = 0; idx < points.size() / 4; ++idx)
+    {   
+        auto real_point1 = points[4 * idx    ].AsEigenVector();
+        auto real_point2 = points[4 * idx + 1].AsEigenVector();
+        auto real_point3 = points[4 * idx + 2].AsEigenVector();
+        auto real_point4 = points[4 * idx + 3].AsEigenVector();
+        // auto real_point1 = points[6 * idx    ].AsEigenVector();
+        // auto real_point2 = points[6 * idx + 1].AsEigenVector();
+        // auto real_point3 = points[6 * idx + 2].AsEigenVector();
+        // auto real_point4 = points[6 * idx + 3].AsEigenVector();
+        // auto real_point5 = points[6 * idx + 4].AsEigenVector();
+        // auto real_point6 = points[6 * idx + 5].AsEigenVector();       
+
+        // 二维显示
+        glColor3f(1.0f, 0.0f, 0.0f);  // cv
+        glVertex3f(real_point1.x(), real_point1.y(), -1.72f);
+        // glVertex3f(real_point4.x(), real_point4.y(), -1.72f);
+        glVertex3f(real_point3.x(), real_point3.y(), -1.72f);
+
+        glColor3f(0.0f, 1.0f, 0.0f);  // ctrv, or 4 point for x_merge
+        glVertex3f(real_point2.x(), real_point2.y(), -1.72f);
+        // glVertex3f(real_point5.x(), real_point5.y(), -1.72f);
+        glVertex3f(real_point4.x(), real_point4.y(), -1.72f);
+
+        // glColor3f(0.0f, 0.0f, 1.0f);  // rm
+        // glVertex3f(real_point3.x(), real_point3.y(), -1.72f);
+        // glVertex3f(real_point6.x(), real_point6.y(), -1.72f);
+
+    }
+    glEnd();
+    glDisable(GL_LINE_STIPPLE);
+    glPopMatrix();    
+
+    // 绘制点 虚线俩个端点
+    glPushMatrix();
+    glPointSize(8.0f);
+    glBegin(GL_POINTS);   
+
+    for (int idx = 0; idx < points.size() / 4; ++idx)
+    { 
+        auto real_point1 = points[4 * idx    ].AsEigenVector();
+        auto real_point2 = points[4 * idx + 1].AsEigenVector();
+        auto real_point3 = points[4 * idx + 2].AsEigenVector();
+        auto real_point4 = points[4 * idx + 3].AsEigenVector();  
+        // auto real_point1 = points[6 * idx    ].AsEigenVector();
+        // auto real_point2 = points[6 * idx + 1].AsEigenVector();
+        // auto real_point3 = points[6 * idx + 2].AsEigenVector();
+        // auto real_point4 = points[6 * idx + 3].AsEigenVector();
+        // auto real_point5 = points[6 * idx + 4].AsEigenVector();
+        // auto real_point6 = points[6 * idx + 5].AsEigenVector();       
+
+        // 二维显示
+        glColor3f(1.0f, 0.0f, 0.0f);  // cv
+        glVertex3f(real_point1.x(), real_point1.y(), -1.72f);
+        glColor3f(1.0f, 1.0f, 1.0f);
+        // glVertex3f(real_point4.x(), real_point4.y(), -1.72f);
+        glVertex3f(real_point3.x(), real_point3.y(), -1.72f);
+
+        glColor3f(0.0f, 1.0f, 0.0f);  // ctrv
+        glVertex3f(real_point2.x(), real_point2.y(), -1.72f);
+        glColor3f(1.0f, 1.0f, 1.0f);
+        // glVertex3f(real_point5.x(), real_point5.y(), -1.72f);
+        glVertex3f(real_point4.x(), real_point4.y(), -1.72f);
+
+        // glColor3f(0.0f, 0.0f, 1.0f);  // rm
+        // glVertex3f(real_point3.x(), real_point3.y(), -1.72f);
+        // glColor3f(1.0f, 1.0f, 1.0f);
+        // glVertex3f(real_point6.x(), real_point6.y(), -1.72f);
+
+    }
+    glEnd();
+    glPopMatrix();  
+}
+
+DrawableTracking::Ptr DrawableTracking::FromCloud(const Cloud::ConstPtr& cloud,
+                                            const Eigen::Vector3f& color,
+                                            const GLfloat & pointSize,
+                                            const int numCluster)
+{
+    return std::make_shared<DrawableTracking>(DrawableTracking(cloud, color, pointSize, numCluster));
+}
+
+
 void DrawableCloud::Draw() const
 {
     // fprintf(stderr, "DrawableCloud::Draw()\n");
@@ -51,6 +155,8 @@ DrawableCloud::Ptr DrawableCloud::FromCloud(const Cloud::ConstPtr& cloud,
 {
     return std::make_shared<DrawableCloud>(DrawableCloud(cloud, color, pointSize, numCluster));
 }
+
+
 
 
 // 矩形繪制
@@ -115,7 +221,7 @@ DrawableBBox::DrawableBBox(const std::vector<Cloud::Ptr> & posVec, bool drawZAxi
 void DrawableBBox::Draw() const
 {
     glPushMatrix();
-    glLineWidth(2.0f);
+    glLineWidth(2.5f);
     glPointSize(6.0f);
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //指定混合函数
     // glEnable(GL_BLEND);
@@ -146,13 +252,13 @@ void DrawableBBox::Draw() const
         glBegin(GL_LINE_STRIP);
         // std::array<int, 4> bottom = {1, 2, 0, 3};
         std::array<int, 5> bottom = {0, 1, 2, 3, 0};
+        // int colorSize = _param.RANDOM_COLORS.size();
+        // int trackingID = bboxPt.id % colorSize;
+        // glColor3f((float)_param.RANDOM_COLORS[trackingID][0] / 255,
+        //           (float)_param.RANDOM_COLORS[trackingID][1] / 255,
+        //           (float)_param.RANDOM_COLORS[trackingID][2] / 255);
         for (int idx = 0; idx < 5; ++idx)
         {
-            // glVertex3f(bboxPt[bottom[idx]].x(), 
-            //             bboxPt[bottom[idx]].y(), 
-            //             bboxPt[bottom[idx]].z());
-
-            // -1.721f
             glVertex3f(bboxPt[bottom[idx]].x(), 
                         bboxPt[bottom[idx]].y(), 
                         -1.721f);
