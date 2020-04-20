@@ -137,15 +137,45 @@ void DrawableCloud::Draw() const
             //           (float)_param.RANDOM_COLORS[classID][2] / 255
             //         );
             glColor3f(0.835f, 0.031f, 0.043f); // 浅红色
-        }        
+        }   
+
         auto real_point = point.AsEigenVector();
-        // fprintf(stderr, "(%f, %f, %f)\n", real_point.x(), real_point.y(), real_point.z());
-        // glVertex3f(real_point.x(), real_point.y(), real_point.z());
-        // 二维显示
-        glVertex3f(real_point.x(), real_point.y(), -1.73f); // 点云二维显示
+        // 其他的显示点的类型
+        if (point.ptType != pointType::TRACK)
+            glVertex3f(real_point.x(), real_point.y(), -1.73f); // 点云二维显示
     }
     glEnd();
-    glPopMatrix();    
+    glPopMatrix();
+
+    glColor3f(1.0f, 0.83f, 0.38f);
+    glLineWidth(3.0f);
+    // glBegin(GL_POINTS);
+    for (const auto & point : _cloud_ptr->points())
+    {
+        if (point.ptType == pointType::TRACK)
+        {
+            auto real_point = point.AsEigenVector();
+            glPushMatrix();
+            glTranslatef(real_point.x(), real_point.y(), 0.0f);
+            drawCircle(0.24, 12);
+            glPopMatrix();  
+        }
+    }
+    // glEnd();  
+}
+
+void DrawableCloud::drawCircle(const float & radius, const int & numPoints) const
+{
+    // glVertex2f(R*cos(2*Pi/n*i), R*sin(2*Pi/n*i));
+    // glBegin(GL_LINE_STRIP);
+    // 实心圆
+    glBegin(GL_TRIANGLE_FAN);
+    for (size_t idx = 0; idx < numPoints; ++idx)
+    {
+        glVertex3f(radius * cos(2 * M_PI / numPoints * idx), radius * sin(2 * M_PI / numPoints * idx), -1.71f);
+    }
+    glVertex3f(radius * cos(0), radius * sin(0), -1.73);
+    glEnd();
 }
 
 DrawableCloud::Ptr DrawableCloud::FromCloud(const Cloud::ConstPtr& cloud,

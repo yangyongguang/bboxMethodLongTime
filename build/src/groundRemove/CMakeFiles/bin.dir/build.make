@@ -60,15 +60,15 @@ include src/groundRemove/CMakeFiles/bin.dir/flags.make
 src/groundRemove/CMakeFiles/bin.dir/src/bin.cpp.o: src/groundRemove/CMakeFiles/bin.dir/flags.make
 src/groundRemove/CMakeFiles/bin.dir/src/bin.cpp.o: ../src/groundRemove/src/bin.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yyg/code/lidarCode/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object src/groundRemove/CMakeFiles/bin.dir/src/bin.cpp.o"
-	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/bin.dir/src/bin.cpp.o -c /home/yyg/code/lidarCode/src/groundRemove/src/bin.cpp
+	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/g++-5   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/bin.dir/src/bin.cpp.o -c /home/yyg/code/lidarCode/src/groundRemove/src/bin.cpp
 
 src/groundRemove/CMakeFiles/bin.dir/src/bin.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/bin.dir/src/bin.cpp.i"
-	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/groundRemove/src/bin.cpp > CMakeFiles/bin.dir/src/bin.cpp.i
+	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/groundRemove/src/bin.cpp > CMakeFiles/bin.dir/src/bin.cpp.i
 
 src/groundRemove/CMakeFiles/bin.dir/src/bin.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/bin.dir/src/bin.cpp.s"
-	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/groundRemove/src/bin.cpp -o CMakeFiles/bin.dir/src/bin.cpp.s
+	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/groundRemove/src/bin.cpp -o CMakeFiles/bin.dir/src/bin.cpp.s
 
 src/groundRemove/CMakeFiles/bin.dir/src/bin.cpp.o.requires:
 

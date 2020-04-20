@@ -60,15 +60,15 @@ include src/groundRemove/CMakeFiles/cloud.dir/flags.make
 src/groundRemove/CMakeFiles/cloud.dir/src/cloud.cpp.o: src/groundRemove/CMakeFiles/cloud.dir/flags.make
 src/groundRemove/CMakeFiles/cloud.dir/src/cloud.cpp.o: ../src/groundRemove/src/cloud.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yyg/code/lidarCode/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object src/groundRemove/CMakeFiles/cloud.dir/src/cloud.cpp.o"
-	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/cloud.dir/src/cloud.cpp.o -c /home/yyg/code/lidarCode/src/groundRemove/src/cloud.cpp
+	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/g++-5   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/cloud.dir/src/cloud.cpp.o -c /home/yyg/code/lidarCode/src/groundRemove/src/cloud.cpp
 
 src/groundRemove/CMakeFiles/cloud.dir/src/cloud.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/cloud.dir/src/cloud.cpp.i"
-	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/groundRemove/src/cloud.cpp > CMakeFiles/cloud.dir/src/cloud.cpp.i
+	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/groundRemove/src/cloud.cpp > CMakeFiles/cloud.dir/src/cloud.cpp.i
 
 src/groundRemove/CMakeFiles/cloud.dir/src/cloud.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/cloud.dir/src/cloud.cpp.s"
-	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/groundRemove/src/cloud.cpp -o CMakeFiles/cloud.dir/src/cloud.cpp.s
+	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/groundRemove/src/cloud.cpp -o CMakeFiles/cloud.dir/src/cloud.cpp.s
 
 src/groundRemove/CMakeFiles/cloud.dir/src/cloud.cpp.o.requires:
 

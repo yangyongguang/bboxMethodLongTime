@@ -60,15 +60,15 @@ include src/groundRemove/CMakeFiles/convex_hull.dir/flags.make
 src/groundRemove/CMakeFiles/convex_hull.dir/src/convex_hull.cpp.o: src/groundRemove/CMakeFiles/convex_hull.dir/flags.make
 src/groundRemove/CMakeFiles/convex_hull.dir/src/convex_hull.cpp.o: ../src/groundRemove/src/convex_hull.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yyg/code/lidarCode/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object src/groundRemove/CMakeFiles/convex_hull.dir/src/convex_hull.cpp.o"
-	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/convex_hull.dir/src/convex_hull.cpp.o -c /home/yyg/code/lidarCode/src/groundRemove/src/convex_hull.cpp
+	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/g++-5   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/convex_hull.dir/src/convex_hull.cpp.o -c /home/yyg/code/lidarCode/src/groundRemove/src/convex_hull.cpp
 
 src/groundRemove/CMakeFiles/convex_hull.dir/src/convex_hull.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/convex_hull.dir/src/convex_hull.cpp.i"
-	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/groundRemove/src/convex_hull.cpp > CMakeFiles/convex_hull.dir/src/convex_hull.cpp.i
+	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/groundRemove/src/convex_hull.cpp > CMakeFiles/convex_hull.dir/src/convex_hull.cpp.i
 
 src/groundRemove/CMakeFiles/convex_hull.dir/src/convex_hull.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/convex_hull.dir/src/convex_hull.cpp.s"
-	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/groundRemove/src/convex_hull.cpp -o CMakeFiles/convex_hull.dir/src/convex_hull.cpp.s
+	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/groundRemove/src/convex_hull.cpp -o CMakeFiles/convex_hull.dir/src/convex_hull.cpp.s
 
 src/groundRemove/CMakeFiles/convex_hull.dir/src/convex_hull.cpp.o.requires:
 

@@ -60,15 +60,15 @@ include src/qt/utils/CMakeFiles/object.dir/flags.make
 src/qt/utils/CMakeFiles/object.dir/object.cpp.o: src/qt/utils/CMakeFiles/object.dir/flags.make
 src/qt/utils/CMakeFiles/object.dir/object.cpp.o: ../src/qt/utils/object.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yyg/code/lidarCode/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object src/qt/utils/CMakeFiles/object.dir/object.cpp.o"
-	cd /home/yyg/code/lidarCode/build/src/qt/utils && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/object.dir/object.cpp.o -c /home/yyg/code/lidarCode/src/qt/utils/object.cpp
+	cd /home/yyg/code/lidarCode/build/src/qt/utils && /usr/bin/g++-5   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/object.dir/object.cpp.o -c /home/yyg/code/lidarCode/src/qt/utils/object.cpp
 
 src/qt/utils/CMakeFiles/object.dir/object.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/object.dir/object.cpp.i"
-	cd /home/yyg/code/lidarCode/build/src/qt/utils && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/qt/utils/object.cpp > CMakeFiles/object.dir/object.cpp.i
+	cd /home/yyg/code/lidarCode/build/src/qt/utils && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/qt/utils/object.cpp > CMakeFiles/object.dir/object.cpp.i
 
 src/qt/utils/CMakeFiles/object.dir/object.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/object.dir/object.cpp.s"
-	cd /home/yyg/code/lidarCode/build/src/qt/utils && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/qt/utils/object.cpp -o CMakeFiles/object.dir/object.cpp.s
+	cd /home/yyg/code/lidarCode/build/src/qt/utils && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/qt/utils/object.cpp -o CMakeFiles/object.dir/object.cpp.s
 
 src/qt/utils/CMakeFiles/object.dir/object.cpp.o.requires:
 

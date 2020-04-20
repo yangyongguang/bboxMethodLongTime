@@ -528,8 +528,9 @@ void MainWindow::onSliderMovedTo(int cloud_number)
             // 对比方法 bbox
             // _viewer->AddDrawable(DrawableBBox::FromCloud(bboxPts2, true, 1));
             // 显示三个端点
-            // _viewer->AddDrawable(DrawableCloud::FromCloud(markPoints, Eigen::Vector3f(0.0f, 1.0f, 0.2f),
-            //          GLfloat(6)),"L_shape markPoints");
+            transCloudL2G(markPoints);
+            _viewer->AddDrawable(DrawableCloud::FromCloud(markPoints, Eigen::Vector3f(0.0f, 1.0f, 0.2f),
+                     GLfloat(6)),"L_shape markPoints");
         }
 
         infoTextEdit->append("number of cluster : " + QString::number(cluster.getNumCluster()));

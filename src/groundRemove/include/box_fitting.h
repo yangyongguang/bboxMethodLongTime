@@ -40,7 +40,7 @@ extern float minLenRatio;
 extern float tPtPerM3;
 
 
-
+using cv::Point2f;
 // 图像做的
 void getBoundingBox(const vector<Cloud::Ptr> & clusteredPoints,
                     vector<Cloud::Ptr> & bbPoints);
@@ -62,13 +62,14 @@ void CloudToVertexs(const Cloud::Ptr & cloud,
             );
 
 // 最小二乘法拟合直线， 返回斜率 K
-float fitLine(const std::vector<cv::Point2f> & points);
+float fitLine(const std::vector<cv::Point2f> & points, Point2f & line);
 
 // RANSAC 算法拟合
 float fitLineRansac(const vector<cv::Point2f>& clouds, 
                     const int & num_iterations,
                     const float & tolerance,
                     float & correct,
+                    Point2f & line,
                     const bool & debug = false
                     );
 
@@ -92,7 +93,7 @@ void getLShapePoints(Cloud & cluster,
 int ColFromAngle(float angle_cols, 
                     float minAngle, 
                     float maxAngle, 
-                    const size_t & numSegment = 20,
+                    const float & step,
                     const bool & debug = false);
 
 // 根据俩主边的长度来划分边缘点选取的密度
@@ -107,6 +108,8 @@ int ColFromAngle(const float & angle_cols,
                     
 // 俩个点之间的距离
 float distTwoPoint(const point & p1, const point & p2);
+// 点到直线的距离，正值
+float pointToLine(const point & pt, const Point2f & line);
 
 // 遮挡检测
 void setShapeOcclusionCheck(
@@ -125,7 +128,9 @@ bool IsBBoxIntersecting(const BBox & boxA, const BBox & boxB, bool debug);
 
 // 判断 boundding box 的参考点函数属于 bbox 那个点
 // 输入为， 点云 I L S， 是否遮挡， 还有 cluster 信息
-void getBBoxRefPoint(vector<Cloud::Ptr> & clusteredPoints, 
-                     vector<Cloud::Ptr> & bbPoints,
-                     Cloud::Ptr & markPoints);
+void getBBoxRefPoint(const vector<Cloud::Ptr> & clusteredPoints, 
+                           vector<Cloud::Ptr> & bbPoints,
+                           std::unordered_map<int, int> & bboxToCluster,
+                           Cloud::Ptr & markPoints,
+                           const int & debugID);
 #endif //MY_PCL_TUTORIAL_BOX_FITTING_H

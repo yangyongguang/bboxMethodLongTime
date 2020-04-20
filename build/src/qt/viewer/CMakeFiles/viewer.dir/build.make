@@ -60,15 +60,15 @@ include src/qt/viewer/CMakeFiles/viewer.dir/flags.make
 src/qt/viewer/CMakeFiles/viewer.dir/viewer.cpp.o: src/qt/viewer/CMakeFiles/viewer.dir/flags.make
 src/qt/viewer/CMakeFiles/viewer.dir/viewer.cpp.o: ../src/qt/viewer/viewer.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yyg/code/lidarCode/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object src/qt/viewer/CMakeFiles/viewer.dir/viewer.cpp.o"
-	cd /home/yyg/code/lidarCode/build/src/qt/viewer && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/viewer.dir/viewer.cpp.o -c /home/yyg/code/lidarCode/src/qt/viewer/viewer.cpp
+	cd /home/yyg/code/lidarCode/build/src/qt/viewer && /usr/bin/g++-5   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/viewer.dir/viewer.cpp.o -c /home/yyg/code/lidarCode/src/qt/viewer/viewer.cpp
 
 src/qt/viewer/CMakeFiles/viewer.dir/viewer.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/viewer.dir/viewer.cpp.i"
-	cd /home/yyg/code/lidarCode/build/src/qt/viewer && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/qt/viewer/viewer.cpp > CMakeFiles/viewer.dir/viewer.cpp.i
+	cd /home/yyg/code/lidarCode/build/src/qt/viewer && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/qt/viewer/viewer.cpp > CMakeFiles/viewer.dir/viewer.cpp.i
 
 src/qt/viewer/CMakeFiles/viewer.dir/viewer.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/viewer.dir/viewer.cpp.s"
-	cd /home/yyg/code/lidarCode/build/src/qt/viewer && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/qt/viewer/viewer.cpp -o CMakeFiles/viewer.dir/viewer.cpp.s
+	cd /home/yyg/code/lidarCode/build/src/qt/viewer && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/qt/viewer/viewer.cpp -o CMakeFiles/viewer.dir/viewer.cpp.s
 
 src/qt/viewer/CMakeFiles/viewer.dir/viewer.cpp.o.requires:
 

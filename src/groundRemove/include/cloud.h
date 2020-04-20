@@ -15,6 +15,7 @@ using std::string;
 
 typedef std::pair<float, float> float2D;
 typedef std::vector<float2D> float2DVec;
+using cv::Point2f;
 
 enum pointType : int
 {
@@ -81,6 +82,8 @@ public:
     inline float& i() { return _intensity; }
     
     inline float dist2D(){return sqrt(_point.x() * _point.x() + _point.y() * _point.y());}
+    // const 对象，如果编译器认为可能会改变函数内部的值， 那么就需要 const 修饰函数使用
+    inline float dist2D() const {return sqrt(_point.x() * _point.x() + _point.y() * _point.y());}
     inline const Eigen::Vector3f& AsEigenVector() const {return _point; }
     inline Eigen::Vector3f& AsEigenVector() { return _point; }
 
@@ -89,6 +92,10 @@ public:
     bool operator==(const point& other) const;
     inline point operator-(const point& other){
         return point(this->x() - other.x(), this->y() - other.y(), this->z() - other.z());}
+    inline point operator+(const point& other){
+        return point(this->x() + other.x(), this->y() + other.y(), this->z() + other.z());}
+    inline point operator*(const float & factor){
+        return point(this->x() * factor, this->y() * factor, this->z() * factor);}
 public:
     int classID = -1;
     float toSensor2D = 0.0f;
@@ -132,7 +139,7 @@ public:
     // 根据距离激光雷达的距离对点进行排序， 从近到远
     inline void sort(){std::sort(_points.begin(), _points.end(), 
         [](const point & a, const point & b){return a.toSensor2D < b.toSensor2D;});}
-
+    
     typedef std::shared_ptr<Cloud> Ptr;
     typedef std::shared_ptr<const Cloud> ConstPtr;
 private:
@@ -169,6 +176,8 @@ public:
 
     // 为了跟踪而添加的属性
     shapeType shape = shapeType::LSHAPE;
+    // 保存当前拟合的 bbox 的直线的斜率
+    Point2f line = Point2f(0.0f, 0.0f);
 
     // bbox 的 ref 点的索引, 或者坐标
     float xRef = 0.0f;

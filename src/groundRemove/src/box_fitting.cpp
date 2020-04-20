@@ -289,12 +289,12 @@ void getBoundingBox(const vector<Cloud::Ptr> & clusteredPoints,
 }
 
 void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
-                    vector<Cloud::Ptr>& bbPoints,
-                    Cloud::Ptr & markPoints,
-                    Cloud::Ptr & lShapePoints,
-                    std::unordered_map<int, int> & bboxToCluster,
-                    const float & lShapeHorizonResolution,
-                    const int & debugID)
+             vector<Cloud::Ptr>& bbPoints,
+             Cloud::Ptr & markPoints,
+             Cloud::Ptr & lShapePoints,
+             std::unordered_map<int, int> & bboxToCluster,
+             const float & lShapeHorizonResolution,
+             const int & debugID)
 {
     // fprintf(stderr, "getBBox------------------------\n");
     int numCorrect = 0;
@@ -304,13 +304,19 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
         fprintf(stderr, "clusteredPoints.size %d, debugID %d\n", clusteredPoints.size(), debugID);
     std::array<string, 4> shapeName = {"SYMETRIC", "LSHAPE", "ISHAPE", "MINAREA"};
     
-    float lshapeResRad = 25 * lShapeHorizonResolution / 180 * M_PI;
-    int numShapePoints = 2 * M_PI / lshapeResRad;
+    // float lshapeResRad = 25 * lShapeHorizonResolution / 180 * M_PI;
+    // float lshapeResRad = 12 * lShapeHorizonResolution / 180 * M_PI;
+    float lshapeResRad = 12.5 * lShapeHorizonResolution / 180 * M_PI;
+    int numShapePoints = 2 * M_PI / (lshapeResRad);
+    lshapeResRad += 1e-6;
     // 存储当前 seg 距离最小距离
-    std::vector<float> shapeToDist(numShapePoints + 1, 999.0f);
+    // std::vector<float> shapeToDist(numShapePoints + 1, 999.0f);
+    std::vector<float> shapeToDist(numShapePoints, 999.0f);
     // 存储当前 seg 所属 cluster 的 ID 如 22222244444333338888555
-    std::vector<int> shapeToClusterID(numShapePoints + 1, -1);
-    std::vector<float> shapeAngleRef(numShapePoints + 1, 0.0f);
+    // std::vector<int> shapeToClusterID(numShapePoints + 1, -1);
+    // std::vector<float> shapeAngleRef(numShapePoints + 1, 0.0f);
+    std::vector<int> shapeToClusterID(numShapePoints, -1);
+    std::vector<float> shapeAngleRef(numShapePoints, 0.0f);
     for (size_t iCluster = 0; iCluster < clusteredPoints.size(); iCluster++)
     {   
         // fprintf(stderr, "---iCluster %d, total %d\n", iCluster, clusteredPoints.size());
@@ -338,8 +344,8 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
         {
             float minAngleFixed = 999.0f;
             float maxAngleFixed = -999.0f;
-            int minLPointIdx;
-            int maxLPointIdx;
+            // int minLPointIdx;
+            // int maxLPointIdx;
             int iPoint = 0;
             for (auto ptIt = cluster.begin(); ptIt != cluster.end(); ++ptIt)
             {
@@ -364,11 +370,14 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
             }
             cluster.minAngle = minAngleFixed;
             cluster.maxAngle = maxAngleFixed;
+
+            // 后面添加, 交换一下 max min L point 的索引值
+            // std::swap(cluster.minLPoint, cluster.maxLPoint);
             needFixed = true;
         }
         // 结束修正
         float minMx, minMy, maxMx, maxMy;
-        float minM = 999; float maxM = -999; float maxZ = -999;
+        // float minM = 999; float maxM = -999; float maxZ = -999;
         if (debugBool)
         {
             fprintf(stderr, "maxMx = cluster[cluster.maxLPoint].x();");
@@ -457,7 +466,8 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
         clusterTmp.detectID = iCluster;
         // 这里分配是否是检测完全的边缘点
         // fprintf(stderr, "setShapeOcclusionCheck before\n");
-        setShapeOcclusionCheck(shapeToDist, shapeToClusterID, shapeAngleRef,clusterTmp, lshapeResRad);
+        // setShapeOcclusionCheck(shapeToDist, shapeToClusterID, shapeAngleRef,clusterTmp, lshapeResRad);
+        setShapeOcclusionCheck(shapeToDist, shapeToClusterID, shapeAngleRef, cluster, lshapeResRad);
         // fprintf(stderr, "setShapeOcclusionCheck after\n");
         if (debugBool)
         {
@@ -826,14 +836,15 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
                 float correct = 0.0f;
                 if (debugBool)
                     fprintf(stderr, "using fitLineRansac ptSet.size %d, longEdge %f\n", ptSet.size(), longEdge);
-                rectK = fitLineRansac(ptSet, 100, 0.12f, correct, debugBool);
+                rectK = fitLineRansac(ptSet, 100, 0.12f, correct, cluster.line,debugBool);
             }
             else
             {
                 if (debugBool)
                     fprintf(stderr, "using fitLine\n");
-                rectK = fitLine(ptSet);
+                rectK = fitLine(ptSet, cluster.line);
             }
+            // 保存当前斜率
             // }
             // else
             // {
@@ -867,7 +878,9 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
             float bboxLength2 = sqrt((pcPoints[1].x - pcPoints[0].x) * (pcPoints[1].x - pcPoints[0].x) + 
                                      (pcPoints[1].y - pcPoints[0].y) * (pcPoints[1].y - pcPoints[0].y));
 
-            if (bboxLength1 / bboxLength2 > 5 | bboxLength1 / bboxLength2 < 1.0/5.0)
+            // 比例不符合， 或者角 AOB 大于一定的角度时候， 比如 130 度， 判断其为 ISHAPE
+            if (bboxLength1 / bboxLength2 > 5 || bboxLength1 / bboxLength2 < 1.0/5.0 ||
+                cosThetaAOB < std::cos(130.0f / 180 * M_PI))
             {
                 cluster.shape = shapeType::ISHAPE;
             }
@@ -964,8 +977,10 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
         // fprintf(stderr, "minLpoint %d, maxLPoint %d, shapeToClusterID size %d\n", 
                 // cluster.minLPoint, cluster.maxLPoint, shapeToClusterID.size());
         // -pi ~ pi   =>   0 ~ 2 * pi
-        int minLIdx = (cluster[cluster.minLPoint].atan2Val + M_PI) / lshapeResRad;
-        int maxLIdx = (cluster[cluster.maxLPoint].atan2Val + M_PI) / lshapeResRad;
+        // int minLIdx = (cluster[cluster.minLPoint].atan2Val + M_PI) / lshapeResRad + 1;
+        // int maxLIdx = (cluster[cluster.maxLPoint].atan2Val + M_PI) / lshapeResRad - 1;
+        int minLIdx = (cluster[cluster.minLPoint].atan2Val + M_PI) / lshapeResRad + 0.5 + 1;
+        int maxLIdx = (cluster[cluster.maxLPoint].atan2Val + M_PI) / lshapeResRad + 0.5 - 1;
         // fprintf(stderr, "minLIdx %d, maxLIdx %d\n", minLIdx, maxLIdx);
         // 当掐的端点记录的 检测目标索引 ID 已经被替换掉了， 所以被替换意味着被遮挡
         // 替换意味着其记录的值不再是当前 cluster 记录的 icluster.detectID
@@ -974,15 +989,24 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
         if (iCluster == debugID)
         {
             fprintf(stderr, "cluster size %d\n", cluster.size()); 
-            fprintf(stderr, "cluster.detectID %d\n", cluster.detectID); 
+            fprintf(stderr, "cluster.detectID %d\n", cluster.detectID);
+            fprintf(stderr, "cluster[cluster.minLPoint] angle : %f, dist : %f\n", 
+                        cluster[cluster.minLPoint].atan2Val * 180 / M_PI,
+                        cluster[cluster.minLPoint].toSensor2D);
+                        // cluster[cluster.minLPoint].toSensor2D);
+            fprintf(stderr, "cluster[cluster.maxLPoint] angle : %f, dist : %f\n", 
+                        cluster[cluster.maxLPoint].atan2Val * 180 / M_PI,
+                        cluster[cluster.maxLPoint].toSensor2D); 
             fprintf(stderr, "shapeToClusterID[minLIdx] %d, angle : %f, dist : %f\n", 
                         shapeToClusterID[minLIdx],
-                        cluster[cluster.minLPoint].atan2Val,
-                        cluster[cluster.minLPoint].toSensor2D);
+                        shapeAngleRef[minLIdx] * 180 / M_PI,
+                        shapeToDist[minLIdx]);
+                        // cluster[cluster.minLPoint].toSensor2D);
             fprintf(stderr, "shapeToClusterID[maxLIdx] %d, angle : %f, dist : %f\n", 
                         shapeToClusterID[maxLIdx],
-                        cluster[cluster.maxLPoint].atan2Val,
-                        cluster[cluster.maxLPoint].toSensor2D);
+                        shapeAngleRef[maxLIdx] * 180 / M_PI,
+                        shapeToDist[maxLIdx]);
+                        // cluster[cluster.maxLPoint].toSensor2D);
         }
         if (shapeToClusterID[minLIdx] == cluster.detectID)
         {
@@ -994,11 +1018,26 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
             cluster.occlusionMax = false;
         }
 
+        // 左右移动俩格， 然后比较其距离激光雷达远近即可判断
+        // int compShapeIdx = (maxLIdx + 2) % (numShapePoints + 1);
+        // if (shapeToDist[maxLIdx] < shapeToDist[compShapeIdx])
+        // {
+        //     cluster.occlusionMax = false;
+        // }
+        // compShapeIdx = minLIdx - 2;
+        // if (compShapeIdx < 0) compShapeIdx += (numShapePoints + 1);
+
+        // if (shapeToDist[minLIdx] < shapeToDist[compShapeIdx])
+        // {
+        //     cluster.occlusionMin = false;
+        // }
+
         if (iCluster == debugID)
         {
             for (int idx = 0; idx < shapeToClusterID.size(); ++idx)
             {
-                fprintf(stderr, "idx:%d [%d] [%f] [%f]\n", idx, shapeToClusterID[idx], shapeAngleRef[idx], shapeToDist[idx]);
+                fprintf(stderr, "idx:%d [%d] [%f] [%f]\n", 
+                    idx, shapeToClusterID[idx], shapeAngleRef[idx] / M_PI * 180, shapeToDist[idx]);
             }
             fprintf(stderr, "\n");
             fprintf(stderr, "current cluster occlustion:\n");
@@ -1011,7 +1050,7 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
     }      
 
     // 开始判断跟踪点的选择问题
-
+    getBBoxRefPoint(clusteredPoints, bbPoints, bboxToCluster, markPoints, debugID);
 }
 
 bool IsBBoxIntersecting(const BBox & boxA, const BBox & boxB, bool debug)
@@ -1089,11 +1128,110 @@ bool IsBBoxIntersecting(const BBox & boxA, const BBox & boxB, bool debug)
     return true;
 }
 
-void getBBoxRefPoint(vector<Cloud::Ptr> & clusteredPoints, 
-                     vector<Cloud::Ptr> & bbPoints, 
-                     Cloud::Ptr & markPoints)
+void getBBoxRefPoint(const vector<Cloud::Ptr> & clusteredPoints, 
+                           vector<Cloud::Ptr> & bbPoints,
+                           std::unordered_map<int, int> & bboxToCluster, 
+                           Cloud::Ptr & markPoints,
+                           const int & debugID)
 {
-    
+    // 判断 L I S 三个方向
+    for (int bboxIdx = 0; bboxIdx < bbPoints.size(); ++bboxIdx)
+    {
+        auto & bbox = (*bbPoints[bboxIdx]);
+        Cloud bboxTmp = bbox;  // 备份， 防止改值, 比如排序使用这种情况
+        int clusterIdx = bboxToCluster[bboxIdx];
+        auto & cluster = (*clusteredPoints[clusterIdx]);
+
+        if (cluster.shape == shapeType::LSHAPE)
+        {
+            // L shape 的规则为， 不管是那种堵的情况， 都是选择与拐点最近的 bbox 点作为参考点
+            // 寻找离 拐点 最近的 bbox 点作为 ref 点
+            point cornerPt = cluster[cluster.minOPoint];
+            auto pos = *std::min_element(bbox.begin(), bbox.begin() + 4, 
+                        [& cornerPt](const point & pt1, const point & pt2)
+                            {return distTwoPoint(pt1, cornerPt) < distTwoPoint(pt2, cornerPt);});
+            markPoints->emplace_back(point(pos.x(), pos.y(), pos.z(), pointType::TRACK));
+        }
+        else if (cluster.shape == shapeType::ISHAPE)
+        {
+            // I shape 的规则
+            // 俩者皆堵， 使用预测点在该边上的投影作为 ref 点， 因为这时候的测量已经是不可信赖的点了
+            if (cluster.occlusionMax && cluster.occlusionMin)  
+            {
+                // 没有参考点选择 do nothing
+            }
+            else if (cluster.occlusionMin ^ cluster.occlusionMax)  // 俩则互异为真， 一端堵， 一端不堵
+            {
+                Point2f line = cluster.line;
+                std::sort(bboxTmp.begin(), bboxTmp.begin() + 4, 
+                        [&line](const point & pt1, const point & pt2)
+                        {return pointToLine(pt1, line) < pointToLine(pt2, line);});
+                // 找到距离不堵点的最近的 bbox 点云
+                point pt = (cluster.occlusionMax) ? cluster[cluster.minLPoint] : cluster[cluster.maxLPoint];
+                // 距离拟合直线最近的俩个点， 然后根据堵塞的点找最近的 bbox 点作为 ref 点
+                point pos = *std::min_element(bboxTmp.begin(), bboxTmp.begin() + 2, 
+                        [& pt](const point & pt1, const point & pt2)
+                        {return distTwoPoint(pt1, pt) < distTwoPoint(pt2, pt);});
+                markPoints->emplace_back(point(pos.x(), pos.y(), pos.z(), pointType::TRACK));
+            }
+            else // (!cluster.occlusionMin && !cluster.occlustionMax) // 俩则都不堵
+            {
+                // 使用俩者的中心点
+                // 使用与拟合直线距离最近的俩个点
+                Point2f line = cluster.line;
+
+                std::sort(bboxTmp.begin(), bboxTmp.begin() + 4, 
+                        [&line](const point & pt1, const point & pt2)
+                        {return pointToLine(pt1, line) < pointToLine(pt2, line);});
+                // point ptMax = cluster[cluster.maxLPoint];
+                // point posMax = *std::min_element(bbox.begin(), bbox.begin() + 4, 
+                //         [& ptMax](const point & pt1, const point & pt2)
+                //         {return distTwoPoint(pt1, ptMax) < distTwoPoint(pt2, ptMax);});
+                // point pos = (posMin + posMax) * 0.5;  // 等于重载除
+                point pos = (bboxTmp[0] + bboxTmp[1]) * 0.5;
+                markPoints->emplace_back(point(pos.x(), pos.y(), pos.z(), pointType::TRACK));
+            }
+            
+        }
+        else if (cluster.shape == shapeType::SYMETRIC)
+        {
+            // 对称的情况也分三种， 不过主要是找寻面向激光雷达最近的 bbox 点， 而非寻找
+            // 与 cluster 某个参考点的最近的 bbox 点， 因为特殊性
+            // 有一端堵塞
+            // 从小到大排列, 只排序前 4 个
+            std::sort(bboxTmp.begin(), bboxTmp.begin() + 4, 
+                    [](const point & pt1, const point & pt2){return pt1.dist2D() < pt2.dist2D();});
+            
+            if (debugID == clusterIdx)
+            {
+                for (int i = 0; i < bboxTmp.size(); ++i)
+                {
+                    fprintf(stderr, "(%f, %f) --> %f\n", bboxTmp[i].x(), bboxTmp[i].y(), bboxTmp[i].toSensor2D);
+                }
+            }
+            if (cluster.occlusionMin ^ cluster.occlusionMax)
+            {
+                point pt = (cluster.occlusionMax) ? cluster[cluster.minLPoint] : cluster[cluster.maxLPoint];
+                point pos = *std::min_element(bboxTmp.begin(), bboxTmp.begin() + 2, 
+                    [& pt](const point & pt1, const point & pt2)
+                    {return distTwoPoint(pt1, pt) < distTwoPoint(pt2, pt);});
+                markPoints->emplace_back(point(pos.x(), pos.y(), pos.z(), pointType::TRACK));
+            }
+            else  // 俩端都不堵， 俩端都堵
+            {
+                point pos = (bboxTmp[0] + bboxTmp[1]) * 0.5;
+                markPoints->emplace_back(point(pos.x(), pos.y(), pos.z(), pointType::TRACK));
+            }
+            
+        }
+        else // cluster.shape = shapeType::MINAREA
+        {
+            // 以中心点为参考点
+            point pos = (bbox[0] + bbox[2]) * 0.5;
+            markPoints->emplace_back(point(pos.x(), pos.y(), pos.z(), pointType::TRACK));
+        }
+        
+    }
 }
 
 bool IsBBoxIntersecting(const Cloud & boxA, const Cloud & boxB)
@@ -1221,12 +1359,16 @@ float fitLineRansac(const vector<cv::Point2f>& clouds,
                     const int & num_iterations,
                     const float & tolerance,                    
                     float & correct,
+                    Point2f & line,
                     const bool & debug)
 {
     if (debug)
         fprintf(stderr, "num %d point fit ransac line \n", clouds.size());
     int max_num_fit = 0;
+    // 最优直线斜率向量表示
     Point2f best_plane(0.0f, 0.0f);
+    // 最优直线穿过的点
+    Point2f best_point(0.0f, 0.0f);
     mt19937_64 mt(0);
     uniform_int_distribution<> randPoints(0, clouds.size() - 1);
     // if (debug)
@@ -1306,6 +1448,7 @@ float fitLineRansac(const vector<cv::Point2f>& clouds,
         { 
             max_num_fit = num_fit;
             best_plane = a;
+            best_point = p;
         }
     }
     // return best_plane;
@@ -1317,11 +1460,17 @@ float fitLineRansac(const vector<cv::Point2f>& clouds,
     //     fprintf(stderr, "res line %f, max_num_fit %d\n", -1 * best_plane.x / best_plane.y, max_num_fit);
     //     fprintf(stderr, "fit %f point\n", 1.0f * max_num_fit / clouds.size());
     // }
-    return -1 * best_plane.x / (best_plane.y + 1e-6);
+    // 最优直线的斜率， 与拟合直线的方向相同
+    float K = -1 * best_plane.x / (best_plane.y + 1e-6);
+    // 最优直线的截距
+    float b = best_point.y - K * best_point.x; 
+    line.x = K;
+    line.y = b;
+    return K;
 }
 
 // 最小二乘法
-float fitLine(const std::vector<Point2f> & points)
+float fitLine(const std::vector<Point2f> & points, Point2f & line)
 {
     const unsigned int n_points = points.size();
     Eigen::MatrixXd X(n_points, 2);
@@ -1338,6 +1487,8 @@ float fitLine(const std::vector<Point2f> & points)
 
     // y = k * x + b; 返回 k 和 b
     Eigen::VectorXd result = X.colPivHouseholderQr().solve(Y);
+    line.x = result(0);
+    line.y = result(1);
     return result(0);
 }
 
@@ -1382,11 +1533,10 @@ float direction(const std::vector<Point2f> & cloud)
 int ColFromAngle(float angle_cols, 
                     float minAngle, 
                     float maxAngle, 
-                    const size_t & numSegment,
+                    const float & step,
                     const bool & debug)
 {
-    // 每一份的步长
-    float step = (maxAngle - minAngle) / numSegment;
+    // 每一份的步长 step
     // 角度等分
     int Col = std::floor((angle_cols - minAngle) / step);
     // if (Col < 0 || Col >= numSegment)
@@ -1428,6 +1578,12 @@ int ColFromAngle(const float & angle_cols,
 float distTwoPoint(const point & p1, const point & p2)
 {
     return sqrt((p1.x() - p2.x()) * (p1.x() - p2.x()) + (p1.y() - p2.y()) * (p1.y() - p2.y()));
+}
+
+// 点到直线的距离
+float pointToLine(const point & pt, const Point2f & line)
+{
+    return abs(line.x * pt.x() - pt.y() + line.y) / sqrt(line.x * line.x + 1);
 }
 
 void getLShapePoints(Cloud & cluster, 
@@ -1528,7 +1684,8 @@ void getLShapePoints(Cloud & cluster,
         int colIdx; // 可能有一边为 0 长度的情况
         if (numMinSample == 0 || numMaxSample == 0)
         {
-            colIdx = ColFromAngle(angle, minAngle, maxAngle, numSampPointComp, debugBool);
+            float stepTheta = (maxAngle - minAngle) / numSampPointComp;
+            colIdx = ColFromAngle(angle, minAngle, maxAngle, stepTheta, debugBool);
         }
         else
         {
@@ -1594,9 +1751,43 @@ void getLShapePoints(Cloud & cluster,
         }
     }
 
-    // 先判断车宽度， 然后判断是否需要对称检测
-    if (carWidth > 1.30f && carWidth < 2.05f && numSampPoint >= nSegment)
+    for (int idx = 0; idx < ToPointID.size(); ++idx)
     {
+        if (ToPointID[idx] == -1)
+        {
+            // fprintf(stderr, "idx %d\n", idx);
+            continue;
+        }
+        // 可视化的点
+        // points->emplace_back((*cluster)[ToPointID[idx]]);
+        cluster[ToPointID[idx]].isLShapePoint = 1;
+    }
+    cluster.numNoneEmptyLShapePoint = ToDist.size();
+    if (debugBool)
+        fprintf(stderr, "distMinToOrigin %f, carWidth %f\n", distMinToOrigin, carWidth);
+    if (debugBool)
+        fprintf(stderr, "\n\n\n\n\n\n\n\n");
+    
+    // 先判断车宽度， 然后判断是否需要对称检测
+    // 原先设置 carWidth 为 2.05 放宽检测条件为 2.30f
+    if (carWidth > 1.30f && carWidth < 2.30f && numSampPoint >= nSegment)
+    {
+        // 重新求取一次 ToDist[], 不进行划分
+        int colIdx = 0;
+        float stepTheta = (maxAngle - minAngle) / numSampPointComp;
+        for (auto ptIt = cluster.begin(); ptIt != cluster.end(); ++ptIt)
+        {
+            // float angle = std::atan2(ptIt->y(), ptIt->x());
+            float angle = ptIt->atan2Val;
+            if (needFixed)
+            {
+                if (angle > 0)    angle -= M_PI;
+                else              angle += M_PI;            
+            }            
+            colIdx = ColFromAngle(angle, minAngle, maxAngle, stepTheta, debugBool);    
+            if (ptIt->toSensor2D < ToDist[colIdx])   ToDist[colIdx] = ptIt->toSensor2D;
+        }   
+        //--------------------
         int NumSymSegs = 0;
         int nPointPreSeg = numSampPoint / nSegment; 
         for (int idx = 0; idx < nSegment / 2; ++idx)
@@ -1674,22 +1865,7 @@ void getLShapePoints(Cloud & cluster,
         */
     }
 
-    for (int idx = 0; idx < ToPointID.size(); ++idx)
-    {
-        if (ToPointID[idx] == -1)
-        {
-            // fprintf(stderr, "idx %d\n", idx);
-            continue;
-        }
-        // 可视化的点
-        // points->emplace_back((*cluster)[ToPointID[idx]]);
-        cluster[ToPointID[idx]].isLShapePoint = 1;
-    }
-    cluster.numNoneEmptyLShapePoint = ToDist.size();
-    if (debugBool)
-        fprintf(stderr, "distMinToOrigin %f, carWidth %f\n", distMinToOrigin, carWidth);
-    if (debugBool)
-        fprintf(stderr, "\n\n\n\n\n\n\n\n");
+    
 }
 
 void fitRect(const float & k, const Cloud & cloud, std::vector<Point2f> & rect)

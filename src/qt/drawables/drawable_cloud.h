@@ -56,6 +56,8 @@ public:
 
     ~DrawableCloud() override {}
 
+    void drawCircle(const float & radius, const int & numPoints) const;
+
 private:
     int _numCluster = -1;
     GLfloat _pointSize = 1.0;
