@@ -94,6 +94,10 @@ public:
         return point(this->x() - other.x(), this->y() - other.y(), this->z() - other.z());}
     inline point operator+(const point& other){
         return point(this->x() + other.x(), this->y() + other.y(), this->z() + other.z());}
+    inline point operator+(const point& other) const{
+        return point(this->x() + other.x(), this->y() + other.y(), this->z() + other.z());}
+    inline point add(const point & other) const {
+        return point(this->x() + other.x(), this->y() + other.y(), this->z() + other.z());}
     inline point operator*(const float & factor){
         return point(this->x() * factor, this->y() * factor, this->z() * factor);}
 public:
@@ -111,7 +115,8 @@ private:
     float _intensity;
 };
 
-class Cloud{
+class Cloud
+{
 public:
     Cloud():minZ(999.0f), maxZ(-999.0f), maxAngle(-999.0f), minAngle(999){}
     // explicit Cloud(const Cloud & cloud) {}
@@ -173,7 +178,21 @@ public:
     float velocity = 0.0f;
     float acceleration = 0.0f;
     float yaw = 0.0f;
-
+    // 求出的 ref 点的索引
+    int refIdx = -1;  
+    // 避免重复计算， 我们将例如 bbox点存储时候的顺序为 0,1,2,3,4,5,6,7
+    // 而我们只需要使用前 0, 1, 2, 3, 4 个点 所以这时候， 我们需要记录点为八个点, -1 表示还未求出跟踪点大小
+    // 使用 10, 21， 32, 30, 20 表示前后点，这些复合点 都是由 前后俩个点的索引组成
+    // 使用 如 320 表示依赖边为 32 但是没找到 ref 点， 俩端都堵的 ISHAPE 类型
+    /*
+            0__________10____________1
+           |                         |
+           |                         |
+         30+           20            + 21
+           |                         |
+           3___________+_____________2
+                       32 
+    */
     // 为了跟踪而添加的属性
     shapeType shape = shapeType::LSHAPE;
     // 保存当前拟合的 bbox 的直线的斜率
@@ -225,6 +244,7 @@ public:
     // golbel to local update yaw
     void updateCenterAndYaw();
     // fprintf(stderr, "pointIdx %d, points[pointIdx](%f, %f)\n", pointIdx, points[pointIdx].x(), points[pointIdx].y());
+    point getRefPoint() const;
 public:
     Pose pose;
     std::array<point, 4> points;
@@ -256,6 +276,17 @@ public:
     // 存储最高最低 z 值
     float minZ = 0.0f;
     float maxZ = 0.0f;
+
+    // ref 点所在位置索引
+    int refIdx = -1;
 };
+
+struct intToPoint
+{
+    intToPoint(const int & inputId, const point & inputPt):id(inputId), pt(inputPt){}
+    int id = 0;
+    point pt;
+};
+
 #endif
 

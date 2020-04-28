@@ -15,6 +15,7 @@ UKF::UKF()
   , std_lane_direction_(0.15)
   , width_(0.0f)
   , length_(0.0f)
+  , refIdx_(-1)
 {
   // initial state vector
   x_merge_ = Eigen::MatrixXd(5, 1);
@@ -505,7 +506,9 @@ void UKF::findMaxZandS(Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s)
   }
 }
 
-void UKF::updateEachMotion(const double detection_probability, const double gate_probability, const double gating_threshold,
+void UKF::updateEachMotion(const double detection_probability, 
+                           const double gate_probability, 
+                           const double gating_threshold,
                            const std::vector<BBox>& object_vec,
                            std::vector<double>& lambda_vec)
 {
@@ -731,7 +734,10 @@ void UKF::updateMeasurementForCTRV(const std::vector<BBox>& object_vec)
     if (is_direction_ctrv_available_)
     {
       meas = Eigen::VectorXd(num_lidar_direction_state_);
-      meas << object.pose.position.x, object.pose.position.y, object.angle;
+      // meas << object.pose.position.x, object.pose.position.y, object.angle;
+      // 更改 refIdx 点
+      point refPoint = object.getRefPoint();
+      meas << refPoint.x(), refPoint.y(), object.pose.yaw;
       meas_vec.push_back(meas);
       Eigen::VectorXd diff_ctrv = meas - z_pred_lidar_direction_ctrv_;
       double e_ctrv = exp(-0.5 * diff_ctrv.transpose() * s_lidar_direction_ctrv_.inverse() * diff_ctrv);
@@ -740,7 +746,9 @@ void UKF::updateMeasurementForCTRV(const std::vector<BBox>& object_vec)
     else
     {
       meas = Eigen::VectorXd(num_lidar_state_);
-      meas << object.pose.position.x, object.pose.position.y;
+      // meas << object.pose.position.x, object.pose.position.y;
+      point refPoint = object.getRefPoint();
+      meas << refPoint.x(), refPoint.y();
       meas_vec.push_back(meas);
       Eigen::VectorXd diff_ctrv = meas - z_pred_ctrv_;
       double e_ctrv = exp(-0.5 * diff_ctrv.transpose() * s_ctrv_.inverse() * diff_ctrv);

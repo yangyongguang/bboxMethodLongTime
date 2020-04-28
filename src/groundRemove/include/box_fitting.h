@@ -121,10 +121,15 @@ void setShapeOcclusionCheck(
             );
 
 // 判断俩个 bbox 是否相交
-bool IsBBoxIntersecting(const Cloud & boxA, const Cloud & boxB);
+bool IsBBoxIntersecting(const Cloud & boxA, const Cloud & boxB, bool debug);
 bool IsBBoxIntersecting(const BBox & boxA, const BBox & boxB, bool debug);
 // 通过中心距离筛选俩个的相交
 // bool IsBBoxIntersectingFromDist(const Cloud &, const)
+
+// 去除重叠的 bbox 将 bboxToCluster 中的索引设置 -1
+void removeIntersectBBox(const vector<Cloud::Ptr> & bbPoints,
+                               std::unordered_map<int, int> & bboxToCluster,
+                               const int & debugID);
 
 // 判断 boundding box 的参考点函数属于 bbox 那个点
 // 输入为， 点云 I L S， 是否遮挡， 还有 cluster 信息
@@ -133,4 +138,7 @@ void getBBoxRefPoint(const vector<Cloud::Ptr> & clusteredPoints,
                            std::unordered_map<int, int> & bboxToCluster,
                            Cloud::Ptr & markPoints,
                            const int & debugID);
+
+//  获取点云的面积
+float getCloudBBoxArea(const Cloud & bbox);
 #endif //MY_PCL_TUTORIAL_BOX_FITTING_H

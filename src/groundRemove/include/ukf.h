@@ -224,6 +224,7 @@ public:
   // yyg
   float width_;
   float length_;
+  int refIdx_;
 public:
   bool debugBool = false;
   /**

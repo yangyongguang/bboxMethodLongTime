@@ -117,6 +117,8 @@ private slots:
     void onClearSelection();
     // 将点云转换为 BBoxs 点的函数
     std::vector<BBox> CloudToBBoxs(const std::vector<Cloud::Ptr> & bboxPts);
+    
+    inline Eigen::Matrix3f getMatrixL2G(){return transL2G_;}
 
 private:
     // Ui::Widget *ui;

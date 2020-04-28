@@ -90,6 +90,7 @@ private:
   // -------------------------
   // 更新转换矩阵
   void updateTransMatrix(const int & currentFrame);
+  void updateTransMatrix(const Eigen::Matrix3f & transL2G);
   point transPointG2L(const point & input);
   point transPointL2G(const point & input);
   void transformPoseToGlobal(const std::vector<BBox>& input,
@@ -169,6 +170,8 @@ private:
 
   BBox makeNewBBoxSize(const UKF & target,
                        const float & yaw);
+
+  point getNearestPoint(const BBox & box, const double & x, const double & y);
 public:
   ImmUkfPda();
   void callback(const std::vector<BBox>& input, 
@@ -176,7 +179,8 @@ public:
                 vector<Cloud::Ptr> & trackerBBox,
                 const double & ts,
                 const int & trackID,
-                Cloud::Ptr & connectPoints);
+                Cloud::Ptr & connectPoints,
+                const Eigen::Matrix3f & transL2G);
 };
 
 #endif /* OBJECT_TRACKING_IMM_UKF_JPDAF_H */

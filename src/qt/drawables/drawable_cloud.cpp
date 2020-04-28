@@ -12,7 +12,7 @@ void DrawableTracking::Draw() const
     // fprintf(stderr, "DrawableTracking::Draw() after _cloud_ptr check\n");
     glPushMatrix();
     glEnable(GL_LINE_STIPPLE);
-    glLineWidth(2.0f);
+    glLineWidth(4.0f);
     glLineStipple(2, 0x3F3F);
     glPointSize(_pointSize);
     // 绘制虚线
@@ -57,7 +57,7 @@ void DrawableTracking::Draw() const
 
     // 绘制点 虚线俩个端点
     glPushMatrix();
-    glPointSize(8.0f);
+    glPointSize(12.0f);
     glBegin(GL_POINTS);   
 
     for (int idx = 0; idx < points.size() / 4; ++idx)
@@ -76,13 +76,13 @@ void DrawableTracking::Draw() const
         // 二维显示
         glColor3f(1.0f, 0.0f, 0.0f);  // cv
         glVertex3f(real_point1.x(), real_point1.y(), -1.72f);
-        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(1.0f, 1.0f, 1.0f);  // 预测值
         // glVertex3f(real_point4.x(), real_point4.y(), -1.72f);
         glVertex3f(real_point3.x(), real_point3.y(), -1.72f);
 
         glColor3f(0.0f, 1.0f, 0.0f);  // ctrv
         glVertex3f(real_point2.x(), real_point2.y(), -1.72f);
-        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(1.0f, 1.0f, 1.0f);  // 预测 merge 之后的值
         // glVertex3f(real_point5.x(), real_point5.y(), -1.72f);
         glVertex3f(real_point4.x(), real_point4.y(), -1.72f);
 
@@ -167,9 +167,9 @@ void DrawableCloud::Draw() const
 void DrawableCloud::drawCircle(const float & radius, const int & numPoints) const
 {
     // glVertex2f(R*cos(2*Pi/n*i), R*sin(2*Pi/n*i));
-    // glBegin(GL_LINE_STRIP);
+    glBegin(GL_LINE_STRIP);
     // 实心圆
-    glBegin(GL_TRIANGLE_FAN);
+    // glBegin(GL_TRIANGLE_FAN);
     for (size_t idx = 0; idx < numPoints; ++idx)
     {
         glVertex3f(radius * cos(2 * M_PI / numPoints * idx), radius * sin(2 * M_PI / numPoints * idx), -1.71f);

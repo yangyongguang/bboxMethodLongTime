@@ -837,6 +837,10 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
                 if (debugBool)
                     fprintf(stderr, "using fitLineRansac ptSet.size %d, longEdge %f\n", ptSet.size(), longEdge);
                 rectK = fitLineRansac(ptSet, 100, 0.12f, correct, cluster.line,debugBool);
+                // 对于一些拟合比较好的， 有可能设置的阈值 0.12f 过大， 这样会存在随机任意直线都会满足所有点的情况
+                // 所以需要设置一个较小的阈值， 或者对于初步 ransac 筛选后的点用最小二乘法再次拟合一次
+                if (correct > 0.85f)
+                    rectK = fitLineRansac(ptSet, 100, 0.05f, correct, cluster.line,debugBool);
             }
             else
             {
@@ -1049,6 +1053,10 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
         }
     }      
 
+    // 重叠部分 bbox 丢弃， 将 bboxToCluster 设置为 -1, 同时对于
+    // -1 的部分， 不进行 ref 点的判断， 后续 CloudToBBoxs 函数对于
+    // 没有 ref 点的 Cloud 不进行转换， 也不输入到跟踪部分
+    removeIntersectBBox(bbPoints, bboxToCluster, debugID);
     // 开始判断跟踪点的选择问题
     getBBoxRefPoint(clusteredPoints, bbPoints, bboxToCluster, markPoints, debugID);
 }
@@ -1128,68 +1136,162 @@ bool IsBBoxIntersecting(const BBox & boxA, const BBox & boxB, bool debug)
     return true;
 }
 
+void removeIntersectBBox(const vector<Cloud::Ptr> & bbPoints,
+                               std::unordered_map<int, int> & bboxToCluster,
+                               const int & debugID)
+{
+    int numBBoxs = bbPoints.size();
+    std::vector<float> areaVec(numBBoxs, -1);
+    for (int i = 0; i < numBBoxs; ++i)
+    {
+        Cloud bboxCurr = (*bbPoints[i]);
+        float Area1 = -1;
+        if (areaVec[i] < 0)
+        {
+            // 为了剔除车辆支架点云部分
+            Area1 = getCloudBBoxArea(bboxCurr);
+            if (bboxCurr[0].dist2D() < 2.5f && Area1 < 0.3f)
+                bboxToCluster[i] = -1;
+            areaVec[i] = Area1;
+        }
+        else
+        {
+            Area1 = areaVec[i];
+        }
+        
+        for (int j = 0; j < numBBoxs; ++j)
+        {
+            bool debug = false;
+            if (i == j) continue;
+            if (bboxToCluster[j] == -1) continue;
+            Cloud & bboxComp = (*bbPoints[j]);
+            bool insertBool = IsBBoxIntersecting(bboxCurr, bboxComp, debug);
+            if (insertBool)
+            {
+                float Area2 = -1;
+                if (areaVec[j] < 0)
+                {
+                    // 为了剔除车辆支架点云部分
+                    Area2 = getCloudBBoxArea(bboxComp);
+                    if (bboxComp[0].dist2D() < 2.5f && Area2 < 0.3f)
+                        bboxToCluster[j] = -1;
+                    areaVec[j] = Area2;
+                }
+                else
+                {
+                    Area2 = areaVec[j];
+                }
+
+                if (Area1 < Area2) bboxToCluster[i] = -1;
+                else               bboxToCluster[j] = -1;
+            }
+        }
+    }
+}
+
+float getCloudBBoxArea(const Cloud & bbox)
+{
+    float len1 = distTwoPoint(bbox[0], bbox[1]);
+    float len2 = distTwoPoint(bbox[1], bbox[2]);
+    return len2 * len1;
+}
+
 void getBBoxRefPoint(const vector<Cloud::Ptr> & clusteredPoints, 
                            vector<Cloud::Ptr> & bbPoints,
                            std::unordered_map<int, int> & bboxToCluster, 
                            Cloud::Ptr & markPoints,
                            const int & debugID)
 {
+    // 避免重复计算， 我们将例如 bbox点存储时候的顺序为 0,1,2,3,4,5,6,7
+    // 而我们只需要使用前 0, 1, 2, 3, 4 个点 所以这时候， 我们需要记录点为八个点, -1 表示还未求出跟踪点大小
+    // 使用 10, 21， 32, 30, 20 表示前后点，这些复合点 都是由 前后俩个点的索引组成
+    // 使用 如 320 表示依赖边为 32 但是没找到 ref 点， 俩端都堵的 ISHAPE 类型
+    /*
+            0__________10____________1
+           |                         |
+           |                         |
+         30+           20            + 21
+           |                         |
+           3___________+_____________2
+                       32 
+    */
+    
     // 判断 L I S 三个方向
     for (int bboxIdx = 0; bboxIdx < bbPoints.size(); ++bboxIdx)
     {
         auto & bbox = (*bbPoints[bboxIdx]);
         Cloud bboxTmp = bbox;  // 备份， 防止改值, 比如排序使用这种情况
         int clusterIdx = bboxToCluster[bboxIdx];
+        // 表示多个 bbox 交叉的情况， 被剔除掉了
+        if (clusterIdx == -1) continue;
         auto & cluster = (*clusteredPoints[clusterIdx]);
-
+        
         if (cluster.shape == shapeType::LSHAPE)
         {
             // L shape 的规则为， 不管是那种堵的情况， 都是选择与拐点最近的 bbox 点作为参考点
             // 寻找离 拐点 最近的 bbox 点作为 ref 点
             point cornerPt = cluster[cluster.minOPoint];
-            auto pos = *std::min_element(bbox.begin(), bbox.begin() + 4, 
+            auto posIter = std::min_element(bbox.begin(), bbox.begin() + 4, 
                         [& cornerPt](const point & pt1, const point & pt2)
                             {return distTwoPoint(pt1, cornerPt) < distTwoPoint(pt2, cornerPt);});
+            int posIdx = posIter - bbox.begin();
+            auto pos = *posIter;
+            bbox.refIdx = posIdx;    // 记录拐点索引
             markPoints->emplace_back(point(pos.x(), pos.y(), pos.z(), pointType::TRACK));
         }
         else if (cluster.shape == shapeType::ISHAPE)
         {
             // I shape 的规则
+            std::vector<intToPoint> bboxID(4, intToPoint(0, point()));
+            assert(bboxID.size() == 4);
+            for (int idx = 0; idx < 4; ++idx) bboxID[idx] = intToPoint(idx, bbox[idx]);
+            // 先根据 bbox 点距离拟合直线， 对 bboxTmp 点进行排序
+            // 使用与拟合直线距离最近的俩个点
+            Point2f line = cluster.line;
+            std::sort(bboxID.begin(), bboxID.end(), 
+                    [&line](const intToPoint & elem1, const intToPoint & elem2)
+                    {return pointToLine(elem1.pt, line) < pointToLine(elem2.pt, line);});
+            // std::sort(bboxTmp.begin(), bboxTmp.begin() + 4, 
+            //             [&line](const point & pt1, const point & pt2)
+            //             {return pointToLine(pt1, line) < pointToLine(pt2, line);});
             // 俩者皆堵， 使用预测点在该边上的投影作为 ref 点， 因为这时候的测量已经是不可信赖的点了
             if (cluster.occlusionMax && cluster.occlusionMin)  
             {
                 // 没有参考点选择 do nothing
+                int oneIdx = bboxID[0].id;
+                int twoIdx = bboxID[1].id;
+                // 设置可以依赖的边
+                bbox.refIdx = std::max(oneIdx, twoIdx) * 100 + std::min(oneIdx, twoIdx) * 10 + 0;
+                // if (debugID == clusterIdx)
+                // {
+                //     fprintf(stderr, "two occlusion refIDx is : %d, pos : (%f, %f)\n", 
+                //                 bbox.refIdx, pos.x(), pos.y(), pos.z());
+                // }
+                // 俩端都堵塞， 并没有绘制点
             }
             else if (cluster.occlusionMin ^ cluster.occlusionMax)  // 俩则互异为真， 一端堵， 一端不堵
             {
-                Point2f line = cluster.line;
-                std::sort(bboxTmp.begin(), bboxTmp.begin() + 4, 
-                        [&line](const point & pt1, const point & pt2)
-                        {return pointToLine(pt1, line) < pointToLine(pt2, line);});
                 // 找到距离不堵点的最近的 bbox 点云
                 point pt = (cluster.occlusionMax) ? cluster[cluster.minLPoint] : cluster[cluster.maxLPoint];
                 // 距离拟合直线最近的俩个点， 然后根据堵塞的点找最近的 bbox 点作为 ref 点
-                point pos = *std::min_element(bboxTmp.begin(), bboxTmp.begin() + 2, 
-                        [& pt](const point & pt1, const point & pt2)
-                        {return distTwoPoint(pt1, pt) < distTwoPoint(pt2, pt);});
+                intToPoint res = *std::min_element(bboxID.begin(), bboxID.begin() + 2, 
+                        [& pt](const intToPoint & elem1, const intToPoint & elem2)
+                        {return distTwoPoint(elem1.pt, pt) < distTwoPoint(elem2.pt, pt);});
+                point pos = res.pt;
                 markPoints->emplace_back(point(pos.x(), pos.y(), pos.z(), pointType::TRACK));
+
+                // 添加参考点索引
+                bbox.refIdx = res.id;
             }
             else // (!cluster.occlusionMin && !cluster.occlustionMax) // 俩则都不堵
             {
-                // 使用俩者的中心点
-                // 使用与拟合直线距离最近的俩个点
-                Point2f line = cluster.line;
-
-                std::sort(bboxTmp.begin(), bboxTmp.begin() + 4, 
-                        [&line](const point & pt1, const point & pt2)
-                        {return pointToLine(pt1, line) < pointToLine(pt2, line);});
-                // point ptMax = cluster[cluster.maxLPoint];
-                // point posMax = *std::min_element(bbox.begin(), bbox.begin() + 4, 
-                //         [& ptMax](const point & pt1, const point & pt2)
-                //         {return distTwoPoint(pt1, ptMax) < distTwoPoint(pt2, ptMax);});
-                // point pos = (posMin + posMax) * 0.5;  // 等于重载除
-                point pos = (bboxTmp[0] + bboxTmp[1]) * 0.5;
+                point pos = (bboxID[0].pt + bboxID[1].pt) * 0.5;
                 markPoints->emplace_back(point(pos.x(), pos.y(), pos.z(), pointType::TRACK));
+                
+                int oneIdx = bboxID[0].id;
+                int twoIdx = bboxID[1].id;
+                // 添加参考点索引
+                bbox.refIdx = std::max(oneIdx, twoIdx) * 10 + std::min(oneIdx, twoIdx);
             }
             
         }
@@ -1199,8 +1301,15 @@ void getBBoxRefPoint(const vector<Cloud::Ptr> & clusteredPoints,
             // 与 cluster 某个参考点的最近的 bbox 点， 因为特殊性
             // 有一端堵塞
             // 从小到大排列, 只排序前 4 个
-            std::sort(bboxTmp.begin(), bboxTmp.begin() + 4, 
-                    [](const point & pt1, const point & pt2){return pt1.dist2D() < pt2.dist2D();});
+            std::vector<intToPoint> bboxID(4, intToPoint(0, point()));
+            assert(bboxID.size() == 4);
+            for (int idx = 0; idx < 4; ++idx)  bboxID[idx] = intToPoint(idx, bbox[idx]);
+            // 先根据 bbox 点距离拟合直线， 对 bboxTmp 点进行排序
+            // 使用与拟合直线距离最近的俩个点
+            Point2f line = cluster.line;
+            std::sort(bboxID.begin(), bboxID.end(), 
+                    [](const intToPoint & elem1, const intToPoint & elem2)
+                    {return elem1.pt.dist2D() < elem2.pt.dist2D();});
             
             if (debugID == clusterIdx)
             {
@@ -1212,15 +1321,23 @@ void getBBoxRefPoint(const vector<Cloud::Ptr> & clusteredPoints,
             if (cluster.occlusionMin ^ cluster.occlusionMax)
             {
                 point pt = (cluster.occlusionMax) ? cluster[cluster.minLPoint] : cluster[cluster.maxLPoint];
-                point pos = *std::min_element(bboxTmp.begin(), bboxTmp.begin() + 2, 
-                    [& pt](const point & pt1, const point & pt2)
-                    {return distTwoPoint(pt1, pt) < distTwoPoint(pt2, pt);});
+                auto res = *std::min_element(bboxID.begin(), bboxID.begin() + 2, 
+                    [& pt](const intToPoint & elem1, const intToPoint & elem2)
+                    {return distTwoPoint(elem1.pt, pt) < distTwoPoint(elem2.pt, pt);});
+                point pos = res.pt;
                 markPoints->emplace_back(point(pos.x(), pos.y(), pos.z(), pointType::TRACK));
+
+                // 添加参考点
+                bbox.refIdx = res.id;
             }
             else  // 俩端都不堵， 俩端都堵
             {
-                point pos = (bboxTmp[0] + bboxTmp[1]) * 0.5;
+                int oneIdx = bboxID[0].id;
+                int twoIdx = bboxID[1].id;
+                point pos = (bboxID[0].pt + bboxID[1].pt) * 0.5;
                 markPoints->emplace_back(point(pos.x(), pos.y(), pos.z(), pointType::TRACK));
+                // 添加参考点
+                bbox.refIdx = std::max(oneIdx, twoIdx) * 10 + std::min(oneIdx, twoIdx);
             }
             
         }
@@ -1229,14 +1346,19 @@ void getBBoxRefPoint(const vector<Cloud::Ptr> & clusteredPoints,
             // 以中心点为参考点
             point pos = (bbox[0] + bbox[2]) * 0.5;
             markPoints->emplace_back(point(pos.x(), pos.y(), pos.z(), pointType::TRACK));
+            bbox.refIdx = 20;
+        }
+
+        if (debugID == clusterIdx)
+        {
+            fprintf(stderr, "refIdx is : %d\n", bbox.refIdx);
         }
         
     }
 }
 
-bool IsBBoxIntersecting(const Cloud & boxA, const Cloud & boxB)
+bool IsBBoxIntersecting(const Cloud & boxA, const Cloud & boxB, bool debug)
 {
-    // 迭代俩个 bbox 每个都选俩个
     for (int bboxIdx = 0; bboxIdx < 2; ++bboxIdx)
     {
         // 迭代选择俩个边， 俩个 bbox 投影每个边的垂线
@@ -1254,30 +1376,53 @@ bool IsBBoxIntersecting(const Cloud & boxA, const Cloud & boxB)
                 p2 = boxB[idx + 1];
             }            
 
+
             // 边的垂直投影向量
             Point2f normal(p2.y() - p1.y(), p1.x() - p2.x());
+            if (debug)
+            {
+                fprintf(stderr, "normal %f,%f\n", normal.x, normal.y);
+            }
             float minA = std::numeric_limits<float>::max();
-            float maxA = std::numeric_limits<float>::min();
+            // float maxA = std::numeric_limits<float>::min(); 理解错误， 最小值是 0， 使用 lowest 最合适
+            float maxA = std::numeric_limits<float>::lowest();
 
             float minB = std::numeric_limits<float>::max();
-            float maxB = std::numeric_limits<float>::min();
+            float maxB = std::numeric_limits<float>::lowest();
 
-            // 计算每个 bbox 在投影上的距离，有正负之分
-            for (int j = 0; j < boxA.size(); ++j)
+            if (debug)
             {
+                fprintf(stderr, "initial: minA , maxA, minB, maxB, %f, %f, %f, %f\n", minA, maxA, minB, maxB);
+            }
+            // 计算每个 bbox 在投影上的距离，有正负之分
+            for (int j = 0; j < 4; ++j)
+            {
+
                 float projected = normal.x * boxA[j].x() + normal.y * boxA[j].y();
                 if (projected < minA) minA = projected;
                 if (projected > maxA) maxA = projected;
+                if (debug)
+                {
+                    fprintf(stderr, "projected %f, boxA[j].x() %f,  boxA[j].y() %f\n", 
+                            projected, boxA[j].x(), boxA[j].y());
+                }
             }
 
-            for (int j = 0; j < boxB.size(); ++j)
+            for (int j = 0; j < 4; ++j)
             {
                 float projected = normal.x * boxB[j].x() + normal.y * boxB[j].y();
                 if (projected < minB) minB = projected;
                 if (projected > maxB) maxB = projected;
+                if (debug)
+                {
+                    fprintf(stderr, "projected %f, boxB[j].x() %f,  boxB[j].y() %f\n", 
+                            projected, boxB[j].x(), boxB[j].y());
+                }
             }
             // 找到分离边， 不相交
-            if (maxA < minB || maxB < minA) return false;
+            if (debug)
+                fprintf(stderr, "minA , maxA, minB, maxB, %f, %f, %f, %f\n", minA, maxA, minB, maxB);
+            if (maxA < minB || maxB < minA) return false;            
         }
     }
     // 是相交的
@@ -1455,6 +1600,10 @@ float fitLineRansac(const vector<cv::Point2f>& clouds,
     // 返回 k
 
     correct = 1.0f * max_num_fit / clouds.size();
+    if (debug)
+    {
+        fprintf(stderr, "Correct percent : %f\n", correct);
+    }
     // if (debug)
     // {
     //     fprintf(stderr, "res line %f, max_num_fit %d\n", -1 * best_plane.x / best_plane.y, max_num_fit);

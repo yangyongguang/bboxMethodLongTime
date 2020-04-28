@@ -545,7 +545,7 @@ void MainWindow::onSliderMovedTo(int cloud_number)
         Eigen::Vector3f trackerBBoxColor(0.0f, 1.0f, 0.0f);
         // fprintf(stderr, "tracker start\n");
         tracker.callback(CloudToBBoxs(bboxPts), curr_data_idx, 
-                trackerBBoxPts, timestampVec[curr_data_idx],trackIDSB->value(), connectPoints);
+                trackerBBoxPts, timestampVec[curr_data_idx],trackIDSB->value(), connectPoints, getMatrixL2G());
         // fprintf(stderr, "tracker finished with tracker bbox : %d\n", trackerBBoxPts.size());
         // _viewer->AddDrawable(DrawSelectAbleBBox::FromCloud(trackerBBoxPts, false, trackerBBoxColor), "DrawSelectAbleTrackerBBox");
         // for (int idx = 0; idx < trackerBBoxPts.size(); ++idx)
@@ -566,7 +566,8 @@ void MainWindow::onSliderMovedTo(int cloud_number)
         std::chrono::high_resolution_clock::time_point end_tracker = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> fp_ms_tracker = end_tracker - start_tracker;
         std::cout << "ImmUkfPda tracker took about " << fp_ms_tracker.count() << " ms" << std::endl;  
-
+        // 强制刷新一次， 将当前添加的内容显示完全
+        _viewer->update();
     }
 
     cv::Mat visImage, depthImage;
@@ -710,67 +711,39 @@ std::vector<BBox> MainWindow::CloudToBBoxs(const std::vector<Cloud::Ptr> & bboxP
 {
     // 过滤掉一些重合的检测
     int numBBoxs = bboxPts.size();
-    // std::vector<bool> saveOrNot(numBBoxs, true);
-    // bool debug = false;
-    /*
-    for (int i = 0; i < numBBoxs; ++i)
-    {
-        if (!saveOrNot[i]) continue;
-        if (debug) continue; // 为了调试找到第一个
-        Cloud & bboxCurr = (*bboxPts[i]);
-
-        float len1 = (bboxCurr[0] - bboxCurr[2]).dist2D();
-        for (int j = 0; j < numBBoxs; ++j)
-        {
-            if (i == j) continue;
-            if (!saveOrNot[j]) continue;
-            Cloud & bboxComp = (*bboxPts[j]);
-            bool insertBool = IsBBoxIntersecting(bboxCurr, bboxComp);
-            if (insertBool)
-            {
-                fprintf(stderr, "%f, %f, %f, %f\n %f, %f, %f, %f\n", 
-                        bboxCurr[0].x(), bboxCurr[0].y(), bboxCurr[2].x(), bboxCurr[2].y(),
-                        bboxComp[0].x(), bboxComp[0].y(), bboxComp[2].x(), bboxComp[2].y());
-                debug = true;
-                float len2 = (bboxComp[0] - bboxComp[2]).dist2D();  
-                if (len1 > 3 || len2 > 3)
-                {
-                    // if (len1 < len2)
-                        saveOrNot[i] = false;
-                    // else
-                        saveOrNot[j] = false;
-                }       
-            }
-        }
-    }
-
-    int numSave = 0;
-    for (int idx = 0; idx < saveOrNot.size(); ++idx)
-    {
-        if (saveOrNot[idx])
-            ++numSave;
-    }
-    */
-    // std::vector<BBox> res(bboxPts.size() + 1);
-
-    std::vector<BBox> res(numBBoxs + 1);
-
+    std::vector<BBox> res;
     for (int idx = 0; idx < numBBoxs; ++idx)
     {
         auto & cloud = (*bboxPts[idx]);
-        res[idx] = BBox(cloud[0], cloud[1], cloud[2], cloud[3]);
-        res[idx].minZ = cloud[0].z();
-        res[idx].maxZ = cloud[4].z();
+        // 这一部分是剔除重叠交叉的 bbox
+        if (cloud.refIdx == -1) continue;
+        auto bbox = BBox(cloud[0], cloud[1], cloud[2], cloud[3]);
+        bbox.minZ = cloud[0].z();
+        bbox.maxZ = cloud[4].z();
+        // 赋值 refIdx
+        bbox.refIdx = cloud.refIdx;
+        // 剔除车载激光雷达支架点云的干扰
+        // if (std::abs(bbox.pose.position.x) < 3.0f &&
+        //     std::abs(bbox.pose.position.y) < 3.0f &&
+        //     (bbox.dimensions.x * bbox.dimensions.y) < 0.01f)
+        // {
+        //     fprintf(stderr, "CloudToBBoxs <=> bbox pose and demension (%f, %f), (%f, %f)\n", 
+        //                 bbox.pose.position.x, bbox.pose.position.y, bbox.dimensions.x, bbox.dimensions.y);
+        //     continue;
+        // }
+        res.emplace_back(bbox);
     }
     // 添加自车的跟踪轨迹
     point pt1 = transPointL2G(point(2.5f, 1.4f, 0.0f));
     point pt2 = transPointL2G(point(2.5f, -1.4f, 0.0f));
     point pt3 = transPointL2G(point(-2.5f, -1.4f, 0.0f));
     point pt4 = transPointL2G(point(-2.5f, 1.4f, 0.0f));
-    res[numBBoxs] = BBox(pt1, pt2, pt3, pt4);
-    res[numBBoxs].minZ = -1.73f;
-    res[numBBoxs].maxZ = 0.0f;
-    
+    auto selfBBox = BBox(pt1, pt2, pt3, pt4);
+    selfBBox.minZ = -1.73f;
+    selfBBox.maxZ = 0.0f;
+    selfBBox.refIdx = 20; 
+    res.emplace_back(selfBBox);
+    // 跟踪取中心点
     return res;
 }
 

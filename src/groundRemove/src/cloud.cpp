@@ -84,3 +84,28 @@ void BBox::updateCenterAndYaw()
 
     dimensions.z = 0.0;
 }
+
+// 获取 ref 点
+point BBox::getRefPoint() const
+{
+    // fprintf(stderr, "refIdx, refIdx / 10, refIdx % 10 : %d, %d, %d, \n", 
+    //             refIdx, refIdx / 10, refIdx % 10);
+    // 角点
+    if (refIdx < 4)  // egg 2
+    {
+        return points[refIdx];
+    } // 边点
+    else if (refIdx > 9 && refIdx < 99) // egg 21
+    {
+        point firstPt = points[refIdx % 10];
+        point secondPt = points[refIdx / 10];
+        return (firstPt + secondPt) * 0.5;
+    } // 参考边
+    else // egg 210
+    {
+        // 暂时返回该边的中点
+        point firstPt = points[refIdx / 100];
+        point secondPt = points[refIdx / 10 % 10];
+        return (firstPt + secondPt) * 0.5;
+    }    
+}
