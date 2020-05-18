@@ -142,7 +142,12 @@ void DrawableCloud::Draw() const
         auto real_point = point.AsEigenVector();
         // 其他的显示点的类型
         if (point.ptType != pointType::TRACK)
+        {
             glVertex3f(real_point.x(), real_point.y(), -1.73f); // 点云二维显示
+            // glVertex3f(real_point.x(), real_point.y(), real_point.z()); // 点云二维显示
+            // fprintf(stderr, "real_point.z() %f\n", real_point.z());
+        }
+
     }
     glEnd();
     glPopMatrix();

@@ -60,15 +60,15 @@ include src/groundRemove/CMakeFiles/box_fitting.dir/flags.make
 src/groundRemove/CMakeFiles/box_fitting.dir/src/box_fitting.cpp.o: src/groundRemove/CMakeFiles/box_fitting.dir/flags.make
 src/groundRemove/CMakeFiles/box_fitting.dir/src/box_fitting.cpp.o: ../src/groundRemove/src/box_fitting.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yyg/code/lidarCode/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object src/groundRemove/CMakeFiles/box_fitting.dir/src/box_fitting.cpp.o"
-	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/g++-5   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/box_fitting.dir/src/box_fitting.cpp.o -c /home/yyg/code/lidarCode/src/groundRemove/src/box_fitting.cpp
+	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/box_fitting.dir/src/box_fitting.cpp.o -c /home/yyg/code/lidarCode/src/groundRemove/src/box_fitting.cpp
 
 src/groundRemove/CMakeFiles/box_fitting.dir/src/box_fitting.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/box_fitting.dir/src/box_fitting.cpp.i"
-	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/groundRemove/src/box_fitting.cpp > CMakeFiles/box_fitting.dir/src/box_fitting.cpp.i
+	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/groundRemove/src/box_fitting.cpp > CMakeFiles/box_fitting.dir/src/box_fitting.cpp.i
 
 src/groundRemove/CMakeFiles/box_fitting.dir/src/box_fitting.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/box_fitting.dir/src/box_fitting.cpp.s"
-	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/groundRemove/src/box_fitting.cpp -o CMakeFiles/box_fitting.dir/src/box_fitting.cpp.s
+	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/groundRemove/src/box_fitting.cpp -o CMakeFiles/box_fitting.dir/src/box_fitting.cpp.s
 
 src/groundRemove/CMakeFiles/box_fitting.dir/src/box_fitting.cpp.o.requires:
 

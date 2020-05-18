@@ -279,6 +279,8 @@ public:
 
     // ref 点所在位置索引
     int refIdx = -1;
+    // I L S MinArea
+    shapeType shape = shapeType::LSHAPE;
 };
 
 struct intToPoint

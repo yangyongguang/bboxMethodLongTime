@@ -60,15 +60,15 @@ include src/qt/drawables/CMakeFiles/drawable.dir/flags.make
 src/qt/drawables/CMakeFiles/drawable.dir/drawable_cloud.cpp.o: src/qt/drawables/CMakeFiles/drawable.dir/flags.make
 src/qt/drawables/CMakeFiles/drawable.dir/drawable_cloud.cpp.o: ../src/qt/drawables/drawable_cloud.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yyg/code/lidarCode/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object src/qt/drawables/CMakeFiles/drawable.dir/drawable_cloud.cpp.o"
-	cd /home/yyg/code/lidarCode/build/src/qt/drawables && /usr/bin/g++-5   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/drawable.dir/drawable_cloud.cpp.o -c /home/yyg/code/lidarCode/src/qt/drawables/drawable_cloud.cpp
+	cd /home/yyg/code/lidarCode/build/src/qt/drawables && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/drawable.dir/drawable_cloud.cpp.o -c /home/yyg/code/lidarCode/src/qt/drawables/drawable_cloud.cpp
 
 src/qt/drawables/CMakeFiles/drawable.dir/drawable_cloud.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/drawable.dir/drawable_cloud.cpp.i"
-	cd /home/yyg/code/lidarCode/build/src/qt/drawables && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/qt/drawables/drawable_cloud.cpp > CMakeFiles/drawable.dir/drawable_cloud.cpp.i
+	cd /home/yyg/code/lidarCode/build/src/qt/drawables && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/qt/drawables/drawable_cloud.cpp > CMakeFiles/drawable.dir/drawable_cloud.cpp.i
 
 src/qt/drawables/CMakeFiles/drawable.dir/drawable_cloud.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/drawable.dir/drawable_cloud.cpp.s"
-	cd /home/yyg/code/lidarCode/build/src/qt/drawables && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/qt/drawables/drawable_cloud.cpp -o CMakeFiles/drawable.dir/drawable_cloud.cpp.s
+	cd /home/yyg/code/lidarCode/build/src/qt/drawables && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/qt/drawables/drawable_cloud.cpp -o CMakeFiles/drawable.dir/drawable_cloud.cpp.s
 
 src/qt/drawables/CMakeFiles/drawable.dir/drawable_cloud.cpp.o.requires:
 
@@ -84,15 +84,15 @@ src/qt/drawables/CMakeFiles/drawable.dir/drawable_cloud.cpp.o.provides.build: sr
 src/qt/drawables/CMakeFiles/drawable.dir/drawable_line.cpp.o: src/qt/drawables/CMakeFiles/drawable.dir/flags.make
 src/qt/drawables/CMakeFiles/drawable.dir/drawable_line.cpp.o: ../src/qt/drawables/drawable_line.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yyg/code/lidarCode/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object src/qt/drawables/CMakeFiles/drawable.dir/drawable_line.cpp.o"
-	cd /home/yyg/code/lidarCode/build/src/qt/drawables && /usr/bin/g++-5   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/drawable.dir/drawable_line.cpp.o -c /home/yyg/code/lidarCode/src/qt/drawables/drawable_line.cpp
+	cd /home/yyg/code/lidarCode/build/src/qt/drawables && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/drawable.dir/drawable_line.cpp.o -c /home/yyg/code/lidarCode/src/qt/drawables/drawable_line.cpp
 
 src/qt/drawables/CMakeFiles/drawable.dir/drawable_line.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/drawable.dir/drawable_line.cpp.i"
-	cd /home/yyg/code/lidarCode/build/src/qt/drawables && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/qt/drawables/drawable_line.cpp > CMakeFiles/drawable.dir/drawable_line.cpp.i
+	cd /home/yyg/code/lidarCode/build/src/qt/drawables && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/qt/drawables/drawable_line.cpp > CMakeFiles/drawable.dir/drawable_line.cpp.i
 
 src/qt/drawables/CMakeFiles/drawable.dir/drawable_line.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/drawable.dir/drawable_line.cpp.s"
-	cd /home/yyg/code/lidarCode/build/src/qt/drawables && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/qt/drawables/drawable_line.cpp -o CMakeFiles/drawable.dir/drawable_line.cpp.s
+	cd /home/yyg/code/lidarCode/build/src/qt/drawables && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/qt/drawables/drawable_line.cpp -o CMakeFiles/drawable.dir/drawable_line.cpp.s
 
 src/qt/drawables/CMakeFiles/drawable.dir/drawable_line.cpp.o.requires:
 
@@ -108,15 +108,15 @@ src/qt/drawables/CMakeFiles/drawable.dir/drawable_line.cpp.o.provides.build: src
 src/qt/drawables/CMakeFiles/drawable.dir/drawable_selectable_cloud.cpp.o: src/qt/drawables/CMakeFiles/drawable.dir/flags.make
 src/qt/drawables/CMakeFiles/drawable.dir/drawable_selectable_cloud.cpp.o: ../src/qt/drawables/drawable_selectable_cloud.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yyg/code/lidarCode/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object src/qt/drawables/CMakeFiles/drawable.dir/drawable_selectable_cloud.cpp.o"
-	cd /home/yyg/code/lidarCode/build/src/qt/drawables && /usr/bin/g++-5   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/drawable.dir/drawable_selectable_cloud.cpp.o -c /home/yyg/code/lidarCode/src/qt/drawables/drawable_selectable_cloud.cpp
+	cd /home/yyg/code/lidarCode/build/src/qt/drawables && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/drawable.dir/drawable_selectable_cloud.cpp.o -c /home/yyg/code/lidarCode/src/qt/drawables/drawable_selectable_cloud.cpp
 
 src/qt/drawables/CMakeFiles/drawable.dir/drawable_selectable_cloud.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/drawable.dir/drawable_selectable_cloud.cpp.i"
-	cd /home/yyg/code/lidarCode/build/src/qt/drawables && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/qt/drawables/drawable_selectable_cloud.cpp > CMakeFiles/drawable.dir/drawable_selectable_cloud.cpp.i
+	cd /home/yyg/code/lidarCode/build/src/qt/drawables && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/qt/drawables/drawable_selectable_cloud.cpp > CMakeFiles/drawable.dir/drawable_selectable_cloud.cpp.i
 
 src/qt/drawables/CMakeFiles/drawable.dir/drawable_selectable_cloud.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/drawable.dir/drawable_selectable_cloud.cpp.s"
-	cd /home/yyg/code/lidarCode/build/src/qt/drawables && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/qt/drawables/drawable_selectable_cloud.cpp -o CMakeFiles/drawable.dir/drawable_selectable_cloud.cpp.s
+	cd /home/yyg/code/lidarCode/build/src/qt/drawables && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/qt/drawables/drawable_selectable_cloud.cpp -o CMakeFiles/drawable.dir/drawable_selectable_cloud.cpp.s
 
 src/qt/drawables/CMakeFiles/drawable.dir/drawable_selectable_cloud.cpp.o.requires:
 

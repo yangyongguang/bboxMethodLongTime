@@ -984,7 +984,9 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
         // int minLIdx = (cluster[cluster.minLPoint].atan2Val + M_PI) / lshapeResRad + 1;
         // int maxLIdx = (cluster[cluster.maxLPoint].atan2Val + M_PI) / lshapeResRad - 1;
         int minLIdx = (cluster[cluster.minLPoint].atan2Val + M_PI) / lshapeResRad + 0.5 + 1;
+        if (minLIdx >= numShapePoints) minLIdx-=numShapePoints;
         int maxLIdx = (cluster[cluster.maxLPoint].atan2Val + M_PI) / lshapeResRad + 0.5 - 1;
+        if (maxLIdx < 0) minLIdx = 0;
         // fprintf(stderr, "minLIdx %d, maxLIdx %d\n", minLIdx, maxLIdx);
         // 当掐的端点记录的 检测目标索引 ID 已经被替换掉了， 所以被替换意味着被遮挡
         // 替换意味着其记录的值不再是当前 cluster 记录的 icluster.detectID
@@ -1001,12 +1003,14 @@ void getBBox(const vector<Cloud::Ptr> & clusteredPoints,
             fprintf(stderr, "cluster[cluster.maxLPoint] angle : %f, dist : %f\n", 
                         cluster[cluster.maxLPoint].atan2Val * 180 / M_PI,
                         cluster[cluster.maxLPoint].toSensor2D); 
-            fprintf(stderr, "shapeToClusterID[minLIdx] %d, angle : %f, dist : %f\n", 
+            fprintf(stderr, "minLIdx : %d, shapeToClusterID[minLIdx] %d, angle : %f, dist : %f\n", 
+                        minLIdx,
                         shapeToClusterID[minLIdx],
                         shapeAngleRef[minLIdx] * 180 / M_PI,
                         shapeToDist[minLIdx]);
                         // cluster[cluster.minLPoint].toSensor2D);
-            fprintf(stderr, "shapeToClusterID[maxLIdx] %d, angle : %f, dist : %f\n", 
+            fprintf(stderr, "maxLIdx : %d, shapeToClusterID[maxLIdx] %d, angle : %f, dist : %f\n", 
+                        maxLIdx,
                         shapeToClusterID[maxLIdx],
                         shapeAngleRef[maxLIdx] * 180 / M_PI,
                         shapeToDist[maxLIdx]);

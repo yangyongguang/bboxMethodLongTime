@@ -60,15 +60,15 @@ include src/qt/utils/CMakeFiles/utils.dir/flags.make
 src/qt/utils/CMakeFiles/utils.dir/utils.cpp.o: src/qt/utils/CMakeFiles/utils.dir/flags.make
 src/qt/utils/CMakeFiles/utils.dir/utils.cpp.o: ../src/qt/utils/utils.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yyg/code/lidarCode/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object src/qt/utils/CMakeFiles/utils.dir/utils.cpp.o"
-	cd /home/yyg/code/lidarCode/build/src/qt/utils && /usr/bin/g++-5   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/utils.dir/utils.cpp.o -c /home/yyg/code/lidarCode/src/qt/utils/utils.cpp
+	cd /home/yyg/code/lidarCode/build/src/qt/utils && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/utils.dir/utils.cpp.o -c /home/yyg/code/lidarCode/src/qt/utils/utils.cpp
 
 src/qt/utils/CMakeFiles/utils.dir/utils.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/utils.dir/utils.cpp.i"
-	cd /home/yyg/code/lidarCode/build/src/qt/utils && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/qt/utils/utils.cpp > CMakeFiles/utils.dir/utils.cpp.i
+	cd /home/yyg/code/lidarCode/build/src/qt/utils && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/qt/utils/utils.cpp > CMakeFiles/utils.dir/utils.cpp.i
 
 src/qt/utils/CMakeFiles/utils.dir/utils.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/utils.dir/utils.cpp.s"
-	cd /home/yyg/code/lidarCode/build/src/qt/utils && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/qt/utils/utils.cpp -o CMakeFiles/utils.dir/utils.cpp.s
+	cd /home/yyg/code/lidarCode/build/src/qt/utils && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/qt/utils/utils.cpp -o CMakeFiles/utils.dir/utils.cpp.s
 
 src/qt/utils/CMakeFiles/utils.dir/utils.cpp.o.requires:
 

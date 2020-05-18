@@ -30,7 +30,9 @@ MainWindow::MainWindow(QWidget *parent):
     lShpaeHorizonResolution = 0.08;
     infoTextEdit = new QTextEdit;
     this->playCloud = false;
-    this->curr_data_idx = 0;
+    // 设置开始位置
+    // this->curr_data_idx = 0;
+    curr_data_idx = 100;
     ui->setupUi(this);
 
     horizontalLayout_tracking = new QHBoxLayout();
@@ -516,7 +518,9 @@ void MainWindow::onSliderMovedTo(int cloud_number)
             // fprintf(stderr, "drawSelectedBBox objects size : %d\n", _viewer->drawSelectableBBox.objects.size());
             // _viewer->AddDrawable(DrawableBBox::FromCloud(bboxPts, true));
             // 转换到全局坐标系
-            transCloudL2G(bboxPts);
+
+            transCloudL2G(bboxPts, 8);
+
             // fprintf(stderr, "transCloudL2G(bboxPts);------------->\n");
             _viewer->drawSelectableBBox = DrawSelectAbleBBox(bboxPts, true);
             // _viewer->setBBoxs(bboxPts);  为了显示 id 设置给全局使用的
@@ -543,6 +547,8 @@ void MainWindow::onSliderMovedTo(int cloud_number)
         // 为了链接前一状态与预测状态的 虚线的点
         Cloud::Ptr connectPoints(new Cloud);
         Eigen::Vector3f trackerBBoxColor(0.0f, 1.0f, 0.0f);
+
+        
         // fprintf(stderr, "tracker start\n");
         tracker.callback(CloudToBBoxs(bboxPts), curr_data_idx, 
                 trackerBBoxPts, timestampVec[curr_data_idx],trackIDSB->value(), connectPoints, getMatrixL2G());
@@ -568,6 +574,7 @@ void MainWindow::onSliderMovedTo(int cloud_number)
         std::cout << "ImmUkfPda tracker took about " << fp_ms_tracker.count() << " ms" << std::endl;  
         // 强制刷新一次， 将当前添加的内容显示完全
         _viewer->update();
+        
     }
 
     cv::Mat visImage, depthImage;
@@ -595,11 +602,11 @@ void MainWindow::onSliderMovedTo(int cloud_number)
         Eigen::Vector3f color;
         // color << 0.0, 1.0, 0.0;
         // color << 0.79f, 1.0f, 0.439f;
-        color << 0.0f, 0.0f, 0.0f;
+        color << 1.0f, 1.0f, 1.0f;
         // _viewer->AddDrawable(DrawableCloud::FromCloud(_cloud));
         // _viewer->AddDrawable(DrawSelectAbleCloud::FromCloud(_cloud, color, 2), "DrawSelectAbleCloud");
         transCloudL2G(_cloud);
-        _viewer->AddDrawable(DrawableCloud::FromCloud(_cloud, color, 2.5f), "DrawSelectAbleCloud");
+        _viewer->AddDrawable(DrawableCloud::FromCloud(_cloud, color, 1.8f), "DrawSelectAbleCloud");
         // 为 viewer 的 drawSelectableCloud 赋值
         // _viewer->selection.clear();
     }
@@ -617,7 +624,7 @@ void MainWindow::onSliderMovedTo(int cloud_number)
     {
         Eigen::Vector3f color;
         // color << 1.0, 0.0, 0.0;
-        color << 0.0f, 0.0f, 0.0f;
+        color << 1.0f, 0.0f, 0.0f;
         transCloudL2G(obstacle_cloud);
         _viewer->AddDrawable(DrawableCloud::FromCloud(obstacle_cloud, color, pointSize), "DrawableCloud obstacle");
     }
@@ -722,6 +729,7 @@ std::vector<BBox> MainWindow::CloudToBBoxs(const std::vector<Cloud::Ptr> & bboxP
         bbox.maxZ = cloud[4].z();
         // 赋值 refIdx
         bbox.refIdx = cloud.refIdx;
+        bbox.shape = cloud.shape;
         // 剔除车载激光雷达支架点云的干扰
         // if (std::abs(bbox.pose.position.x) < 3.0f &&
         //     std::abs(bbox.pose.position.y) < 3.0f &&
@@ -742,6 +750,7 @@ std::vector<BBox> MainWindow::CloudToBBoxs(const std::vector<Cloud::Ptr> & bboxP
     selfBBox.minZ = -1.73f;
     selfBBox.maxZ = 0.0f;
     selfBBox.refIdx = 20; 
+    selfBBox.shape = shapeType::MINAREA;
     res.emplace_back(selfBBox);
     // 跟踪取中心点
     return res;
@@ -900,6 +909,7 @@ point MainWindow::transPointG2L(const point & input)
   point tmp;
   tmp.x() = input.x() * transG2L_(0, 0) + input.y() * transG2L_(1, 0) + transG2L_(2, 0);
   tmp.y() = input.x() * transG2L_(0, 1) + input.y() * transG2L_(1, 1) + transG2L_(2, 1);
+  tmp.z() = input.z();
   return tmp;
 }
 
@@ -908,6 +918,7 @@ point MainWindow::transPointL2G(const point & input)
   point tmp;
   tmp.x() = input.x() * transL2G_(0, 0) + input.y() * transL2G_(1, 0) + transL2G_(2, 0);
   tmp.y() = input.x() * transL2G_(0, 1) + input.y() * transL2G_(1, 1) + transL2G_(2, 1);
+  tmp.z() = input.z();
   return tmp;
 }
 
@@ -930,12 +941,12 @@ void MainWindow::transformPoseToGlobal(const std::vector<BBox>& input,
   }
 }
 
-void MainWindow::transCloudL2G(std::vector<Cloud::Ptr> & input)
+void MainWindow::transCloudL2G(std::vector<Cloud::Ptr> & input, int pointNum = 4)
 {
     for (int bboxIdx = 0; bboxIdx < input.size(); ++bboxIdx)
     {
         auto & bbox = (*input[bboxIdx]);
-        for (int idx = 0; idx < 4; ++idx)
+        for (int idx = 0; idx < pointNum; ++idx)
         {
             bbox[idx] = transPointL2G(bbox[idx]);
         }

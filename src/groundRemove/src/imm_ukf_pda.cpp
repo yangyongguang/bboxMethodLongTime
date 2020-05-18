@@ -246,6 +246,15 @@ void ImmUkfPda::measurementValidation(const std::vector<BBox>& input, UKF& targe
 	bool exists_smallest_nis_object = false;
 	double smallest_nis = std::numeric_limits<double>::max();
 	int smallest_nis_ind = 0;
+	Eigen::VectorXd smallest_meas = Eigen::VectorXd(2);
+	Eigen::VectorXd smallest_diff = Eigen::VectorXd(2);
+	
+	if (target.debugBool)
+	{
+		fprintf(stderr, "measurementValidation--------------\n");
+		fprintf(stderr, "object_vec size: %d\n", object_vec.size());
+	}
+
 	for (size_t i = 0; i < input.size(); i++)
 	{
         // double x = input[i].pose.position.x;
@@ -256,8 +265,12 @@ void ImmUkfPda::measurementValidation(const std::vector<BBox>& input, UKF& targe
         Eigen::VectorXd meas = Eigen::VectorXd(2);
         // yyg
         // here
-        if (target.tracking_num_ == TrackingState::Init)
+        if (target.tracking_num_ == TrackingState::Init 
+						&& target.object_.shape == input[i].shape
+						&& target.object_.shape == shapeType::ISHAPE)
         {
+			// max_det_z 的俩个元素还是自身的 参考点位置， 对于初始化的目标对象
+			fprintf(stderr, "ISHAPE and Init\n");
             point nearestPt = getNearestPoint(input[i], max_det_z(0), max_det_z(1));
             meas << nearestPt.x(), nearestPt.y();
         }
@@ -276,13 +289,16 @@ void ImmUkfPda::measurementValidation(const std::vector<BBox>& input, UKF& targe
         double nis = diff.transpose() * max_det_s.inverse() * diff;
         // nis 值越小就说明但前检测的值距离预测的值越近
         // gating_threshold_ 为距离阈值 9.22， 论文中的
-        if (target.ukf_id_ == trackId_)
-        {
-            fprintf(stderr, "meas: (%f, %f)\n", meas(0), meas(1));
-            fprintf(stderr, "diff: (%f, %f)\n", diff(0), diff(1));
-            fprintf(stderr, "nis: %f\n", nis);
-            fprintf(stderr, "\n");
-        }
+
+        // if (target.ukf_id_ == trackId_ && nis < 50)
+        // {
+		// 	fprintf(stderr, "refPoint = %d\n", input[i].refIdx);
+        //     fprintf(stderr, "meas: (%f, %f), max_det_s: (%f, %f)\n", 
+		// 		meas(0), meas(1), max_det_z(0), max_det_z(1));
+        //     fprintf(stderr, "diff: (%f, %f)\n", diff(0), diff(1));
+        //     fprintf(stderr, "nis: %f\n", nis);
+        //     fprintf(stderr, "\n");
+        // }
 
         if (nis < gating_threshold_)
         {
@@ -294,9 +310,23 @@ void ImmUkfPda::measurementValidation(const std::vector<BBox>& input, UKF& targe
                 smallest_nis_ind = i;
                 // 找到了最小的距离， 在门限内的
                 exists_smallest_nis_object = true;
+				// -----------------
+				smallest_meas = meas;
+				smallest_diff = diff;
             }
         }
 	}
+
+	if (target.ukf_id_ == trackId_)
+	{
+		fprintf(stderr, "refPoint = %d\n", target.object_.refIdx);
+		fprintf(stderr, "meas: (%f, %f), max_det_s: (%f, %f)\n", 
+			smallest_meas(0), smallest_meas(1), max_det_z(0), max_det_z(1));
+		fprintf(stderr, "diff: (%f, %f)\n", smallest_diff(0), smallest_diff(1));
+		fprintf(stderr, "nis: %f\n", smallest_nis);
+		fprintf(stderr, "\n");
+	}
+
 	// yyg 添加 tracking bbox 大小保持
 	if (target.ukf_id_ == trackId_)
 	// if (1)
@@ -319,6 +349,7 @@ void ImmUkfPda::measurementValidation(const std::vector<BBox>& input, UKF& targe
 		fprintf(stderr, "target.object size (%f, %f)\n", target.object_.dimensions.x, target.object_.dimensions.y);
 		fprintf(stderr, "length %f, width %f\n", target.length_, target.width_);
 		fprintf(stderr, "-------------------end----------------\n");
+		fprintf(stderr, "--------------measurementValidation\n");
 	}
 	// fprintf(stderr, "after length %f, width %f\n", target.length_, target.width_);
 	// fprintf(stderr, "-------------------------------------\n\n\n");
@@ -533,13 +564,23 @@ void ImmUkfPda::secondInit(UKF& target, const std::vector<BBox>& object_vec, dou
 
 	// state update
 	// 测量值
-	// yyg 添加判断 一个 ukf 可能的关联
-	// point refPoint = object_vec[0].getRefPoint();
-	// double target_x = refPoint.x();
-	// double target_y = refPoint.y();
-    point nearestPt = getNearestPoint(object_vec[0], target.x_merge_(0), target.x_merge_(1));
-    double target_x = nearestPt.x();
-    double target_y = nearestPt.y();
+	// object_vec 就是这样一个可能的关联对象
+	// yyg 添加判断 一个 ukf 可能的关联, 这个关联只是找到了对象 
+	// 还未开始具体计算一些值
+	double target_x = 0.0f;
+	double target_y = 0.0f;
+	if (target.object_.shape == object_vec[0].shape && target.object_.shape == shapeType::ISHAPE)
+	{
+		point nearestPt = getNearestPoint(object_vec[0], target.x_merge_(0), target.x_merge_(1));
+		target_x = nearestPt.x();
+		target_y = nearestPt.y();
+	}
+	else
+	{
+		point refPoint = object_vec[0].getRefPoint();
+		target_x = refPoint.x();
+		target_y = refPoint.y();
+	}
 
 	// double target_x = object_vec[0].pose.position.x;
 	// double target_y = object_vec[0].pose.position.y;
@@ -1221,7 +1262,7 @@ void ImmUkfPda::tracker(const std::vector<BBox>& input,
 	std::vector<bool> matching_vec(input.size(), false);
 	// fprintf(stderr, "std::vector<bool> matching_vec(input.size(), false)\n");
 	// 未初始化则执行
-	// 程序只初始化一次， 后续不再初始化
+	// 整个程序只初始化一次， 后续不再初始化
 	if (!init_)
 	{
 		// tracks_ ==>  vector<UKF> 初始化
@@ -1288,6 +1329,7 @@ void ImmUkfPda::tracker(const std::vector<BBox>& input,
 		connectPoints->emplace_back(point(targets_[i].x_ctrv_(0),       targets_[i].x_ctrv_(1),       -1.72f));
 		connectPoints->emplace_back(point(targets_[i].x_ctrv_(0),       targets_[i].x_ctrv_(1),       -1.72f));
 		// connectPoints->emplace_back(point(targets_[i].x_rm_(0),         targets_[i].x_rm_(1),         -1.72f));
+		// 根据状态， 预测一个合理的位置
 		targets_[i].prediction(use_sukf_, has_subscribed_vectormap_, dt);
 		// connectPoints->emplace_back(point(targets_[i].z_pred_cv_(0),    targets_[i].z_pred_cv_(1),    -1.72f));
 		// connectPoints->emplace_back(point(targets_[i].z_pred_ctrv_(0),  targets_[i].z_pred_ctrv_(1),  -1.62f));
@@ -1302,6 +1344,7 @@ void ImmUkfPda::tracker(const std::vector<BBox>& input,
 		bool success = probabilisticDataAssociation(input, dt, matching_vec, object_vec, targets_[i]);
 		if (!success)
 		{
+			fprintf(stderr, "current track id : %d  no object to associate\n", targets_[i].ukf_id_);
 			// connectPoints->emplace_back(point(targets_[i].x_cv_(0),         targets_[i].x_cv_(1),         -1.72f));
 			connectPoints->emplace_back(point(targets_[i].x_ctrv_(0),       targets_[i].x_ctrv_(1),       -1.72f));
 			// connectPoints->emplace_back(point(targets_[i].x_rm_(0),         targets_[i].x_rm_(1),         -1.72f));

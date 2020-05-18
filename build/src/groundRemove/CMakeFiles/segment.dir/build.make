@@ -60,15 +60,15 @@ include src/groundRemove/CMakeFiles/segment.dir/flags.make
 src/groundRemove/CMakeFiles/segment.dir/src/segment.cpp.o: src/groundRemove/CMakeFiles/segment.dir/flags.make
 src/groundRemove/CMakeFiles/segment.dir/src/segment.cpp.o: ../src/groundRemove/src/segment.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yyg/code/lidarCode/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object src/groundRemove/CMakeFiles/segment.dir/src/segment.cpp.o"
-	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/g++-5   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/segment.dir/src/segment.cpp.o -c /home/yyg/code/lidarCode/src/groundRemove/src/segment.cpp
+	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/segment.dir/src/segment.cpp.o -c /home/yyg/code/lidarCode/src/groundRemove/src/segment.cpp
 
 src/groundRemove/CMakeFiles/segment.dir/src/segment.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/segment.dir/src/segment.cpp.i"
-	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/groundRemove/src/segment.cpp > CMakeFiles/segment.dir/src/segment.cpp.i
+	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/groundRemove/src/segment.cpp > CMakeFiles/segment.dir/src/segment.cpp.i
 
 src/groundRemove/CMakeFiles/segment.dir/src/segment.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/segment.dir/src/segment.cpp.s"
-	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/groundRemove/src/segment.cpp -o CMakeFiles/segment.dir/src/segment.cpp.s
+	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/groundRemove/src/segment.cpp -o CMakeFiles/segment.dir/src/segment.cpp.s
 
 src/groundRemove/CMakeFiles/segment.dir/src/segment.cpp.o.requires:
 

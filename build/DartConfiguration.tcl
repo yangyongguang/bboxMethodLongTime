@@ -14,7 +14,7 @@ CostDataFile:
 Site: persue
 
 # Build name is osname-revision-compiler, i.e. Linux-2.4.2-2smp-c++
-BuildName: Linux-g++-5
+BuildName: Linux-c++
 
 # Submission information
 IsCDash: 
@@ -68,7 +68,7 @@ UpdateOptions:
 UpdateType: git
 
 # Compiler info
-Compiler: /usr/bin/g++-5
+Compiler: /usr/bin/c++
 CompilerVersion: 5.4.0
 
 # Dynamic analysis (MemCheck)

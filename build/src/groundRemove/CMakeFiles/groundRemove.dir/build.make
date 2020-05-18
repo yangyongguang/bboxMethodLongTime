@@ -60,15 +60,15 @@ include src/groundRemove/CMakeFiles/groundRemove.dir/flags.make
 src/groundRemove/CMakeFiles/groundRemove.dir/src/groundRemove.cpp.o: src/groundRemove/CMakeFiles/groundRemove.dir/flags.make
 src/groundRemove/CMakeFiles/groundRemove.dir/src/groundRemove.cpp.o: ../src/groundRemove/src/groundRemove.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/yyg/code/lidarCode/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object src/groundRemove/CMakeFiles/groundRemove.dir/src/groundRemove.cpp.o"
-	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/g++-5   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/groundRemove.dir/src/groundRemove.cpp.o -c /home/yyg/code/lidarCode/src/groundRemove/src/groundRemove.cpp
+	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/groundRemove.dir/src/groundRemove.cpp.o -c /home/yyg/code/lidarCode/src/groundRemove/src/groundRemove.cpp
 
 src/groundRemove/CMakeFiles/groundRemove.dir/src/groundRemove.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/groundRemove.dir/src/groundRemove.cpp.i"
-	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/groundRemove/src/groundRemove.cpp > CMakeFiles/groundRemove.dir/src/groundRemove.cpp.i
+	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/yyg/code/lidarCode/src/groundRemove/src/groundRemove.cpp > CMakeFiles/groundRemove.dir/src/groundRemove.cpp.i
 
 src/groundRemove/CMakeFiles/groundRemove.dir/src/groundRemove.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/groundRemove.dir/src/groundRemove.cpp.s"
-	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/g++-5  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/groundRemove/src/groundRemove.cpp -o CMakeFiles/groundRemove.dir/src/groundRemove.cpp.s
+	cd /home/yyg/code/lidarCode/build/src/groundRemove && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/yyg/code/lidarCode/src/groundRemove/src/groundRemove.cpp -o CMakeFiles/groundRemove.dir/src/groundRemove.cpp.s
 
 src/groundRemove/CMakeFiles/groundRemove.dir/src/groundRemove.cpp.o.requires:
 

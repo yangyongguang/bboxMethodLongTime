@@ -72,7 +72,7 @@ public:
                              std::vector<BBox>& transformed_input,
                              const size_t & currentFrame);
 
-    void transCloudL2G(std::vector<Cloud::Ptr> & input);
+    void transCloudL2G(std::vector<Cloud::Ptr> & input, int pointNum);
     void transCloudL2G(Cloud::Ptr & input);
     // std::vector<std::string> fileNameBin;
     // std::vector<std::string> fileNameImage;

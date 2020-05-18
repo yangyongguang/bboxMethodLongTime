@@ -851,6 +851,12 @@ void UKF::ctrv(const double p_x, const double p_y, const double v, const double 
   state[2] = v_p;
   state[3] = yaw_p;
   state[4] = yawd_p;
+
+  if (debugBool)
+  {
+    fprintf(stderr, "  px,   py: (%f, %f)\n", p_x, p_y);
+    fprintf(stderr, "px_p, py_p: (%f, %f)\n\n", px_p, py_p);
+  }
 }
 
 void UKF::cv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
@@ -1043,6 +1049,11 @@ void UKF::predictionMotion(const double delta_t, const int model_ind)
     x = x + weights_s_(i) * x_sig_pred.col(i);
   }
 
+  if (debugBool)
+  {
+    std::cout << "weights_s_ : " << weights_s_.transpose() << std::endl;
+    fprintf(stderr, "x after weights_s_: %f, %f, %f, %f, %f\n\n", x(0), x(1), x(2), x(3), x(4));
+  }
   while (x(3) > M_PI)
     x(3) -= 2. * M_PI;
   while (x(3) < -M_PI)
